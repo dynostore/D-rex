@@ -48,25 +48,23 @@ def get_set_of_N_on_pareto_front(number_of_nodes, reliability_threshold, reliabi
 	space_cost_of_couple = []
 	time_cost_of_couple = []
 	
-	# First we get the set of N and their associating K as big as possible that meet the resilience threshold
+	# First we get the set of N and their associated K as big as possible that meet the resilience threshold
 	for i in range (1, number_of_nodes + 1):
 		K = get_max_K_from_reliability_threshold_and_nodes(i, reliability_threshold, reliability_of_nodes)
-		if (K != -1): # This value of N can match the reliability threshold
+		if (K != -1): # Means that this value of N cannot match the reliability threshold
 			set_of_possible_N_and_K_couple.append((i, K))
 	
+	if (len(set_of_possible_N_and_K_couple) == 0):
+		print("ERROR: No value of N is available to meet the reliability thresold.")
+		exit
 	print("set_of_possible_N_and_K_couple:", set_of_possible_N_and_K_couple)
 	
 	# Put in a table the time and space cost of each couple of possible N,K
-		
 	for i in range (0, len(set_of_possible_N_and_K_couple)):
 		space_cost_of_couple.append((file_size/set_of_possible_N_and_K_couple[i][1])*set_of_possible_N_and_K_couple[i][0]) # (file_size/K)*N
 		time_cost_of_couple.append(replication_and_chuncking_time(set_of_possible_N_and_K_couple[i][0], set_of_possible_N_and_K_couple[i][1], file_size, bandwidths))
-	
 	print(space_cost_of_couple)
 	print(time_cost_of_couple)
-		
-	# time_cost = interpolation from Dante function
-
 	
 	# Then we get from the possible couple the set of N that is on the pareto front
 	
@@ -101,18 +99,23 @@ def get_max_K_from_reliability_threshold_and_nodes(number_of_nodes, reliability_
 # Under are just some values and examples on how to use the utils functions
 
 # Numpy arrays of probability of failure each node over the data timeframe
+# TODO use real values and have them as external inputs
 p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3])
 
 # Bandwidth to write on the storage nodes in MB/s
+# TODO use real values and have them as external inputs
 bandwidths = np.array([10, 23, 15, 13, 11, 32])
 
-# Number of replica we create
+# Number of nodes
+# TODO have it as external input
 N = 6
 
 # Threshold we want to meet
+# TODO have it as external input
 reliability_threshold = 0.99
 
 # File size in MB
+# TODO have it as external input and have different values depending on the data type
 file_size = 10
 
 print("Probability of availability must be superior to", reliability_threshold)
