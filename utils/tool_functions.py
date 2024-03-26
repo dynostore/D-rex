@@ -12,7 +12,7 @@ import sys
 # Takes as inputs N, K, the size of the file and the bandwidth to write on the storage nodes
 # Return a time in seconds (or micro-seconds?)
 def replication_and_chuncking_time(N, K, file_size, bandwidths):
-	
+	time = 1
 	return time
 
 # ~ # Faster than is_pareto_efficient_simple, but less readable.
@@ -57,12 +57,13 @@ def get_set_of_N_on_pareto_front(number_of_nodes, reliability_threshold, reliabi
 	print("set_of_possible_N_and_K_couple:", set_of_possible_N_and_K_couple)
 	
 	# Put in a table the time and space cost of each couple of possible N,K
+		
+	for i in range (0, len(set_of_possible_N_and_K_couple)):
+		space_cost_of_couple.append((file_size/set_of_possible_N_and_K_couple[i][1])*set_of_possible_N_and_K_couple[i][0]) # (file_size/K)*N
+		time_cost_of_couple.append(replication_and_chuncking_time(set_of_possible_N_and_K_couple[i][0], set_of_possible_N_and_K_couple[i][1], file_size, bandwidths))
 	
-	print(set_of_possible_N_and_K_couple[0][0], set_of_possible_N_and_K_couple[0][1])
-	
-	# ~ for i in range (0, size(set_of_possible_N_and_K_couple)):
-		# ~ space_cost_of_couple.append((file_size/K) * N)
-		# ~ time_cost_of_couple = replication_and_chuncking_time(set_of_possible_N_and_K_couple[i][0], set_of_possible_N_and_K_couple[i][1])
+	print(space_cost_of_couple)
+	print(time_cost_of_couple)
 		
 	# time_cost = interpolation from Dante function
 
