@@ -3,6 +3,8 @@
 from poibin import PoiBin
 import numpy as np
 import sys
+from load_data import RealRecords
+
 
 # Return the estimated time cost of chunking and replicating a data of 
 # size file_size into N chunks of size file_size/K
@@ -11,10 +13,23 @@ import sys
 # execution
 # Takes as inputs N, K, the size of the file and the bandwidth to write on the storage nodes
 # Return a time in seconds (or micro-seconds?)
-def replication_and_chuncking_time(N, K, file_size, bandwidths):
-	time = 1
-	return time
-
+def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
+    sizes_times = []
+    for s,d in zip(real_records.sizes, real_records.data):
+        result_filter = d[(d["n"] == n) & (d["k"] == k)]
+        if len(result_filter) > 0:
+            sizes_times.append([s, result_filter[0]['avg_time']])
+    sizes_times = np.array(sizes_times)
+    if file_size >= min(real_records.sizes) and file_size <= max(real_records.sizes):
+        print("Interpolating")
+        return np.interp(file_size, sizes_times[:,0], sizes_times[:,1])
+    else: #Extrapolate
+        print("Extrapolating")
+        fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
+        line = np.poly1d(fit)
+        return line(file_size)
+	#return 1
+ 
 # ~ # Faster than is_pareto_efficient_simple, but less readable.
 # ~ def is_pareto_efficient(costs, return_mask = True):
     # ~ """
@@ -40,9 +55,10 @@ def replication_and_chuncking_time(N, K, file_size, bandwidths):
         # ~ return is_efficient_mask
     # ~ else:
         # ~ return is_efficient
+  
 
 # Getting the set of N on the pareto front that match the reliability threshold
-def get_set_of_N_on_pareto_front(number_of_nodes, reliability_threshold, reliability_of_nodes, file_size, bandwidths):
+def get_set_of_N_on_pareto_front(number_of_nodes, reliability_threshold, reliability_of_nodes, file_size, bandwidths, real_records):
 	N_on_pareto = []
 	set_of_possible_N_and_K_couple = []
 	space_cost_of_couple = []
@@ -60,7 +76,7 @@ def get_set_of_N_on_pareto_front(number_of_nodes, reliability_threshold, reliabi
 		
 	for i in range (0, len(set_of_possible_N_and_K_couple)):
 		space_cost_of_couple.append((file_size/set_of_possible_N_and_K_couple[i][1])*set_of_possible_N_and_K_couple[i][0]) # (file_size/K)*N
-		time_cost_of_couple.append(replication_and_chuncking_time(set_of_possible_N_and_K_couple[i][0], set_of_possible_N_and_K_couple[i][1], file_size, bandwidths))
+		time_cost_of_couple.append(replication_and_chuncking_time(set_of_possible_N_and_K_couple[i][0], set_of_possible_N_and_K_couple[i][1], file_size, bandwidths, real_records))
 	
 	print(space_cost_of_couple)
 	print(time_cost_of_couple)
@@ -113,11 +129,13 @@ N = 6
 reliability_threshold = 0.99
 
 # File size in MB
-file_size = 10
+file_size = 1000
+
+real_records = RealRecords()
 
 print("Probability of availability must be superior to", reliability_threshold)
 
 K = get_max_K_from_reliability_threshold_and_nodes(N, reliability_threshold, p)
 
-set_of_N_on_pareto = get_set_of_N_on_pareto_front(N, reliability_threshold, p, file_size, bandwidths)
+set_of_N_on_pareto = get_set_of_N_on_pareto_front(N, reliability_threshold, p, file_size, bandwidths, real_records)
 print("The set of N on the pareto front between speed and size is", set_of_N_on_pareto)
