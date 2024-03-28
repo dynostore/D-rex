@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=64.0", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "drex"
+version = "0.0.21"
+authors = [
+  { name="Maxime, Dante, Haochen", email="dantsanc@pa.uc3m.es" },
+]
+description = "DRex package"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy"
+]
+
+[tool.setuptools.packages.find]
+exclude = ["data*", "Simulation*"]
+namespaces = false
