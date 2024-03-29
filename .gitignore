@@ -5,3 +5,4 @@ dist/*
 build/*
 drex.egg-info/*
 *.pyc
+venv/*

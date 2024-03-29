@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "drex"
-version = "0.0.24"
+version = "0.0.241"
 authors = [
   { name="Maxime, Dante, Haochen", email="dantsanc@pa.uc3m.es" },
 ]
@@ -22,5 +22,5 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-exclude = ["data*", "Simulation*"]
+exclude = ["data*", "Simulation*", "test*"]
 namespaces = false
