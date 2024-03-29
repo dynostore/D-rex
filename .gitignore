@@ -4,3 +4,4 @@ drex_egg-info/*
 dist/*
 build/*
 drex.egg-info/*
+*.pyc
