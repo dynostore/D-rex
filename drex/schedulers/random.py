@@ -7,7 +7,7 @@ import random
 from drex.utils.tool_functions import reliability_thresold_met
 
 # Return a pair N and K that matches the reliability trehsold
-def get_random_N_K_pair(number_of_nodes, reliability_threshold, reliability_of_nodes):
+def random_schedule(number_of_nodes, reliability_threshold, reliability_of_nodes):
 	
 	pairs = []
 	

@@ -1,7 +1,7 @@
 import numpy as np
 from drex.utils.load_data import RealRecords
 from drex.utils.tool_functions import get_max_K_from_reliability_threshold_and_nodes, get_set_of_N_on_pareto_front
-from drex.schedulers.random import get_random_N_K_pair
+from drex.schedulers.random import random_schedule
 
 # Under are just some values and examples on how to use the utils functions
 
@@ -35,5 +35,5 @@ K = get_max_K_from_reliability_threshold_and_nodes(N, reliability_threshold, p)
 set_of_N_on_pareto = get_set_of_N_on_pareto_front(N, reliability_threshold, p, file_size, bandwidths, real_records)
 
 # Testing the random scheduler
-N, K, set_of_nodes_random_scheduler = get_random_N_K_pair(N, reliability_threshold, p)
+N, K, set_of_nodes_random_scheduler = random_schedule(N, reliability_threshold, p)
 print("Random scheduler chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_random_scheduler)
