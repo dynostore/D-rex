@@ -5,7 +5,6 @@ import numpy as np
 import sys
 from drex.utils.load_data import RealRecords
 
-
 # Return the estimated time cost of chunking and replicating a data of 
 # size file_size into N chunks of size file_size/K
 # uses an interpolation or extrapolation from previous experiments
@@ -58,6 +57,7 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
   
 
 # Getting the set of N on the pareto front that match the reliability threshold
+# TODO MAXIME: finish this function
 def get_set_of_N_on_pareto_front(number_of_nodes, reliability_threshold, reliability_of_nodes, file_size, bandwidths, real_records):
 	N_on_pareto = []
 	set_of_possible_N_and_K_couple = []
@@ -88,21 +88,23 @@ def get_set_of_N_on_pareto_front(number_of_nodes, reliability_threshold, reliabi
 	
 	return N_on_pareto
 
+# Return True or false
+def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
+	pb = PoiBin(reliability_of_nodes)
+	x = N - K
+	if (pb.cdf(x) >= reliability_threshold):
+		return True
+	else:
+		return False
+
 # Getting the biggest K we can have to still meet the reliability threshold. If no K is found that match the reliability, -1 is return meaning that the value N is not sufficiant to meet the reliability threshold
 def get_max_K_from_reliability_threshold_and_nodes(number_of_nodes, reliability_threshold, reliability_of_nodes):
 	# Gettin Poisson Binomial distributions
-	pb = PoiBin(reliability_of_nodes)
 	max_K = -1
 	
 	for i in range (1, number_of_nodes):
 		K = i
-	
-		# Setting number of failures we can withstand
-		x = number_of_nodes - K
-	
-		print("With N =", number_of_nodes, "and K =", K, "the probability of availability is", pb.cdf(x))
-	
-		if (pb.cdf(x) > reliability_threshold):
+		if (reliability_thresold_met(number_of_nodes, K, reliability_threshold, reliability_of_nodes)):
 			max_K = K
 
 	if max_K == -1:
