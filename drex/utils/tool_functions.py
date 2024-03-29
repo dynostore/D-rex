@@ -89,6 +89,7 @@ def get_set_of_N_on_pareto_front(number_of_nodes, reliability_threshold, reliabi
 	return N_on_pareto
 
 # Return True or false
+# Must indicate the reliability of nodes used! Not all the nodes
 def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
 	pb = PoiBin(reliability_of_nodes)
 	x = N - K
