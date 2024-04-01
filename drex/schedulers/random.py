@@ -24,7 +24,8 @@ def random_schedule(number_of_nodes, reliability_threshold, reliability_of_nodes
 				else: # Reliability must be met with a certain subset of nodes chosen
 					for reliability_of_nodes_chosen in itertools.combinations(reliability_of_nodes, i):
 						print(reliability_of_nodes_chosen)
-						set_of_nodes = corresponding from reliability
+						set_of_nodes = combinations(set_of_nodes, i)
+						print(set_of_nodes)
 						if (reliability_thresold_met(i, j, reliability_threshold, reliability_of_nodes_chosen)): 
 							pairs.append((i, j, set_of_nodes))
 	

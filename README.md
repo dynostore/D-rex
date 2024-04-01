@@ -23,3 +23,5 @@ Execution:
 ```bash
 python3 -m test.drex-test    
 ```
+
+(sudo if not in editable repository ;))
