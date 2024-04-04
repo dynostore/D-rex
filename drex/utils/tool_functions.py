@@ -28,7 +28,6 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
         fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
         line = np.poly1d(fit)
         return line(file_size)
-	#return 1
  
 # ~ # Faster than is_pareto_efficient_simple, but less readable.
 # ~ def is_pareto_efficient(costs, return_mask = True):
