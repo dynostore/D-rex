@@ -7,21 +7,26 @@ import itertools
 
 # Under are just some values and examples on how to use the utils functions
 
+# Number of nodes
+# TODO have it as external input
+# ~ number_of_nodes = 6
+# ~ number_of_nodes = 12
+number_of_nodes = 13
+
 # Numpy arrays of probability of failure each node over the data timeframe
 # TODO use real values and have them as external inputs
-p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3])
+# ~ p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3])
+# ~ p = np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
+p = [0.1] * number_of_nodes
 
 # Bandwidth to write on the storage nodes in MB/s
 # TODO use real values and have them as external inputs
-bandwidths = np.array([10, 23, 15, 13, 11, 32])
+bandwidths = [20] * number_of_nodes
 
-# Number of nodes
-# TODO have it as external input
-number_of_nodes = 6
 
 # Threshold we want to meet
 # TODO have it as external input
-reliability_threshold = 0.99
+reliability_threshold = 0.9
 
 # To manage the real time obtained in experiments
 real_records = RealRecords(dir_data="data/")
@@ -32,7 +37,10 @@ file_size = 10
 
 # Algorithm 1
 N = number_of_nodes
-K = get_max_K_from_reliability_threshold_and_nodes_chosen(N, reliability_threshold, p)
+K = get_max_K_from_reliability_threshold_and_nodes_chosen(N, reliability_threshold, p[0:N])
+if (N == -1):
+	print("ERROR: No N was found for ALgorithm 1.")
+	exit(1)
 set_of_nodes = list(range(0, number_of_nodes))
 print("")
 print("Algorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes)
@@ -86,21 +94,21 @@ for i in range(2, number_of_nodes + 1):
 			time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
 			set_of_possible_solutions.append((i, K, set_of_nodes_chosen, time, (file_size/K)*i))
 			time_and_space_from_set_of_possible_solution.append([time, (file_size/K)*i])
-print(set_of_possible_solutions)
-print(time_and_space_from_set_of_possible_solution)
+# ~ print(set_of_possible_solutions)
+# ~ print(time_and_space_from_set_of_possible_solution)
 
 # 2. Take those that are on the pareto front
-
-# ~ costs = np.array([[1,2], [3,4], [2,1], [1,1]])
-# ~ costs = np.empty(shape=[0, len(time_and_space_from_set_of_possible_solution)])
-# ~ for i in range(len(time_and_space_from_set_of_possible_solution)):
-	# ~ costs = np.append(costs, time_and_space_from_set_of_possible_solution[i], axis=0)
-# ~ costs = np.array(time_and_space_from_set_of_possible_solution)
 costs = np.asarray(time_and_space_from_set_of_possible_solution)
-print(costs)
+# ~ print(costs)
 test = is_pareto_efficient(costs, False)
-print(test)
-print(time_and_space_from_set_of_possible_solution[43])
+print("Set on pareto front is", test)
+print(set_of_possible_solutions[test[0]])
+print(set_of_possible_solutions[test[1]])
+# ~ print(set_of_possible_solutions[100])
+# ~ print(set_of_possible_solutions[200])
+# ~ print(set_of_possible_solutions[300])
+# ~ print(set_of_possible_solutions[781])
+# ~ print(set_of_possible_solutions[4070])
 
 # 3. Plateau
 

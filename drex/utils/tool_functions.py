@@ -21,10 +21,10 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
             sizes_times.append([s, result_filter[0]['avg_time']])
     sizes_times = np.array(sizes_times)
     if file_size >= min(real_records.sizes) and file_size <= max(real_records.sizes):
-        print("Interpolating")
+        # ~ print("Interpolating")
         return np.interp(file_size, sizes_times[:,0], sizes_times[:,1])
     else: #Extrapolate
-        print("Extrapolating")
+        # ~ print("Extrapolating")
         fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
         line = np.poly1d(fit)
         return line(file_size)
