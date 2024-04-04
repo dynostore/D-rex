@@ -29,65 +29,31 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
         line = np.poly1d(fit)
         return line(file_size)
  
-# ~ # Faster than is_pareto_efficient_simple, but less readable.
-# ~ def is_pareto_efficient(costs, return_mask = True):
-    # ~ """
-    # ~ Find the pareto-efficient points
-    # ~ :param costs: An (n_points, n_costs) array
-    # ~ :param return_mask: True to return a mask
-    # ~ :return: An array of indices of pareto-efficient points.
-        # ~ If return_mask is True, this will be an (n_points, ) boolean array
-        # ~ Otherwise it will be a (n_efficient_points, ) integer array of indices.
-    # ~ """
-    # ~ is_efficient = np.arange(costs.shape[0])
-    # ~ n_points = costs.shape[0]
-    # ~ next_point_index = 0  # Next index in the is_efficient array to search for
-    # ~ while next_point_index<len(costs):
-        # ~ nondominated_point_mask = np.any(costs<costs[next_point_index], axis=1)
-        # ~ nondominated_point_mask[next_point_index] = True
-        # ~ is_efficient = is_efficient[nondominated_point_mask]  # Remove dominated points
-        # ~ costs = costs[nondominated_point_mask]
-        # ~ next_point_index = np.sum(nondominated_point_mask[:next_point_index])+1
-    # ~ if return_mask:
-        # ~ is_efficient_mask = np.zeros(n_points, dtype = bool)
-        # ~ is_efficient_mask[is_efficient] = True
-        # ~ return is_efficient_mask
-    # ~ else:
-        # ~ return is_efficient
-  
-
-# Getting the set of N on the pareto front that match the reliability threshold
-# TODO MAXIME: finish this function
-def get_set_of_N_on_pareto_front(number_of_nodes, reliability_threshold, reliability_of_nodes, file_size, bandwidths, real_records):
-	N_on_pareto = []
-	set_of_possible_N_and_K_couple = []
-	space_cost_of_couple = []
-	time_cost_of_couple = []
-	
-	# First we get the set of N and their associated K as big as possible that meet the resilience threshold
-	# TODO: this is wrong as we need to send the right set of reliability, have to fix it
-	for i in range (1, number_of_nodes + 1):
-		K = get_max_K_from_reliability_threshold_and_nodes_chosen(i, reliability_threshold, reliability_of_nodes)
-		if (K != -1): # Means that this value of N cannot match the reliability threshold
-			set_of_possible_N_and_K_couple.append((i, K))
-	
-	if (len(set_of_possible_N_and_K_couple) == 0):
-		print("ERROR: No value of N is available to meet the reliability thresold.")
-		exit
-	print("set_of_possible_N_and_K_couple:", set_of_possible_N_and_K_couple)
-	
-	# Put in a table the time and space cost of each couple of possible N,K
-	for i in range (0, len(set_of_possible_N_and_K_couple)):
-		space_cost_of_couple.append((file_size/set_of_possible_N_and_K_couple[i][1])*set_of_possible_N_and_K_couple[i][0]) # (file_size/K)*N
-		time_cost_of_couple.append(replication_and_chuncking_time(set_of_possible_N_and_K_couple[i][0], set_of_possible_N_and_K_couple[i][1], file_size, bandwidths, real_records))
-	
-	print(space_cost_of_couple)
-	print(time_cost_of_couple)
-	
-	# Then we get from the possible couple the set of N that is on the pareto front
-	
-	
-	return N_on_pareto
+# Faster than is_pareto_efficient_simple, but less readable.
+def is_pareto_efficient(costs, return_mask = True):
+    """
+    Find the pareto-efficient points
+    :param costs: An (n_points, n_costs) array
+    :param return_mask: True to return a mask
+    :return: An array of indices of pareto-efficient points.
+        If return_mask is True, this will be an (n_points, ) boolean array
+        Otherwise it will be a (n_efficient_points, ) integer array of indices.
+    """
+    is_efficient = np.arange(costs.shape[0])
+    n_points = costs.shape[0]
+    next_point_index = 0  # Next index in the is_efficient array to search for
+    while next_point_index<len(costs):
+        nondominated_point_mask = np.any(costs<costs[next_point_index], axis=1)
+        nondominated_point_mask[next_point_index] = True
+        is_efficient = is_efficient[nondominated_point_mask]  # Remove dominated points
+        costs = costs[nondominated_point_mask]
+        next_point_index = np.sum(nondominated_point_mask[:next_point_index])+1
+    if return_mask:
+        is_efficient_mask = np.zeros(n_points, dtype = bool)
+        is_efficient_mask[is_efficient] = True
+        return is_efficient_mask
+    else:
+        return is_efficient
 
 # Return True or false
 # Must indicate the reliability of teh set of nodes used! Not all the nodes
