@@ -1,6 +1,6 @@
 from drex.utils.tool_functions import *
 
-def algorithm2():
+def algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records):
 	min_time = sys.maxsize
 	min_N = 0
 	min_K = 0
@@ -18,7 +18,7 @@ def algorithm2():
 			# ~ print("Test N =", i, "K =", K, set_of_nodes_chosen)
 			if (K != -1):
 				time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
-				# ~ print(time)
+				print(time)
 				if (time < min_time):
 					min_time = time
 					min_N = i

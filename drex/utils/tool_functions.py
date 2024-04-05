@@ -6,6 +6,21 @@ import sys
 from drex.utils.load_data import RealRecords
 import itertools
 
+
+def calculate_transfer_time(data_size, bandwidth):
+    """
+    Calculate the estimated transfer time given data size and bandwidth.
+    
+    Args:
+    data_size (float): Size of data to be transferred, in bits.
+    bandwidth (float): Bandwidth of the connection, in bits per second.
+    
+    Returns:
+    float: Estimated transfer time in seconds.
+    """
+    transfer_time = data_size / bandwidth
+    return transfer_time
+
 # Return the estimated time cost of chunking and replicating a data of 
 # size file_size into N chunks of size file_size/K
 # uses an interpolation or extrapolation from previous experiments
@@ -14,11 +29,14 @@ import itertools
 # Takes as inputs N, K, the size of the file and the bandwidth to write on the storage nodes
 # Return a time in seconds (or micro-seconds?)
 def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
+    
     sizes_times = []
     for s,d in zip(real_records.sizes, real_records.data):
         result_filter = d[(d["n"] == n) & (d["k"] == k)]
         if len(result_filter) > 0:
-            sizes_times.append([s, result_filter[0]['avg_time']])
+            for b in bandwidths:
+                sizes_times.append([s, result_filter[0]['avg_time'] + calculate_transfer_time(file_size, b)])
+            #sizes_times.append([s, result_filter[0]['avg_time']])
     sizes_times = np.array(sizes_times)
     if file_size >= min(real_records.sizes) and file_size <= max(real_records.sizes):
         # ~ print("Interpolating")

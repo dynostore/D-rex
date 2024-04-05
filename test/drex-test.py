@@ -12,7 +12,7 @@ import itertools
 # TODO have these values as external input by the user
 
 # Number of nodes
-number_of_nodes = 1000
+number_of_nodes = 10
 
 # Numpy arrays of probability of failure each node over the data timeframe
 # ~ p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3])
@@ -37,7 +37,7 @@ file_size = 10
 algorithm1(number_of_nodes, reliability_threshold, p)
 
 # Algorithm 2
-# ~ algorithm2()
+algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # ~ # Algorithm 3
 # ~ # 1. Get set of N, K and associated nodes that match the reliability and put them in a list, with fastest N when multiple set of nodes can staisfy the reliability
