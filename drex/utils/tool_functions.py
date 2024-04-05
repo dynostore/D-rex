@@ -55,8 +55,7 @@ def is_pareto_efficient(costs, return_mask = True):
     else:
         return is_efficient
 
-# Return True or false
-# Must indicate the reliability of teh set of nodes used! Not all the nodes
+# Must indicate the reliability of the set of nodes used. Not  of all the nodes
 def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
 	pb = PoiBin(reliability_of_nodes)
 	x = N - K
@@ -68,20 +67,16 @@ def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
 # Getting the biggest K we can have to still meet the reliability threshold.
 # If no K is found that match the reliability, -1 is returned meaning that
 # the value of N is not sufficiant to meet the reliability threshold
-# Careful, number_of_nodes and reliability_of_nodes must be the set of nodes
-# you inted to use.
+# Careful, number_of_nodes and reliability_of_nodes must be the number and 
+# reliability of the set of nodes you inted to use.
 def get_max_K_from_reliability_threshold_and_nodes_chosen(number_of_nodes, reliability_threshold, reliability_of_nodes):
-	# Gettin Poisson Binomial distributions
 	max_K = -1
-	
 	for i in range (1, number_of_nodes):
 		K = i
 		if (reliability_thresold_met(number_of_nodes, K, reliability_threshold, reliability_of_nodes)):
 			max_K = K
-	
 	if max_K == -1:
 		print("/!\ No value of K can meet the reliability threshold with N =", number_of_nodes, "/!\ ")
-	
 	return max_K
 
 def get_set_of_node_associated_with_chosen_N_and_K(number_of_nodes, N, K, reliability_threshold, reliability_of_nodes):

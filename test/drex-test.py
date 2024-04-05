@@ -12,7 +12,7 @@ import itertools
 # TODO have these values as external input by the user
 
 # Number of nodes
-number_of_nodes = 10
+number_of_nodes = 1000
 
 # Numpy arrays of probability of failure each node over the data timeframe
 # ~ p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3])
@@ -31,36 +31,13 @@ real_records = RealRecords(dir_data="data/")
 file_size = 10
 
 # Algorithm 1
+# Time for 10 nodes: 0.0008
+# Time for 100 nodes: 0.0351
+# Time for 1000 nodes: 11.1834
 algorithm1(number_of_nodes, reliability_threshold, p)
 
 # Algorithm 2
-min_time = sys.maxsize
-min_N = 0
-min_K = 0
-set_of_nodes_chosen = []
-set_of_nodes = list(range(0, number_of_nodes))
-for i in range(2, number_of_nodes + 1):
-	for set_of_nodes_chosen in itertools.combinations(set_of_nodes, i):
-		reliability_of_nodes_chosen = []
-		bandwidth_of_nodes_chosen = []
-		# ~ print(set_of_nodes_chosen)
-		for j in range(0, len(set_of_nodes_chosen)):
-			reliability_of_nodes_chosen.append(p[set_of_nodes_chosen[j]])
-			bandwidth_of_nodes_chosen.append(bandwidths[set_of_nodes_chosen[j]])
-		K = get_max_K_from_reliability_threshold_and_nodes_chosen(i, reliability_threshold, reliability_of_nodes_chosen)
-		# ~ print("Test N =", i, "K =", K, set_of_nodes_chosen)
-		if (K != -1):
-			time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
-			# ~ print(time)
-			if (time < min_time):
-				min_time = time
-				min_N = i
-				min_K = K
-				min_set_of_nodes_chosen = set_of_nodes_chosen
-N = min_N
-K = min_K
-print("")
-print("Algorithm 2 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen)
+# ~ algorithm2()
 
 # ~ # Algorithm 3
 # ~ # 1. Get set of N, K and associated nodes that match the reliability and put them in a list, with fastest N when multiple set of nodes can staisfy the reliability
