@@ -1,8 +1,7 @@
 from drex.utils.tool_functions import *
 import sys, time
 
-def algorithm2(number_of_nodes, reliability_threshold, reliability_of_nodes, real_records, bandwidths, file_size):
-	start = time.time()
+def algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records):
 	min_time = sys.maxsize
 	min_N = 0
 	min_K = 0
@@ -21,6 +20,8 @@ def algorithm2(number_of_nodes, reliability_threshold, reliability_of_nodes, rea
 				replication_and_write_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
 				if (replication_and_write_time < min_time):
 					min_time = replication_and_write_time
+				if (time < min_time):
+					min_time = time
 					min_N = i
 					min_K = K
 					min_set_of_nodes_chosen = set_of_nodes_chosen
