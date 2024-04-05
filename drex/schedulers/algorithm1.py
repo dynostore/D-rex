@@ -9,6 +9,5 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes):
 		print("ERROR: No N was found for Algorithm 1.")
 		exit(1)
 	set_of_nodes = list(range(0, number_of_nodes))
-	print("\nAlgorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes)
 	end = time.time()
-	print(end - start)
+	print("\nAlgorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes, "It took", end - start, "seconds.")

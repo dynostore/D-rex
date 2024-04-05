@@ -12,10 +12,10 @@ import itertools
 # TODO have these values as external input by the user
 
 # Number of nodes
-number_of_nodes = 1000
+number_of_nodes = 25
 
 # Numpy arrays of probability of failure each node over the data timeframe
-# ~ p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3])
+# ~ p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3, 0.1, 0.01, 0.5, 0.6])
 p = [0.1] * number_of_nodes
 
 # Bandwidth to write on the storage nodes in MB/s
@@ -30,14 +30,26 @@ real_records = RealRecords(dir_data="data/")
 # File size in MB
 file_size = 10
 
+
+# Test for invalid values
+if (file_size <= 0 or number_of_nodes < 3):
+	print("ERROR: invalid value for file_size and/or number_of_nodes")
+	exit(1)
+
 # Algorithm 1
 # Time for 10 nodes: 0.0008
 # Time for 100 nodes: 0.0351
 # Time for 1000 nodes: 11.1834
-algorithm1(number_of_nodes, reliability_threshold, p)
+# ~ algorithm1(number_of_nodes, reliability_threshold, p)
 
 # Algorithm 2
-# ~ algorithm2()
+# Time for 10 nodes: 0.1598
+# Time for 15 nodes: 7.0923
+# Time for 17 nodes: 35.6570
+# Time for 19 nodes: 132.0603
+# Time for 20 nodes: 279.5449
+# ~ 1280.2816948890686 for 22
+algorithm2(number_of_nodes, reliability_threshold, p, real_records, bandwidths, file_size)
 
 # ~ # Algorithm 3
 # ~ # 1. Get set of N, K and associated nodes that match the reliability and put them in a list, with fastest N when multiple set of nodes can staisfy the reliability
