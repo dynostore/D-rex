@@ -15,8 +15,8 @@ import itertools
 number_of_nodes = 10
 
 # Numpy arrays of probability of failure each node over the data timeframe
-# ~ p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3, 0.1, 0.01, 0.5, 0.6])
-p = [0.1] * number_of_nodes
+p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3, 0.1, 0.01, 0.5, 0.6])
+# ~ p = [0.1] * number_of_nodes
 
 # Bandwidth to write on the storage nodes in MB/s
 bandwidths = [20] * number_of_nodes
@@ -40,7 +40,7 @@ if (file_size <= 0 or number_of_nodes < 3):
 # Time for 10 nodes: 0.0008
 # Time for 100 nodes: 0.0351
 # Time for 1000 nodes: 11.1834
-# ~ algorithm1(number_of_nodes, reliability_threshold, p)
+algorithm1(number_of_nodes, reliability_threshold, p)
 
 # Algorithm 2
 # Time for 10 nodes: 0.1598
@@ -48,7 +48,7 @@ if (file_size <= 0 or number_of_nodes < 3):
 # Time for 17 nodes: 35.6570
 # Time for 19 nodes: 132.0603
 # Time for 20 nodes: 279.5449
-# ~ 1280.2816948890686 for 22
+# Time for 22 nodes: 1280.2816
 algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # ~ # Algorithm 3
