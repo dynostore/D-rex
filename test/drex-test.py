@@ -40,7 +40,7 @@ if (file_size <= 0 or number_of_nodes < 3):
 # Time for 10 nodes: 0.0008
 # Time for 100 nodes: 0.0351
 # Time for 1000 nodes: 11.1834
-algorithm1(number_of_nodes, reliability_threshold, p)
+# ~ algorithm1(number_of_nodes, reliability_threshold, p)
 
 # Algorithm 2
 # Time for 10 nodes: 0.1598
@@ -49,41 +49,10 @@ algorithm1(number_of_nodes, reliability_threshold, p)
 # Time for 19 nodes: 132.0603
 # Time for 20 nodes: 279.5449
 # Time for 22 nodes: 1280.2816
-algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+# ~ algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
-# ~ # Algorithm 3
-# ~ # 1. Get set of N, K and associated nodes that match the reliability and put them in a list, with fastest N when multiple set of nodes can staisfy the reliability
-# ~ min_K = 0
-# ~ set_of_nodes_chosen = []
-# ~ set_of_nodes = list(range(0, number_of_nodes))
-# ~ set_of_possible_solutions = []
-# ~ time_and_space_from_set_of_possible_solution = []
-# ~ for i in range(2, number_of_nodes + 1):
-	# ~ min_time = sys.maxsize
-	# ~ for set_of_nodes_chosen in itertools.combinations(set_of_nodes, i):
-		# ~ reliability_of_nodes_chosen = []
-		# ~ bandwidth_of_nodes_chosen = []
-		# ~ for j in range(0, len(set_of_nodes_chosen)):
-			# ~ reliability_of_nodes_chosen.append(p[set_of_nodes_chosen[j]])
-			# ~ bandwidth_of_nodes_chosen.append(bandwidths[set_of_nodes_chosen[j]])
-		# ~ K = get_max_K_from_reliability_threshold_and_nodes_chosen(i, reliability_threshold, reliability_of_nodes_chosen)
-		# ~ if (K != -1):
-			# ~ time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
-			# ~ set_of_possible_solutions.append((i, K, set_of_nodes_chosen, time, (file_size/K)*i))
-			# ~ time_and_space_from_set_of_possible_solution.append([time, (file_size/K)*i])
-
-# ~ # 2. Take those that are on the pareto front
-# ~ costs = np.asarray(time_and_space_from_set_of_possible_solution)
-# ~ test = is_pareto_efficient(costs, False)
-# ~ print("Set on pareto front is", test)
-# ~ print(set_of_possible_solutions[test[0]])
-# ~ print(set_of_possible_solutions[test[1]])
-# ~ # 3. Plateau
-
-# ~ # 4. Results
-# ~ print("")
-# ~ print("Algorithm 3 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen)
-
+# Algorithm 3
+algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # ~ # Random scheduler
 # ~ N, K, set_of_nodes_random_scheduler = random_schedule(N, reliability_threshold, p)
