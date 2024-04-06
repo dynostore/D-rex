@@ -34,18 +34,18 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
     for s,d in zip(real_records.sizes, real_records.data):
         result_filter = d[(d["n"] == n) & (d["k"] == k)]
         if len(result_filter) > 0:
-            for b in bandwidths:
-                sizes_times.append([s, result_filter[0]['avg_time'] + calculate_transfer_time(file_size, b)])
-            #sizes_times.append([s, result_filter[0]['avg_time']])
+            #for b in bandwidths:
+            #    sizes_times.append([s, result_filter[0]['avg_time'] + calculate_transfer_time(file_size, b)])
+            sizes_times.append([s, result_filter[0]['avg_time']])
     sizes_times = np.array(sizes_times)
     if file_size >= min(real_records.sizes) and file_size <= max(real_records.sizes):
         # ~ print("Interpolating")
-        return np.interp(file_size, sizes_times[:,0], sizes_times[:,1])
+        return np.interp(file_size, sizes_times[:,0], sizes_times[:,1]) + calculate_transfer_time(file_size, max(bandwidths))
     else: #Extrapolate
         # ~ print("Extrapolating")
         fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
         line = np.poly1d(fit)
-        return line(file_size)
+        return line(file_size) + calculate_transfer_time(file_size, max(bandwidths))
  
 # Faster than is_pareto_efficient_simple, but less readable.
 def is_pareto_efficient(costs, return_mask = True):
