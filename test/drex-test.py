@@ -1,6 +1,6 @@
 import numpy as np
 from drex.utils.load_data import RealRecords
-from drex.utils.tool_functions import get_max_K_from_reliability_threshold_and_nodes_chosen, is_pareto_efficient, get_set_of_node_associated_with_chosen_N_and_K, replication_and_chuncking_time
+from drex.utils.tool_functions import replication_and_chuncking_time, get_max_K_from_reliability_threshold_and_nodes_chosen, is_pareto_efficient, get_set_of_node_associated_with_chosen_N_and_K, replication_and_chuncking_time
 from drex.schedulers.random import *
 from drex.schedulers.algorithm1 import *
 from drex.schedulers.algorithm2 import *
@@ -29,13 +29,17 @@ reliability_threshold = 0.6
 real_records = RealRecords(dir_data="data/")
 
 # File size in MB
-file_size = 100
+file_size = 10
 
 
 # Test for invalid values
 if (file_size <= 0 or number_of_nodes < 3):
 	print("ERROR: invalid value for file_size and/or number_of_nodes")
 	exit(1)
+
+#k = 2
+#for i in range(3, number_of_nodes):
+#	print(i,i-2,replication_and_chuncking_time(i, 2, file_size, bandwidths[:i], real_records))
 
 # Algorithm 1
 # Time for 10 nodes: 0.0008
