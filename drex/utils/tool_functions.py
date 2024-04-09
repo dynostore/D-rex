@@ -46,8 +46,8 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
         fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
         line = np.poly1d(fit)
         chunking_time = line(file_size)
-    #transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
-    transfer_time_per_chunk = calculate_transfer_time(file_size, max(bandwidths))
+    transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
+    #transfer_time_per_chunk = calculate_transfer_time(file_size, max(bandwidths))
     return chunking_time + transfer_time_per_chunk, chunking_time, transfer_time_per_chunk
     
 # Faster than is_pareto_efficient_simple, but less readable.
