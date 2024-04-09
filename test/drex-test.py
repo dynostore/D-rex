@@ -61,5 +61,4 @@ if (file_size <= 0 or number_of_nodes < 3):
 # ~ algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # Random scheduler
-# Time for  nodes:  seconds
 random_schedule(number_of_nodes, p, reliability_threshold)
