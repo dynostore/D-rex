@@ -13,7 +13,7 @@ import itertools
 
 # Number of nodes
 number_of_nodes = 10
-# ~ number_of_nodes = 12
+print("There are", number_of_nodes, "nodes.")
 
 # Numpy arrays of probability of failure each node over the data timeframe
 # ~ p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3, 0.1, 0.01, 0.5, 0.6])
@@ -41,22 +41,24 @@ if (file_size <= 0 or number_of_nodes < 3):
 #	print(i,i-2,replication_and_chuncking_time(i, 2, file_size, bandwidths[:i], real_records))
 
 # Algorithm 1
-# Time for 10 nodes: 0.0008
-# Time for 100 nodes: 0.0351
-# Time for 1000 nodes: 11.1834
+# Time for 10 nodes: 0 seconds
+# Time for 100 nodes: 0 seconds
+# Time for 1000 nodes: 11 seconds
 # ~ algorithm1(number_of_nodes, reliability_threshold, p)
 
 # Algorithm 2
-# Time for 10 nodes: 0.1598
-# Time for 15 nodes: 7.0923
-# Time for 17 nodes: 35.6570
-# Time for 19 nodes: 132.0603
-# Time for 20 nodes: 279.5449
-# Time for 22 nodes: 1280.2816
+# Time for 10 nodes: 0 seconds
+# Time for 15 nodes: 7 seconds
+# Time for 17 nodes: 35 seconds
+# Time for 19 nodes: 132 seconds
+# Time for 20 nodes: 279 seconds
+# Time for 22 nodes: 1280 seconds
 # ~ algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # Algorithm 3
-algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+# Time for 16 nodes: 16 seconds
+# Time for 20 nodes: 333 seconds
+# ~ algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # Random scheduler
 # ~ N, K, set_of_nodes_random_scheduler = random_schedule(N, reliability_threshold, p)

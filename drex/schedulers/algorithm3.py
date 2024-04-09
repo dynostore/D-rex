@@ -26,7 +26,7 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	# 2. Take those that are on the pareto front
 	costs = numpy.asarray(time_and_space_from_set_of_possible_solution)
 	set_of_solution_on_pareto = is_pareto_efficient(costs, False)
-	print("Set on pareto front is", set_of_solution_on_pareto)
+	# ~ print("Set on pareto front is", set_of_solution_on_pareto)
 
 	time_on_pareto = []
 	for i in range (0, len(set_of_solution_on_pareto)):
@@ -36,27 +36,30 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	# Get min and max
 	time_on_pareto.sort()
 	size = len(time_on_pareto) - 1
-	print(time_on_pareto[0], time_on_pareto[size])
+	# ~ print(time_on_pareto[0], time_on_pareto[size])
 	
 	# Start from smallest time and stop when 10% degradation of time has been made and keep the index
 	total_progress = time_on_pareto[size] - time_on_pareto[0]
-	print("total progress:", total_progress)
+	# ~ print("total progress:", total_progress)
 	min_index = -1
-	min_progress = -1
+	min_progress = sys.maxsize
 	for i in range (0, size+1):
 		progress = 100 - ((time_on_pareto[i] - time_on_pareto[0])*100)/total_progress
-		print(time_on_pareto[i], "did", progress, "% of the total progress.")
+		# ~ print(time_on_pareto[i], "did", progress, "% of the total progress.")
 		if progress < 90:
+			# ~ print("Break")
 			break
 		if progress < min_progress:
 			min_progress = progress
 			min_index = i
 	if min_index == -1:
-		print("no solution on 90 take the last one")
+		# ~ print("No solution found take the fastest N")
 		min_index = 0
-		
-	# ~ min_N = set_of_solution_on_pareto[0]
-	# ~ print(min_N)
-	exit(1)
+	# ~ print("min_index =", min_index)
+	
+	min_N = set_of_possible_solutions[set_of_solution_on_pareto[min_index]][0]
+	min_K = set_of_possible_solutions[set_of_solution_on_pareto[min_index]][1]
+	min_set_of_nodes_chosen = set_of_possible_solutions[set_of_solution_on_pareto[min_index]][2]
+
 	end = time.time()
 	print("\nAlgorithm 3 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
