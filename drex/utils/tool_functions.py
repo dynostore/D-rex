@@ -5,6 +5,8 @@ import numpy as np
 import sys
 from drex.utils.load_data import RealRecords
 import itertools
+from scipy.interpolate import interp1d
+
 
 
 def calculate_transfer_time(data_size, bandwidth):
@@ -37,10 +39,13 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
             #for b in bandwidths:
             #    sizes_times.append([s, result_filter[0]['avg_time'] + calculate_transfer_time(file_size, b)])
             sizes_times.append([s, result_filter[0]['avg_time']])
+    #print(sizes_times)
     sizes_times = np.array(sizes_times)
     if file_size >= min(real_records.sizes) and file_size <= max(real_records.sizes):
         # ~ print("Interpolating")
-        chunking_time = np.interp(file_size, sizes_times[:,0], sizes_times[:,1])
+        #chunking_time = np.interp(file_size, sizes_times[:,0], sizes_times[:,1])
+        interp_func = interp1d(sizes_times[:,0], sizes_times[:,1])
+        chunking_time = interp_func(file_size)
     else: #Extrapolate
         # ~ print("Extrapolating")
         fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
