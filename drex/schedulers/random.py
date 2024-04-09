@@ -10,31 +10,29 @@ import time, sys
 # Return a pair N and K that matches the reliability threshold
 def random_schedule(number_of_nodes, reliability_of_nodes, reliability_threshold):
 	start = time.time()
-	print("")
-	print("### Random Scheduler ###")
 	pairs = []
 	set_of_nodes = list(range(0, number_of_nodes))
 	reliability_of_nodes_chosen = []
 	
-	print("Set of nodes =", set_of_nodes)
-	print("Reliability of nodes =", reliability_of_nodes)
+	# ~ print("Set of nodes =", set_of_nodes)
+	# ~ print("Reliability of nodes =", reliability_of_nodes)
 	
 	N = random.randint(2, number_of_nodes)
 	K = random.randint(1, N - 1)
-	print(N, K)
+	# ~ print(N, K)
 	set_of_nodes_chosen = random.sample(range(0, number_of_nodes), N)
 	set_of_nodes_chosen.sort()
-	print(set_of_nodes_chosen)
+	# ~ print(set_of_nodes_chosen)
 	for i in range(0, len(set_of_nodes_chosen)):
 		reliability_of_nodes_chosen.append(reliability_of_nodes[set_of_nodes_chosen[i]])
 	
 	while (reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes) == False):	
 		N = random.randint(2, number_of_nodes)
 		K = random.randint(1, N - 1)
-		print(N, K)
+		# ~ print(N, K)
 		set_of_nodes_chosen = random.sample(range(0, number_of_nodes), N)
 		set_of_nodes_chosen.sort()
-		print(set_of_nodes_chosen)
+		# ~ print(set_of_nodes_chosen)
 		for i in range(0, len(set_of_nodes_chosen)):
 			reliability_of_nodes_chosen.append(reliability_of_nodes[set_of_nodes_chosen[i]])
 	
