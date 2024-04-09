@@ -2,7 +2,7 @@ from drex.utils.tool_functions import *
 import time, sys, numpy
 
 def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records):
-	start = time.time()	
+	start = time.time()
 	# 1. Get set of N, K and associated nodes that match the reliability and put them in a list, with fastest N when multiple set of nodes can staisfy the reliability
 	min_K = 0
 	set_of_nodes_chosen = []

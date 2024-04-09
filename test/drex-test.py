@@ -61,6 +61,5 @@ if (file_size <= 0 or number_of_nodes < 3):
 # ~ algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # Random scheduler
-# ~ N, K, set_of_nodes_random_scheduler = random_schedule(N, reliability_threshold, p)
-# ~ print("")
-# ~ print("Random scheduler chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_random_scheduler)
+# Time for  nodes:  seconds
+random_schedule(number_of_nodes, p, reliability_threshold)

@@ -5,40 +5,38 @@
 import itertools
 import random
 from drex.utils.tool_functions import reliability_thresold_met
+import time, sys
 
 # Return a pair N and K that matches the reliability threshold
-def random_schedule(number_of_nodes, reliability_threshold, reliability_of_nodes):
-	# ~ print("")
-	# ~ print("### Random Scheduler ###")
+def random_schedule(number_of_nodes, reliability_of_nodes, reliability_threshold):
+	start = time.time()
+	print("")
+	print("### Random Scheduler ###")
 	pairs = []
 	set_of_nodes = list(range(0, number_of_nodes))
 	reliability_of_nodes_chosen = []
-	# ~ print("Set of nodes =", set_of_nodes)
-	# ~ print("Reliability of nodes =", reliability_of_nodes)
 	
-	for i in range(2, number_of_nodes + 1): # Set of N
-		for j in range(1, i): # Set of K and N > K
-			# ~ print("Testing N =", i, "and K =", j)
-			if i == number_of_nodes: # Reliability must be met with a certain set of nodes. Here we use all nodes so no change
-				# ~ print("i == number_of_nodes")
-				if (reliability_thresold_met(i, j, reliability_threshold, reliability_of_nodes)):
-					pairs.append((i, j, set_of_nodes))
-			else: # Reliability must be met with a certain subset of nodes chosen
-				# ~ for reliability_of_nodes_chosen in itertools.combinations(reliability_of_nodes, i):
-				for set_of_nodes_chosen in itertools.combinations(set_of_nodes, i):
-					reliability_of_nodes_chosen = []
-					# ~ print("Subset of nodes =", set_of_nodes_chosen)
-					for k in range(0, len(set_of_nodes_chosen)):
-						reliability_of_nodes_chosen.append(reliability_of_nodes[set_of_nodes_chosen[k]])
-					# ~ print("Associated reliability = ", reliability_of_nodes_chosen)
-					if (reliability_thresold_met(i, j, reliability_threshold, reliability_of_nodes_chosen)): 
-						pairs.append((i, j, set_of_nodes_chosen))
+	print("Set of nodes =", set_of_nodes)
+	print("Reliability of nodes =", reliability_of_nodes)
 	
-	# ~ print(pairs)
-	if len(pairs) == 0:
-		print("ERROR, no pair could be find to match the reliability threshold. Use a smaller value or change the set of storage nodes.")
-		exit(1)
+	N = random.randint(2, number_of_nodes)
+	K = random.randint(1, N - 1)
+	print(N, K)
+	set_of_nodes_chosen = random.sample(range(0, number_of_nodes), N)
+	set_of_nodes_chosen.sort()
+	print(set_of_nodes_chosen)
+	for i in range(0, len(set_of_nodes_chosen)):
+		reliability_of_nodes_chosen.append(reliability_of_nodes[set_of_nodes_chosen[i]])
 	
-	random_index = random.randint(0, len(pairs) - 1)
+	while (reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes) == False):	
+		N = random.randint(2, number_of_nodes)
+		K = random.randint(1, N - 1)
+		print(N, K)
+		set_of_nodes_chosen = random.sample(range(0, number_of_nodes), N)
+		set_of_nodes_chosen.sort()
+		print(set_of_nodes_chosen)
+		for i in range(0, len(set_of_nodes_chosen)):
+			reliability_of_nodes_chosen.append(reliability_of_nodes[set_of_nodes_chosen[i]])
 	
-	return pairs[random_index][0], pairs[random_index][1], pairs[random_index][2], 
+	end = time.time()
+	print("\nAlgorithm 3 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
