@@ -29,7 +29,7 @@ def calculate_transfer_time(data_size, bandwidth):
 # Takes as inputs N, K, the size of the file and the bandwidth to write on the storage nodes
 # Return a time in seconds (or micro-seconds?)
 def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
-    
+    chunk_size = file_size / k
     sizes_times = []
     for s,d in zip(real_records.sizes, real_records.data):
         result_filter = d[(d["n"] == n) & (d["k"] == k)]
@@ -40,13 +40,16 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
     sizes_times = np.array(sizes_times)
     if file_size >= min(real_records.sizes) and file_size <= max(real_records.sizes):
         # ~ print("Interpolating")
-        return np.interp(file_size, sizes_times[:,0], sizes_times[:,1]) + calculate_transfer_time(file_size, max(bandwidths))
+        chunking_time = np.interp(file_size, sizes_times[:,0], sizes_times[:,1])
     else: #Extrapolate
         # ~ print("Extrapolating")
         fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
         line = np.poly1d(fit)
-        return line(file_size) + calculate_transfer_time(file_size, max(bandwidths))
- 
+        chunking_time = line(file_size)
+    #transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
+    transfer_time_per_chunk = calculate_transfer_time(file_size, max(bandwidths))
+    return chunking_time + transfer_time_per_chunk, chunking_time, transfer_time_per_chunk
+    
 # Faster than is_pareto_efficient_simple, but less readable.
 def is_pareto_efficient(costs, return_mask = True):
     """
