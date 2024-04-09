@@ -31,7 +31,6 @@ real_records = RealRecords(dir_data="data/")
 # File size in MB
 file_size = 10
 
-
 # Test for invalid values
 if (file_size <= 0 or number_of_nodes < 3):
 	print("ERROR: invalid value for file_size and/or number_of_nodes")
@@ -54,10 +53,10 @@ if (file_size <= 0 or number_of_nodes < 3):
 # Time for 19 nodes: 132.0603
 # Time for 20 nodes: 279.5449
 # Time for 22 nodes: 1280.2816
-algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+# ~ algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # Algorithm 3
-# ~ algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # Random scheduler
 # ~ N, K, set_of_nodes_random_scheduler = random_schedule(N, reliability_threshold, p)

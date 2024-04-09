@@ -55,8 +55,8 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 		print("no solution on 90 take the last one")
 		min_index = 0
 		
-	min_N = set_of_solution_on_pareto[0]
-	print(min_N)
+	# ~ min_N = set_of_solution_on_pareto[0]
+	# ~ print(min_N)
 	exit(1)
 	end = time.time()
 	print("\nAlgorithm 3 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
