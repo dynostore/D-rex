@@ -36,7 +36,6 @@ if (file_size <= 0 or number_of_nodes < 3):
 	print("ERROR: invalid value for file_size and/or number_of_nodes")
 	exit(1)
 
-#k = 2
 #for i in range(3, number_of_nodes):
 #	print(i,i-2,replication_and_chuncking_time(i, 2, file_size, bandwidths[:i], real_records))
 
