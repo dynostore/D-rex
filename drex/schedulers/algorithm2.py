@@ -27,3 +27,4 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 					min_set_of_nodes_chosen = set_of_nodes_chosen
 	end = time.time()
 	print("\nAlgorithm 2 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
+	return min_set_of_nodes_chosen
