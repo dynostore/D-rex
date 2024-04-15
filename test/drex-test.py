@@ -47,15 +47,6 @@ for i in range(3, number_of_nodes):
 # ~ algorithm1(number_of_nodes, reliability_threshold, p)
 
 # Algorithm 2
-<<<<<<< HEAD
-# Time for 10 nodes: 0.1598
-# Time for 15 nodes: 7.0923
-# Time for 17 nodes: 35.6570
-# Time for 19 nodes: 132.0603
-# Time for 20 nodes: 279.5449
-# Time for 22 nodes: 1280.2816
-#algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
-=======
 # Time for 10 nodes: 0 seconds
 # Time for 15 nodes: 7 seconds
 # Time for 17 nodes: 35 seconds
@@ -63,7 +54,6 @@ for i in range(3, number_of_nodes):
 # Time for 20 nodes: 279 seconds
 # Time for 22 nodes: 1280 seconds
 # ~ algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
->>>>>>> 98e315874cb0bee17f2a7e3389bff7f8a4e7bee2
 
 # Algorithm 3
 # Time for 16 nodes: 16 seconds
