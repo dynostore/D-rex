@@ -11,3 +11,4 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes):
 	set_of_nodes = list(range(0, number_of_nodes))
 	end = time.time()
 	print("\nAlgorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes, "It took", end - start, "seconds.")
+	return set_of_nodes

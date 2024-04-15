@@ -29,15 +29,15 @@ reliability_threshold = 0.6
 real_records = RealRecords(dir_data="data/")
 
 # File size in MB
-file_size = 10
+file_size = 300
 
 # Test for invalid values
 if (file_size <= 0 or number_of_nodes < 3):
 	print("ERROR: invalid value for file_size and/or number_of_nodes")
 	exit(1)
 
-#for i in range(3, number_of_nodes):
-#	print(i,i-2,replication_and_chuncking_time(i, 2, file_size, bandwidths[:i], real_records))
+for i in range(3, number_of_nodes):
+	print(i,i-2,replication_and_chuncking_time(i, 2, file_size, bandwidths[:i], real_records))
 
 # Algorithm 1
 # Time for 10 nodes: 0 seconds
