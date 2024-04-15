@@ -53,7 +53,7 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
         chunking_time = line(file_size)
     transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
     #transfer_time_per_chunk = calculate_transfer_time(file_size, max(bandwidths))
-    return chunking_time + transfer_time_per_chunk, chunking_time, transfer_time_per_chunk
+    return chunking_time + transfer_time_per_chunk
     
 # Faster than is_pareto_efficient_simple, but less readable.
 def is_pareto_efficient(costs, return_mask = True):

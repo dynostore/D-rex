@@ -16,10 +16,10 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 				reliability_of_nodes_chosen.append(reliability_of_nodes[set_of_nodes_chosen[j]])
 				bandwidth_of_nodes_chosen.append(bandwidths[set_of_nodes_chosen[j]])
 			K = get_max_K_from_reliability_threshold_and_nodes_chosen(i, reliability_threshold, reliability_of_nodes_chosen)
-			print("Test", i, K, set_of_nodes_chosen)
+			# ~ print("Test", i, K, set_of_nodes_chosen)
 			if (K != -1):
-				replication_and_write_time, chunking_time, transfer_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
-				print(replication_and_write_time)
+				replication_and_write_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
+				# ~ print(replication_and_write_time)
 				if (replication_and_write_time < min_time):
 					min_time = replication_and_write_time
 					min_N = i
