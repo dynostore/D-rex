@@ -128,7 +128,7 @@ def group_nodes_by_similarities(number_of_nodes, p, bandwidths, node_sizes):
             bandwidth_diff = abs((bandwidths[i] - bandwidths[j])/float(bandwidths[i]))
             size_diff = abs((node_sizes[i] - node_sizes[j])/float(node_sizes[i]))
             matrix_of_differences[i][j] = (reliability_diff + bandwidth_diff + size_diff) / 3
-    print("Matrix of differences between nodes is:\n", matrix_of_differences)
+    # print("Matrix of differences between nodes is:\n", matrix_of_differences)
     return matrix_of_differences
 
 def get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_difference_allowed):
@@ -136,19 +136,21 @@ def get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_dif
     set_of_nodes = list(range(0, number_of_nodes))
     reduced_set_of_nodes = []
     reduced_set_of_nodes_first_nodes_only = []
-    deleted_nodes = 0 # This value is increased when a similarities has been found with another node in order to avoid writing out of bound
+    # deleted_nodes = 0 # This value is increased when a similarities has been found with another node in order to avoid writing out of bound
+    index_in_tab = 0
     for i in (set_of_nodes):
-        index_in_tab = i - deleted_nodes
+        # index_in_tab = i - deleted_nodes
         reduced_set_of_nodes.append([])
         reduced_set_of_nodes_first_nodes_only.append(i)
         reduced_set_of_nodes[index_in_tab].append(i)
         for j in (set_of_nodes[i+1:]):
-            print("Compare", i, "and", j, "Similarities is", matrix_of_differences[i][j])
+            # print("Compare", i, "and", j, "Similarities is", matrix_of_differences[i][j])
             if (matrix_of_differences[i][j] < maximum_difference_allowed):
-                print("Similarities!")
-                reduced_set_of_nodes[i].append(j)
+                # print("Similarities!")
+                reduced_set_of_nodes[index_in_tab].append(j)
                 set_of_nodes.remove(j)
-                deleted_nodes += 1
-    print(reduced_set_of_nodes)
-    print(reduced_set_of_nodes_first_nodes_only)
+        index_in_tab += 1
+                # deleted_nodes += 1
+    # print(reduced_set_of_nodes)
+    # print(reduced_set_of_nodes_first_nodes_only)
     return reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only

@@ -12,20 +12,30 @@ import itertools
 # TODO have these values as external input by the user
 
 # Number of nodes
-number_of_nodes = 10
+# number_of_nodes = 10
+number_of_nodes = 15
 print("There are", number_of_nodes, "nodes.")
 
 # Numpy arrays of probability of failure each node over the data timeframe
-p = np.array([0.01, 0.2, 0.1, 0.1, 0.1, 0.3, 0.1, 0.01, 0.5, 0.6])
+# p = np.array([0.1, 0.2, 0.1, 0.1, 0.1, 0.3, 0.1, 0.1, 0.5, 0.2])
 # p = [0.1] * number_of_nodes
+p = []
+for i in range(0, number_of_nodes):
+	p.append(random.uniform(0.1, 0.15))
 
 # Bandwidth to write on the storage nodes in MB/s
-bandwidths = np.array([20, 10, 15, 18, 21, 20, 10, 10, 20, 5])
+# bandwidths = np.array([20, 10, 15, 18, 21, 20, 20, 10, 20, 10])
 # bandwidths = [20] * number_of_nodes
+bandwidths = []
+for i in range(0, number_of_nodes):
+	bandwidths.append(random.uniform(10, 15))
 
 # Storage size of each node
-node_sizes = np.array([100, 100, 100, 100, 200, 120, 160, 190, 220, 100])
+# node_sizes = np.array([100, 100, 100, 100, 200, 120, 160, 190, 120, 100])
 # node_sizes = [100] * number_of_nodes
+node_sizes = []
+for i in range(0, number_of_nodes):
+	node_sizes.append(random.uniform(100, 150))
 
 # Threshold we want to meet
 reliability_threshold = 0.6
@@ -59,15 +69,15 @@ reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only = get_reduced_set_of
 # Time for 1000 nodes: 11 seconds
 # ~ algorithm1(number_of_nodes, reliability_threshold, p)
 
-# Algorithm 2
-# Time for 10 nodes: 0 seconds
-# Time for 15 nodes: 7 seconds
-# Time for 17 nodes: 35 seconds
-# Time for 19 nodes: 132 seconds
-# Time for 20 nodes: 279 seconds
+# Algorithm 2 vs Algorithm 2 reduced complexity 10% and ranges are [0.1, 0.15][10, 15][100, 150]
+# Time for 10 nodes: 0 seconds | 0 seconds
+# Time for 15 nodes: 7 seconds | 0 seconds
+# Time for 17 nodes: 35 seconds | 0 seconds
+# Time for 19 nodes: 132 seconds | 0 seconds
+# Time for 20 nodes: 279 seconds | 0 seconds
 # Time for 22 nodes: 1280 seconds
 # ~ algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
-algorithm2_reduced_complexity(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only)
+algorithm2_reduced_complexity(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, reduced_set_of_nodes_first_nodes_only)
 
 # Algorithm 3
 # Time for 16 nodes: 16 seconds

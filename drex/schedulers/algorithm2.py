@@ -29,7 +29,7 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	print("\nAlgorithm 2 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
 	return list(min_set_of_nodes_chosen), min_N, min_K
 
-def algorithm2_reduced_complexity(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only):
+def algorithm2_reduced_complexity(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, reduced_set_of_nodes_first_nodes_only):
 	start = time.time()	
 	min_time = sys.maxsize
 	min_N = 0
