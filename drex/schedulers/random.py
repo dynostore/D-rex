@@ -38,3 +38,4 @@ def random_schedule(number_of_nodes, reliability_of_nodes, reliability_threshold
 	
 	end = time.time()
 	print("\nAlgorithm 3 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
+	return list(set_of_nodes_chosen), N, K

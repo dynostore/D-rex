@@ -2,6 +2,9 @@ from drex.utils.reliability.utils import build_building_blocks, inner_product, n
 from drex.utils.reliability.fragment_handler import fragment_writer, fragment_reader, fragment_reader_bytes
 import pickle
 import numpy as np
+import time
+import itertools   
+
 
 class Fragment:
     def __init__(self, idx, content, p, n, m): 
@@ -33,19 +36,53 @@ def split_bytes(data, n, m):
     # all computations are done modulo p
     p = 257 if n<257 else nextPrime(n)
     
+    original_segments = list(itertools.zip_longest(*(iter(data),) * m, fillvalue=0))
 
-    original_segments=[list(data[i:i+m]) for i in range(0,len(data),m)]
+    building_blocks=build_building_blocks(m,n,p)
+    fragments=[]
+    for i in range(n): 
+        fragment_arr = [inner_product(building_blocks[i], original_segments[k],p) for k in range(len(original_segments))]
+        frag = Fragment(i, fragment_arr, p, n, m)
+        fragments.append(frag)
+    
+    return fragments
+
+
+def split_bytes_v0(data, n, m):
+    """
+    Inputs: 
+    data: bytes to split
+    n   : number of fragments after splitting the file
+    m   : minimum number of fragments required to restore the file
+    Output:
+    a list of n fragments (as Fragment objects)
+    """
+    
+    data = pickle.dumps(data)
+    
+    if n<0 or m<0: 
+        raise ValueError("numFragments ad numToAssemble must be positive.")
+    
+    if m>n: 
+        raise ValueError("numToAssemble must be less than numFragments")
+    
+    # find the prime number greater than n
+    # all computations are done modulo p
+    p = 257 if n<257 else nextPrime(n)
+    
+    start = time.time_ns()
+    original_segments = list(itertools.zip_longest(*(iter(data),) * m, fillvalue=0))
+    end = time.time_ns()
+    
     
     # for the last subfile, if the length is less than m, pad the subfile with zeros 
     # to achieve final length of m
-    residue = len(data)%m
-    if residue:
-        
-        last_subfile=original_segments[-1]
-        last_subfile.extend([0]*(m-residue))
-    
-    original_segments_array = np.array(original_segments)
-    
+    #residue = len(data)%m
+    #if residue:
+    #    last_subfile=[data[i] for i in range(len(data)-residue,len(data))]
+    #    last_subfile.extend([0]*(m-residue))
+    #    original_segments.append(tuple(last_subfile))
+    #     #last_subfile.extend([0]*(m-residue))
     
     building_blocks=build_building_blocks(m,n,p)
     fragments=[]
