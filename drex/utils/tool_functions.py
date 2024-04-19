@@ -10,8 +10,6 @@ from scipy.interpolate import interp1d
 from scipy.interpolate import griddata
 from scipy.interpolate import Rbf
 
-
-
 def calculate_transfer_time(data_size, bandwidth):
     """
     Calculate the estimated transfer time given data size and bandwidth.
@@ -159,5 +157,42 @@ def get_set_of_node_associated_with_chosen_N_and_K(number_of_nodes, N, K, reliab
 		if (reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes_chosen)): 
 			return(set_of_nodes_chosen)
 			
-	print("/!\ CRITICAL ERROR: No set of nodes returned in get_set_of_node_associated_with_chosen_N_and_K. This is not normal. /!\ ")
+	print("! CRITICAL ERROR: No set of nodes returned in get_set_of_node_associated_with_chosen_N_and_K. This is not normal !")
 	exit(1)
+
+def group_nodes_by_similarities(number_of_nodes, p, bandwidths, node_sizes):
+    "Return the mean difference in percentage between all pairs of nodes"
+    matrix_of_differences = [[0 for i in range(number_of_nodes)] for j in range(number_of_nodes)] 
+    max_difference_allowed = 0.10 # Maximum difference in percentages to consider the nodes similar
+    for i in range (0, number_of_nodes):
+        for j in range (i+1, number_of_nodes):
+            reliability_diff = abs((p[i] - p[j])/float(p[i]))
+            bandwidth_diff = abs((bandwidths[i] - bandwidths[j])/float(bandwidths[i]))
+            size_diff = abs((node_sizes[i] - node_sizes[j])/float(node_sizes[i]))
+            matrix_of_differences[i][j] = (reliability_diff + bandwidth_diff + size_diff) / 3
+    # print("Matrix of differences between nodes is:\n", matrix_of_differences)
+    return matrix_of_differences
+
+def get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_difference_allowed):
+    "Return a set of nodes that account for nodes similarities"
+    set_of_nodes = list(range(0, number_of_nodes))
+    reduced_set_of_nodes = []
+    reduced_set_of_nodes_first_nodes_only = []
+    # deleted_nodes = 0 # This value is increased when a similarities has been found with another node in order to avoid writing out of bound
+    index_in_tab = 0
+    for i in (set_of_nodes):
+        # index_in_tab = i - deleted_nodes
+        reduced_set_of_nodes.append([])
+        reduced_set_of_nodes_first_nodes_only.append(i)
+        reduced_set_of_nodes[index_in_tab].append(i)
+        for j in (set_of_nodes[i+1:]):
+            # print("Compare", i, "and", j, "Similarities is", matrix_of_differences[i][j])
+            if (matrix_of_differences[i][j] < maximum_difference_allowed):
+                # print("Similarities!")
+                reduced_set_of_nodes[index_in_tab].append(j)
+                set_of_nodes.remove(j)
+        index_in_tab += 1
+                # deleted_nodes += 1
+    # print(reduced_set_of_nodes)
+    # print(reduced_set_of_nodes_first_nodes_only)
+    return reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only
