@@ -7,8 +7,8 @@ from drex.utils.load_data import RealRecords
 
 import itertools
 from scipy.interpolate import interp1d
-from scipy.interpolate import griddata
 from scipy.interpolate import Rbf
+from scipy.interpolate import LinearNDInterpolator
 
 def calculate_transfer_time(data_size, bandwidth):
     """
@@ -24,6 +24,51 @@ def calculate_transfer_time(data_size, bandwidth):
     transfer_time = data_size / bandwidth
     return transfer_time
 
+
+def my_interpolation(sizes_arr, ns_arr, ks_arr, times_arr):
+    """CT interpolator + nearest-neighbor extrapolation.
+
+    Parameters
+    ----------
+    xy : ndarray, shape (npoints, ndim)
+        Coordinates of data points
+    z : ndarray, shape (npoints)
+        Values at data points
+
+    Returns
+    -------
+    func : callable
+        A callable object which mirrors the CT behavior,
+        with an additional neareast-neighbor extrapolation
+        outside of the data range.
+    """
+    f = LinearNDInterpolator(list(zip(sizes_arr, ns_arr, ks_arr)), times_arr)
+
+    # this inner function will be returned to a user
+    def new_f(size, n, k):
+        # evaluate the CT interpolator. Out-of-bounds values are nan.
+        zz = f(size, n, k)
+        if np.isnan(zz):
+            zz = 0
+            f2 =  Rbf(sizes_arr, ns_arr, ks_arr, times_arr, function="linear", smooth=5)
+            zz = f2(size, n, k)
+        #print(zz)
+        #nans = np.isnan(zz)
+
+        """if nans.any():
+            # for each nan point, find its nearest neighbor
+            inds = np.argmin(
+                (sizes_arr[:, None] - xx[nans])**2 +
+                (ns_arr[:, None] - yy[nans])**2 +
+                (ks_arr[:, None] - yy[nans])**2
+                , axis=0)
+            # ... and use its value
+            zz[nans] = z[inds]
+        return zz"""
+        return zz
+
+    return new_f
+
 # Return the estimated time cost of chunking and replicating a data of 
 # size file_size into N chunks of size file_size/K
 # uses an interpolation or extrapolation from previous experiments
@@ -35,50 +80,75 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
     chunk_size = file_size / k
     sizes_times = []
     
+    
     # Case 1: We have values of n and k in the real_records
-    """for s,d in zip(real_records.sizes, real_records.data):
+    number_sizes = 0
+    for s in real_records.sizes:
+        
+        d = real_records.data_dict[s]
         result_filter = d[(d["n"] == n) & (d["k"] == k)]
         if len(result_filter) > 0:
-            #for b in bandwidths:
-            #    sizes_times.append([s, result_filter[0]['avg_time'] + calculate_transfer_time(file_size, b)])
-            sizes_times.append([s, result_filter[0]['avg_time']])"""
-            
-    # Case 2: We don't have values of n and k in the real_records
-    # Get the closest values of n and k
-    if len(sizes_times) == 0:
-        #print("No values for n =", n, "and k =", k, "in the real records.")
-        # Get estimated times for n and k for each file size in the real records
+            for b in bandwidths:
+                sizes_times.append([s, result_filter[0]['avg_time'] + calculate_transfer_time(file_size, b)])
+            sizes_times.append([s, result_filter[0]['avg_time']])
+            number_sizes += 1
+    
+    transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
+    if len(sizes_times) > 0 and number_sizes > 1:
+        sizes_times = np.array(sizes_times)
+        interp_func = interp1d(sizes_times[:,0], sizes_times[:,1], fill_value="extrapolate")
+        chunking_time = interp_func(file_size)
+        """if file_size >= min(sizes_times[:,0]) and file_size <= max(sizes_times[:,0]):
+            # ~ print("Interpolating")
+            #chunking_time = np.interp(file_size, sizes_times[:,0], sizes_times[:,1])
+            interp_func = interp1d(sizes_times[:,0], sizes_times[:,1])
+            chunking_time = interp_func(file_size)
+        else: #Extrapolate
+            # ~ print("Extrapolating")
+            fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
+            line = np.poly1d(fit)
+            chunking_time = line(file_size)"""
+        return chunking_time + transfer_time_per_chunk
+    else:
+        #Find two nearest values in size
         ns_arr = []
         ks_arr = []
         times_arr = []
         sizes_arr = []
-        for s in real_records.sizes:
-            #z_new = griddata((, y), z, (x_new, y_new), method='linear')
-            ns = real_records.data_dict[s]["n"][:]
-            ks = real_records.data_dict[s]["k"][:]
-            times = real_records.data_dict[s]["avg_time"][:]
-            sizes = [s] * len(ns)
+        vals_abs = np.argsort([abs(x-file_size) for x in real_records.sizes])
+        #Get values
+        for idx in vals_abs:
+            ns = real_records.data_dict[real_records.sizes[idx]]["n"][:]
+            ks = real_records.data_dict[real_records.sizes[idx]]["k"][:]
+            times = real_records.data_dict[real_records.sizes[idx]]["avg_time"][:]
+            sizes = [real_records.sizes[idx]] * len(ns)
             ns_arr.extend(ns)
             ks_arr.extend(ks)
             times_arr.extend(times)
             sizes_arr.extend(sizes)
-        
-        ns_arr = np.array(ns_arr)
-        ks_arr = np.array(ks_arr)
-        times_arr = np.array(times_arr)
-        sizes_arr = np.array(sizes_arr)
-        
-        points = np.array(list(zip(sizes_arr, ns_arr, ks_arr)))
-        rbfi = Rbf(sizes_arr, ns_arr, ks_arr, times_arr, function="multiquadric", smooth=5)  # radial basis function interpolator instance
-        di = rbfi(file_size, n, k)   # interpolated values
-        print(file_size,n,k,di)
-        #print(len(ns_arr), len(ks_arr), len(times_arr), len(sizes_arr))
-        #print(file_size, n, k)
-        #interpolated_z = griddata(points, times_arr, (file_size, n, k), method='linear', rescale=True)
-        #print(interpolated_z)
-
-    return
+        #Interpolate
+        interp = my_interpolation(
+            sizes_arr, ns_arr, ks_arr, times_arr
+        )
+        res = interp(file_size, n, k)
+        return res + transfer_time_per_chunk
     
+# Return the estimated time cost of chunking and replicating a data of 
+# size file_size into N chunks of size file_size/K
+# uses an interpolation or extrapolation from previous experiments
+# TODO in future works: update estimation with observation from current 
+# execution
+# Takes as inputs N, K, the size of the file and the bandwidth to write on the storage nodes
+# Return a time in seconds (or micro-seconds?)
+def replication_and_chuncking_time_v0(n, k, file_size, bandwidths, real_records):
+    chunk_size = file_size / k
+    sizes_times = []
+    for s,d in zip(real_records.sizes, real_records.data):
+        result_filter = d[(d["n"] == n) & (d["k"] == k)]
+        if len(result_filter) > 0:
+            #for b in bandwidths:
+            #    sizes_times.append([s, result_filter[0]['avg_time'] + calculate_transfer_time(file_size, b)])
+            sizes_times.append([s, result_filter[0]['avg_time']])
     #print(sizes_times)
     sizes_times = np.array(sizes_times)
     if file_size >= min(real_records.sizes) and file_size <= max(real_records.sizes):
@@ -94,6 +164,59 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
     transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
     #transfer_time_per_chunk = calculate_transfer_time(file_size, max(bandwidths))
     return chunking_time + transfer_time_per_chunk
+    
+    
+    # Case 1: We have values of n and k in the real_records
+    number_sizes = 0
+    for s in real_records.sizes:
+        
+        d = real_records.data_dict[s]
+        result_filter = d[(d["n"] == n) & (d["k"] == k)]
+        if len(result_filter) > 0:
+            for b in bandwidths:
+                sizes_times.append([s, result_filter[0]['avg_time'] + calculate_transfer_time(file_size, b)])
+            sizes_times.append([s, result_filter[0]['avg_time']])
+            number_sizes += 1
+    
+    transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
+    if len(sizes_times) > 0 and number_sizes > 1:
+        sizes_times = np.array(sizes_times)
+        interp_func = interp1d(sizes_times[:,0], sizes_times[:,1], fill_value="extrapolate")
+        chunking_time = interp_func(file_size)
+        """if file_size >= min(sizes_times[:,0]) and file_size <= max(sizes_times[:,0]):
+            # ~ print("Interpolating")
+            #chunking_time = np.interp(file_size, sizes_times[:,0], sizes_times[:,1])
+            interp_func = interp1d(sizes_times[:,0], sizes_times[:,1])
+            chunking_time = interp_func(file_size)
+        else: #Extrapolate
+            # ~ print("Extrapolating")
+            fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
+            line = np.poly1d(fit)
+            chunking_time = line(file_size)"""
+        return chunking_time + transfer_time_per_chunk
+    else:
+        #Find two nearest values in size
+        ns_arr = []
+        ks_arr = []
+        times_arr = []
+        sizes_arr = []
+        vals_abs = np.argsort([abs(x-file_size) for x in real_records.sizes])
+        #Get values
+        for idx in vals_abs:
+            ns = real_records.data_dict[real_records.sizes[idx]]["n"][:]
+            ks = real_records.data_dict[real_records.sizes[idx]]["k"][:]
+            times = real_records.data_dict[real_records.sizes[idx]]["avg_time"][:]
+            sizes = [real_records.sizes[idx]] * len(ns)
+            ns_arr.extend(ns)
+            ks_arr.extend(ks)
+            times_arr.extend(times)
+            sizes_arr.extend(sizes)
+        #Interpolate
+        interp = my_interpolation(
+            sizes_arr, ns_arr, ks_arr, times_arr
+        )
+        res = interp(file_size, n, k)
+        return res + transfer_time_per_chunk
     
 # Faster than is_pareto_efficient_simple, but less readable.
 def is_pareto_efficient(costs, return_mask = True):

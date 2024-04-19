@@ -9,7 +9,7 @@ class RealRecords(object):
     def __init__(self, dir_data=DIR_DATA):
         self.dir_data = dir_data
         self.files = self.get_files_in_directory(self.dir_data)
-        self.sizes = [int(re.sub("[^0-9]", "", f)) for f in self.files]
+        self.sizes = []
         self.data_dict = {}
         for i,f in enumerate(self.files):
             size = int(re.sub("[^0-9]", "", f))

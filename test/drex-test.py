@@ -43,7 +43,7 @@ reliability_threshold = 0.6
 real_records = RealRecords(dir_data="data/")
 
 # File size in MB
-file_size = 200
+file_size = 100
 
 # Test for invalid values
 if (file_size <= 0 or number_of_nodes < 3):
@@ -51,7 +51,8 @@ if (file_size <= 0 or number_of_nodes < 3):
 	exit(1)
 
 #for i in range(3, number_of_nodes):
-replication_and_chuncking_time(number_of_nodes, 2, file_size, bandwidths, real_records)
+#	print(i,2,replication_and_chuncking_time(i, 2, file_size, bandwidths, real_records))
+	#replication_and_chuncking_time(i, 2, file_size, bandwidths, real_records)
 
 # For reduced complexity we need to call this function that groups similar nodes together
 matrix_of_differences = group_nodes_by_similarities(number_of_nodes, p, bandwidths, node_sizes)
