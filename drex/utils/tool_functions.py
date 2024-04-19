@@ -4,8 +4,11 @@ from drex.utils.poibin import PoiBin
 import numpy as np
 import sys
 from drex.utils.load_data import RealRecords
+
 import itertools
 from scipy.interpolate import interp1d
+from scipy.interpolate import griddata
+from scipy.interpolate import Rbf
 
 
 
@@ -33,12 +36,51 @@ def calculate_transfer_time(data_size, bandwidth):
 def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
     chunk_size = file_size / k
     sizes_times = []
-    for s,d in zip(real_records.sizes, real_records.data):
+    
+    # Case 1: We have values of n and k in the real_records
+    """for s,d in zip(real_records.sizes, real_records.data):
         result_filter = d[(d["n"] == n) & (d["k"] == k)]
         if len(result_filter) > 0:
             #for b in bandwidths:
             #    sizes_times.append([s, result_filter[0]['avg_time'] + calculate_transfer_time(file_size, b)])
-            sizes_times.append([s, result_filter[0]['avg_time']])
+            sizes_times.append([s, result_filter[0]['avg_time']])"""
+            
+    # Case 2: We don't have values of n and k in the real_records
+    # Get the closest values of n and k
+    if len(sizes_times) == 0:
+        #print("No values for n =", n, "and k =", k, "in the real records.")
+        # Get estimated times for n and k for each file size in the real records
+        ns_arr = []
+        ks_arr = []
+        times_arr = []
+        sizes_arr = []
+        for s in real_records.sizes:
+            #z_new = griddata((, y), z, (x_new, y_new), method='linear')
+            ns = real_records.data_dict[s]["n"][:]
+            ks = real_records.data_dict[s]["k"][:]
+            times = real_records.data_dict[s]["avg_time"][:]
+            sizes = [s] * len(ns)
+            ns_arr.extend(ns)
+            ks_arr.extend(ks)
+            times_arr.extend(times)
+            sizes_arr.extend(sizes)
+        
+        ns_arr = np.array(ns_arr)
+        ks_arr = np.array(ks_arr)
+        times_arr = np.array(times_arr)
+        sizes_arr = np.array(sizes_arr)
+        
+        points = np.array(list(zip(sizes_arr, ns_arr, ks_arr)))
+        rbfi = Rbf(sizes_arr, ns_arr, ks_arr, times_arr, function="multiquadric", smooth=5)  # radial basis function interpolator instance
+        di = rbfi(file_size, n, k)   # interpolated values
+        print(file_size,n,k,di)
+        #print(len(ns_arr), len(ks_arr), len(times_arr), len(sizes_arr))
+        #print(file_size, n, k)
+        #interpolated_z = griddata(points, times_arr, (file_size, n, k), method='linear', rescale=True)
+        #print(interpolated_z)
+
+    return
+    
     #print(sizes_times)
     sizes_times = np.array(sizes_times)
     if file_size >= min(real_records.sizes) and file_size <= max(real_records.sizes):

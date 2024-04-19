@@ -10,7 +10,14 @@ class RealRecords(object):
         self.dir_data = dir_data
         self.files = self.get_files_in_directory(self.dir_data)
         self.sizes = [int(re.sub("[^0-9]", "", f)) for f in self.files]
-        self.data = [self.load_data(os.path.join(self.dir_data + f))  for f in self.files]
+        self.data_dict = {}
+        for i,f in enumerate(self.files):
+            size = int(re.sub("[^0-9]", "", f))
+            self.sizes.append(size)
+            self.data_dict[size] = self.load_data(os.path.join(self.dir_data + f))
+        
+        #self.data = [self.load_data(os.path.join(self.dir_data + f))  for f in self.files]
+        #self.data_dict = dict(zip(self.sizes, self.data))
 
     # Get files in directory
     def get_files_in_directory(self, directory):

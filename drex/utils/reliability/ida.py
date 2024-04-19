@@ -37,14 +37,24 @@ def split_bytes(data, n, m):
     p = 257 if n<257 else nextPrime(n)
     
     original_segments = list(itertools.zip_longest(*(iter(data),) * m, fillvalue=0))
-
+    original_segments_arr = np.array(original_segments)
     building_blocks=build_building_blocks(m,n,p)
     fragments=[]
-    for i in range(n): 
-        fragment_arr = [inner_product(building_blocks[i], original_segments[k],p) for k in range(len(original_segments))]
+    for i in range(n):
+        fragment_arr = [np.inner(building_blocks[i], original_segments_arr[k]) % p for k in range(original_segments_arr.shape[0])]
         frag = Fragment(i, fragment_arr, p, n, m)
         fragments.append(frag)
-    
+        #print(fragment_arr)
+        #fragment_arr = [inner_product(building_blocks[i], original_segments[k],p) for k in range(len(original_segments))]
+        #print(fragment_arr)
+        #break
+        #for k in range(original_segments_arr.shape[0]):
+        #    fragment_arr = np.inner(building_blocks[i], original_segments_arr[k])
+        #    print(fragment_arr)
+        #    #fragments.append(frag)
+        #fragment_arr = np.inner(building_blocks[i], original_segments_arr[k])
+    #    fragment_arr = #[inner_product(building_blocks[i], original_segments[k],p) for k in range(len(original_segments))]
+        
     return fragments
 
 

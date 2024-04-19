@@ -12,7 +12,7 @@ import itertools
 # TODO have these values as external input by the user
 
 # Number of nodes
-number_of_nodes = 10
+number_of_nodes = 100
 print("There are", number_of_nodes, "nodes.")
 
 # Numpy arrays of probability of failure each node over the data timeframe
@@ -29,15 +29,15 @@ reliability_threshold = 0.6
 real_records = RealRecords(dir_data="data/")
 
 # File size in MB
-file_size = 300
+file_size = 200
 
 # Test for invalid values
 if (file_size <= 0 or number_of_nodes < 3):
 	print("ERROR: invalid value for file_size and/or number_of_nodes")
 	exit(1)
 
-for i in range(3, number_of_nodes):
-	print(i,i-2,replication_and_chuncking_time(i, 2, file_size, bandwidths[:i], real_records))
+#for i in range(3, number_of_nodes):
+replication_and_chuncking_time(number_of_nodes, 2, file_size, bandwidths, real_records)
 
 # Algorithm 1
 # Time for 10 nodes: 0 seconds
@@ -57,7 +57,7 @@ for i in range(3, number_of_nodes):
 # Algorithm 3
 # Time for 16 nodes: 16 seconds
 # Time for 20 nodes: 333 seconds
-# ~ algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+#algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # Random scheduler
-random_schedule(number_of_nodes, p, reliability_threshold)
+#random_schedule(number_of_nodes, p, reliability_threshold)
