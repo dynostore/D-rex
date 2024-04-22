@@ -20,6 +20,8 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 			K = get_max_K_from_reliability_threshold_and_nodes_chosen(i, reliability_threshold, reliability_of_nodes_chosen)
 			if (K != -1):
 				replication_and_write_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
+				# ~ print(replication_and_write_time) 
+				# ~ exit(1)
 				set_of_possible_solutions.append((i, K, set_of_nodes_chosen, replication_and_write_time, (file_size/K)*i))
 				time_and_space_from_set_of_possible_solution.append([replication_and_write_time, (file_size/K)*i])
 
@@ -31,6 +33,8 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	time_on_pareto = []
 	for i in range (0, len(set_of_solution_on_pareto)):
 		time_on_pareto.append(time_and_space_from_set_of_possible_solution[set_of_solution_on_pareto[i]][0])
+		# ~ print(time_and_space_from_set_of_possible_solution[set_of_solution_on_pareto[i]][0])
+		# ~ print(set_of_possible_solutions[set_of_solution_on_pareto[i]][2])
 		
 	# 3. Finding the solution on the plateau
 	# Get min and max
@@ -45,9 +49,8 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	min_progress = sys.maxsize
 	for i in range (0, size+1):
 		progress = 100 - ((time_on_pareto[i] - time_on_pareto[0])*100)/total_progress
-		# ~ print(time_on_pareto[i], "did", progress, "% of the total progress.")
+		# ~ print(time_on_pareto[i], "did", progress, "% of the total progress, with time_on_pareto[0] =", time_on_pareto[0])
 		if progress < 90:
-			# ~ print("Break")
 			break
 		if progress < min_progress:
 			min_progress = progress

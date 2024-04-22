@@ -1,10 +1,11 @@
 import numpy as np
 from drex.utils.load_data import RealRecords
-from drex.utils.tool_functions import replication_and_chuncking_time, get_max_K_from_reliability_threshold_and_nodes_chosen, is_pareto_efficient, get_set_of_node_associated_with_chosen_N_and_K, replication_and_chuncking_time
+from drex.utils.tool_functions import *
 from drex.schedulers.random import *
 from drex.schedulers.algorithm1 import *
 from drex.schedulers.algorithm2 import *
 from drex.schedulers.algorithm3 import *
+from drex.schedulers.algorithm4 import *
 import sys
 import itertools
 
@@ -12,7 +13,8 @@ import itertools
 # TODO have these values as external input by the user
 
 # Number of nodes
-number_of_nodes = 100
+# ~ number_of_nodes = 100
+number_of_nodes = 10
 print("There are", number_of_nodes, "nodes.")
 
 # Numpy arrays of probability of failure each node over the data timeframe
@@ -67,7 +69,7 @@ reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only = get_reduced_set_of
 # Time for 10 nodes: 0 seconds
 # Time for 100 nodes: 0 seconds
 # Time for 1000 nodes: 11 seconds
-# ~ algorithm1(number_of_nodes, reliability_threshold, p)
+# set_of_nodes_chosen, N, K = algorithm1(number_of_nodes, reliability_threshold, p)
 
 # Algorithm 2 vs Algorithm 2 reduced complexity 10% and ranges are [0.1, 0.15][10, 15][100, 150]
 # Time for 10 nodes: 0 seconds | 0 seconds
@@ -76,13 +78,19 @@ reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only = get_reduced_set_of
 # Time for 19 nodes: 132 seconds | 0 seconds
 # Time for 20 nodes: 279 seconds | 0 seconds
 # Time for 22 nodes: 1280 seconds
-# ~ algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
-algorithm2_reduced_complexity(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, reduced_set_of_nodes_first_nodes_only)
+# set_of_nodes_chosen, N, K = algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+# set_of_nodes_chosen, N, K = algorithm2_reduced_complexity(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, reduced_set_of_nodes_first_nodes_only)
 
 # Algorithm 3
 # Time for 16 nodes: 16 seconds
 # Time for 20 nodes: 333 seconds
-#algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+# set_of_nodes_chosen, N, K = algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+
+# Algorithm 4
+set_of_nodes_chosen, N, K = algorithm4(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes)
 
 # Random scheduler
-# random_schedule(number_of_nodes, p, reliability_threshold)
+# set_of_nodes_chosen, N, K = random_schedule(number_of_nodes, p, reliability_threshold)
+
+# Update node sizes with what was chosen
+node_sizes = update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes)
