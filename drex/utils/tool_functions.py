@@ -2,6 +2,7 @@
 
 from drex.utils.poibin import PoiBin
 import numpy as np
+import math
 import sys
 from drex.utils.load_data import RealRecords
 
@@ -324,3 +325,17 @@ def update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes):
 	for i in set_of_nodes_chosen:
 		node_sizes[i] = node_sizes[i] - file_size/K
 	return node_sizes
+
+
+def exponential_function(x, x1, y1, x2, y2):
+    # Ensure x1 is not equal to x2
+    if x1 == x2:
+        raise ValueError("x1 cannot be equal to x2 in exponential_function")
+    
+    # Calculate the exponent
+    exponent = (x - x1) / (x2 - x1)
+
+    # Calculate the y value
+    y = y1 * math.pow(y2 / y1, exponent)
+    
+    return y

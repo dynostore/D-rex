@@ -65,6 +65,34 @@ maximum_difference_allowed = 0.10 # Here it is 10%
 # Then we get a reduced set of nodes from this
 reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only = get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_difference_allowed)
 
+# Test exponential
+# Example usage
+x1 = 100 # max node
+y1 = 1
+x2 = 10 # min data
+y2 = 1/number_of_nodes
+x = 11  # Remaining data after adding chunk
+result = exponential_function(x, x1, y1, x2, y2)
+print(f"f({x}) = {result}")
+x = 100  # Remaining data after adding chunk
+result = exponential_function(x, x1, y1, x2, y2)
+print(f"f({x}) = {result}")
+x = 10 # Remaining data after adding chunk
+result = exponential_function(x, x1, y1, x2, y2)
+print(f"f({x}) = {result}")
+x = 86 # Remaining data after adding chunk
+result = exponential_function(x, x1, y1, x2, y2)
+print(f"f({x}) = {result}")
+
+# By hand it is:
+# ~ ab^100 = 1 -> a = b^-100 -> a = 0.077459322
+# ~ ab^10 = 0.1 ->  b^-100*b^10 = 0.1 -> b^-90 = 0.1 -> b = 1.02591
+# ~ f(11) = 0.077459322*1.02591^11
+print("f(11) =", 0.077459322*pow(1.02591,11))
+print("f(100) =", 0.077459322*pow(1.02591,100))
+print("f(10) =", 0.077459322*pow(1.02591,10))
+print("f(86) =", 0.077459322*pow(1.02591,86))
+
 # Algorithm 1
 # Time for 10 nodes: 0 seconds
 # Time for 100 nodes: 0 seconds
@@ -87,10 +115,10 @@ reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only = get_reduced_set_of
 # set_of_nodes_chosen, N, K = algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # Algorithm 4
-set_of_nodes_chosen, N, K = algorithm4(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes)
+# ~ set_of_nodes_chosen, N, K = algorithm4(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes)
 
 # Random scheduler
 # set_of_nodes_chosen, N, K = random_schedule(number_of_nodes, p, reliability_threshold)
 
 # Update node sizes with what was chosen
-node_sizes = update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes)
+# ~ node_sizes = update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes)

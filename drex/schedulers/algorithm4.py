@@ -27,7 +27,8 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 						print("This solution is not available because mem inf 0")
 						set_of_node_valid = False
 						break
-					size_score += node_sizes[l] - (file_size/K) # TODO future work: add time the data is spending on the system
+					# ~ size_score += exponential_function( # TODO future work: add time the data is spending on the system and use exp function from algo4
+					# the lower the better so need to take 1 - result of exponential_function
 				
 				if (set_of_node_valid == True):
 					# Adding them in the tuple used for pareto front
@@ -36,12 +37,12 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 					time_space_and_size_score_from_set_of_possible_solution.append([replication_and_write_time, (file_size/K)*i, size_score])
 	
 	# 2. Take those that are on the 3D pareto front
-	# ~ print(time_space_and_size_score_from_set_of_possible_solution)
+	print(time_space_and_size_score_from_set_of_possible_solution)
 	costs = numpy.asarray(time_space_and_size_score_from_set_of_possible_solution)
 	set_of_solution_on_pareto = is_pareto_efficient(costs, False)
 	print("Set on pareto front is", set_of_solution_on_pareto)
-	# ~ exit(1)
 	
+	# Just printing
 	for i in set_of_solution_on_pareto:
 		print(time_space_and_size_score_from_set_of_possible_solution[i])
 	exit(1)
