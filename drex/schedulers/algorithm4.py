@@ -1,7 +1,7 @@
 from drex.utils.tool_functions import *
 import time, sys, numpy
 
-def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes):
+def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes, max_node_size, min_data_size, system_saturation):
 	start = time.time()
 	# 1. Get set of N, K and associated nodes that match the reliability and put them in a list, with fastest N when multiple set of nodes can satisfy the reliability
 	min_K = 0
@@ -27,29 +27,33 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 						print("This solution is not available because mem inf 0")
 						set_of_node_valid = False
 						break
-					# ~ size_score += exponential_function( # TODO future work: add time the data is spending on the system and use exp function from algo4
-					# the lower the better so need to take 1 - result of exponential_function
-				
+					# ~ size_score += 1 - exponential_function(node_sizes[l] - (file_size/K), max_node_size, 1, min_data_size, 1/number_of_nodes) # TODO future work: add time the data is spending on the system 
+					size_score += 1 - exponential_function(node_sizes[l] - (file_size/K), max_node_size, 1, min_data_size, 1/number_of_nodes) # TODO future work: add time the data is spending on the system 
+									
 				if (set_of_node_valid == True):
+					size_score = size_score/len(set_of_nodes_chosen) # Take the mean
 					# Adding them in the tuple used for pareto front
 					replication_and_write_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
 					set_of_possible_solutions.append((i, K, set_of_nodes_chosen, replication_and_write_time, (file_size/K)*i))
 					time_space_and_size_score_from_set_of_possible_solution.append([replication_and_write_time, (file_size/K)*i, size_score])
 	
 	# 2. Take those that are on the 3D pareto front
-	print(time_space_and_size_score_from_set_of_possible_solution)
+	# ~ print(time_space_and_size_score_from_set_of_possible_solution)
+	print(node_sizes)
 	costs = numpy.asarray(time_space_and_size_score_from_set_of_possible_solution)
 	set_of_solution_on_pareto = is_pareto_efficient(costs, False)
 	print("Set on pareto front is", set_of_solution_on_pareto)
 	
 	# Just printing
 	for i in set_of_solution_on_pareto:
-		print(time_space_and_size_score_from_set_of_possible_solution[i])
-	exit(1)
+		print(i, ":", time_space_and_size_score_from_set_of_possible_solution[i], "with nodes", set_of_possible_solutions[i][2])
+
 	# ~ time_on_pareto = []
 	# ~ for i in range (0, len(set_of_solution_on_pareto)):
 		# ~ time_on_pareto.append(time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][0])
-		
+	
+	# ~ if system saturation sup ??
+	
 	# 3. Finding the solution on the plateau
 	# Get min and max
 	time_on_pareto.sort()
@@ -71,7 +75,6 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 			min_progress = progress
 			min_index = i
 	if min_index == -1:
-		# ~ print("No solution found take the fastest N")
 		min_index = 0
 	# ~ print("min_index =", min_index)
 	

@@ -328,6 +328,8 @@ def update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes):
 
 
 def exponential_function(x, x1, y1, x2, y2):
+    """ x is the free memory on the node
+    """
     # Ensure x1 is not equal to x2
     if x1 == x2:
         raise ValueError("x1 cannot be equal to x2 in exponential_function")
@@ -339,3 +341,13 @@ def exponential_function(x, x1, y1, x2, y2):
     y = y1 * math.pow(y2 / y1, exponent)
     
     return y
+
+def system_saturation(node_sizes, min_data_size, total_node_size):
+	number_of_nodes = len(node_sizes)
+	saturation = 0
+	total_remaining_size = 0
+	for i in range(0, number_of_nodes):
+		total_remaining_size += node_sizes[i]
+	print(total_remaining_size, total_node_size)
+	saturation = 1 - exponential_function(total_remaining_size, total_node_size, 1, min_data_size, 1/number_of_nodes)
+	return saturation # The closer to 1 the worst
