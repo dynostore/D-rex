@@ -306,13 +306,11 @@ def get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_dif
     """
     set_of_nodes = list(range(0, number_of_nodes))
     reduced_set_of_nodes = []
-    reduced_set_of_nodes_first_nodes_only = []
     # deleted_nodes = 0 # This value is increased when a similarities has been found with another node in order to avoid writing out of bound
     index_in_tab = 0
     for i in (set_of_nodes):
         # index_in_tab = i - deleted_nodes
         reduced_set_of_nodes.append([])
-        reduced_set_of_nodes_first_nodes_only.append(i)
         reduced_set_of_nodes[index_in_tab].append(i)
         for j in (set_of_nodes[i+1:]):
             # print("Compare", i, "and", j, "Similarities is", matrix_of_differences[i][j])
@@ -322,9 +320,7 @@ def get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_dif
                 set_of_nodes.remove(j)
         index_in_tab += 1
                 # deleted_nodes += 1
-    # print(reduced_set_of_nodes)
-    # print(reduced_set_of_nodes_first_nodes_only)
-    return reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only
+    return reduced_set_of_nodes
     
 def update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes):
 	for i in set_of_nodes_chosen:

@@ -85,8 +85,12 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	min_N = set_of_possible_solutions[set_of_solution_on_pareto[min_index]][0]
 	min_K = set_of_possible_solutions[set_of_solution_on_pareto[min_index]][1]
 	min_set_of_nodes_chosen = set_of_possible_solutions[set_of_solution_on_pareto[min_index]][2]
-
+	
+	node_sizes = update_node_sizes(min_set_of_nodes_chosen, min_K, file_size, node_sizes)
+	
 	end = time.time()
+	
 	print("\nAlgorithm 4 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
-	return list(min_set_of_nodes_chosen), min_N, min_K
+	
+	return list(min_set_of_nodes_chosen), min_N, min_K, node_sizes
 

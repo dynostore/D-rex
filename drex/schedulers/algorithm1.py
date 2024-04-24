@@ -28,4 +28,4 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes, nod
 	
 	print("\nAlgorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes, "It took", end - start, "seconds.")
 	
-	return set_of_nodes, N, K
+	return set_of_nodes, N, K, node_sizes
