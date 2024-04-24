@@ -284,21 +284,26 @@ def get_set_of_node_associated_with_chosen_N_and_K(number_of_nodes, N, K, reliab
 	print("! CRITICAL ERROR: No set of nodes returned in get_set_of_node_associated_with_chosen_N_and_K. This is not normal !")
 	exit(1)
 
-def group_nodes_by_similarities(number_of_nodes, p, bandwidths, node_sizes):
-    "Return the mean difference in percentage between all pairs of nodes"
+def group_nodes_by_similarities(number_of_nodes, p, bandwidths, node_sizes, max_difference_allowed):
+    """
+    Return the mean difference in percentage between all pairs of nodes
+    """
     matrix_of_differences = [[0 for i in range(number_of_nodes)] for j in range(number_of_nodes)] 
     max_difference_allowed = 0.10 # Maximum difference in percentages to consider the nodes similar
+    
     for i in range (0, number_of_nodes):
         for j in range (i+1, number_of_nodes):
             reliability_diff = abs((p[i] - p[j])/float(p[i]))
             bandwidth_diff = abs((bandwidths[i] - bandwidths[j])/float(bandwidths[i]))
             size_diff = abs((node_sizes[i] - node_sizes[j])/float(node_sizes[i]))
             matrix_of_differences[i][j] = (reliability_diff + bandwidth_diff + size_diff) / 3
-    # print("Matrix of differences between nodes is:\n", matrix_of_differences)
+
     return matrix_of_differences
 
 def get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_difference_allowed):
-    "Return a set of nodes that account for nodes similarities"
+    """
+    Return a set of nodes that account for nodes similarities
+    """
     set_of_nodes = list(range(0, number_of_nodes))
     reduced_set_of_nodes = []
     reduced_set_of_nodes_first_nodes_only = []
@@ -328,7 +333,21 @@ def update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes):
 
 
 def exponential_function(x, x1, y1, x2, y2):
-    """ x is the free memory on the node
+    """
+    x is the free memory on the node
+    Example usage of exponential for algorithm 4
+	x1 = 100 # max node
+	y1 = 1
+	x2 = 10 # min data
+	y2 = 1/number_of_nodes
+	x = 11  # Remaining data after adding chunk
+	result = exponential_function(x, x1, y1, x2, y2)
+	print(f"f({x}) = {result}")
+
+	By hand it is:
+	f(x) = ab^x
+	ab^100 = 1 -> a = b^-100 -> a = 0.077459322
+	ab^10 = 0.1 ->  b^-100*b^10 = 0.1 -> b^-90 = 0.1 -> b = 1.02591
     """
     # Ensure x1 is not equal to x2
     if x1 == x2:
@@ -343,11 +362,30 @@ def exponential_function(x, x1, y1, x2, y2):
     return y
 
 def system_saturation(node_sizes, min_data_size, total_node_size):
+	"""
+	Return the system saturation between 0 and 1 using and exponential
+	The closer to 1 the worst
+	"""
+	
 	number_of_nodes = len(node_sizes)
 	saturation = 0
 	total_remaining_size = 0
+	
 	for i in range(0, number_of_nodes):
 		total_remaining_size += node_sizes[i]
-	print(total_remaining_size, total_node_size)
+
 	saturation = 1 - exponential_function(total_remaining_size, total_node_size, 1, min_data_size, 1/number_of_nodes)
-	return saturation # The closer to 1 the worst
+
+	return saturation
+
+def nodes_can_fit_new_data(set_of_nodes_chosen, node_sizes, size_to_remove):
+	"""
+	Return True if the node can fit the data without getting under a memory of 0
+	Else return False
+	"""
+	
+	for i in set_of_nodes_chosen:
+		if (node_sizes[i] - size_to_remove < 0):
+			return False
+	
+	return True

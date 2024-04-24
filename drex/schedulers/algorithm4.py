@@ -1,7 +1,7 @@
 from drex.utils.tool_functions import *
 import time, sys, numpy
 
-def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes, max_node_size, min_data_size, system_saturation):
+def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes, max_node_size, min_data_size, system_saturation, total_node_size):
 	start = time.time()
 	# 1. Get set of N, K and associated nodes that match the reliability and put them in a list, with fastest N when multiple set of nodes can satisfy the reliability
 	min_K = 0
@@ -9,6 +9,10 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	set_of_nodes = list(range(0, number_of_nodes))
 	set_of_possible_solutions = []
 	time_space_and_size_score_from_set_of_possible_solution = [] # First value is time, then total space, then sapce score. Space score is computed as sum of size left on node and the higher the better
+	system_saturation = system_saturation(node_sizes, min_data_size, total_node_size)
+	print("Saturation of the system is", system_saturation)
+
+
 	for i in range(2, number_of_nodes + 1):
 		min_time = sys.maxsize
 		for set_of_nodes_chosen in itertools.combinations(set_of_nodes, i):
