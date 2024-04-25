@@ -12,7 +12,7 @@ import itertools
 # TODO have these values as external input by the user
 
 # Number of nodes
-number_of_nodes = 100
+number_of_nodes = 10
 print("There are", number_of_nodes, "nodes.")
 
 # Numpy arrays of probability of failure each node over the data timeframe
@@ -49,7 +49,8 @@ file_size = 100
 if (file_size <= 0 or number_of_nodes < 3):
 	print("ERROR: invalid value for file_size and/or number_of_nodes")
 	exit(1)
-
+ 
+#print(2,1,replication_and_chuncking_time(2, 1, file_size, bandwidths, real_records))
 #for i in range(3, number_of_nodes):
 #	print(i,2,replication_and_chuncking_time(i, 2, file_size, bandwidths, real_records))
 	#replication_and_chuncking_time(i, 2, file_size, bandwidths, real_records)
@@ -76,13 +77,13 @@ reduced_set_of_nodes, reduced_set_of_nodes_first_nodes_only = get_reduced_set_of
 # Time for 19 nodes: 132 seconds | 0 seconds
 # Time for 20 nodes: 279 seconds | 0 seconds
 # Time for 22 nodes: 1280 seconds
-# ~ algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
-algorithm2_reduced_complexity(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, reduced_set_of_nodes_first_nodes_only)
+algorithm2(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+# algorithm2_reduced_complexity(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, reduced_set_of_nodes_first_nodes_only)
 
 # Algorithm 3
 # Time for 16 nodes: 16 seconds
 # Time for 20 nodes: 333 seconds
-#algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
+algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records)
 
 # Random scheduler
 # random_schedule(number_of_nodes, p, reliability_threshold)
