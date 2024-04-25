@@ -1,5 +1,8 @@
 from drex.utils.tool_functions import *
-import time, sys, numpy
+import time
+import sys
+import numpy
+
 
 def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes):
 	"""
