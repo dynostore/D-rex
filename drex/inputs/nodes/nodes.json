@@ -1,0 +1,25 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "storage_size": "500",
+      "write_bandwidth": "50",
+      "read_bandwidth": "100",
+      "annual_failure_rate": 1.5
+    },
+    {
+      "id": 2,
+      "storage_size": "500",
+      "write_bandwidth": "25",
+      "read_bandwidth": "50",
+      "annual_failure_rate": 2.0
+    },
+    {
+      "id": 3,
+      "storage_size": "2000",
+      "write_bandwidth": "100",
+      "read_bandwidth": "200",
+      "annual_failure_rate": 0.8
+    }
+  ]
+}
