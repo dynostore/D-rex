@@ -11,7 +11,7 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	set_of_possible_solutions = []
 	time_space_and_size_score_from_set_of_possible_solution = [] # First value is time, then total space, then space score.
 	system_saturation = system_saturation(node_sizes, min_data_size, total_node_size)
-	print("Saturation of the system is", system_saturation)
+	# ~ print("Saturation of the system is", system_saturation)
 	
 	# 1. Get set of N, K and associated nodes that match the reliability and put them in a list, with fastest N when multiple set of nodes can satisfy the reliability
 	for i in range(2, number_of_nodes + 1):
@@ -29,10 +29,9 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 				set_of_node_valid = True
 				for l in set_of_nodes_chosen:
 					if (node_sizes[l] - (file_size/K) <= 0):
-						print("This solution is not available because mem inf 0")
 						set_of_node_valid = False
 						break
-					size_score += 1 - exponential_function(node_sizes[l] - (file_size/K), max_node_size, 1, min_data_size, 1/number_of_nodes) # TODO future work: add time the data is spending on the system 
+					size_score += 1 - exponential_function(node_sizes[l] - (file_size/K), max_node_size, 1, min_data_size, 1/number_of_nodes) # The lower the better. TODO future work: add time the data is spending on the system 
 									
 				if (set_of_node_valid == True):
 					size_score = size_score/len(set_of_nodes_chosen) # Take the mean score over all nodes chosen
@@ -44,33 +43,36 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	# 2. Take those that are on the 3D pareto front
 	costs = numpy.asarray(time_space_and_size_score_from_set_of_possible_solution)
 	set_of_solution_on_pareto = is_pareto_efficient(costs, False)
-	print("Set on pareto front is", set_of_solution_on_pareto)
+	# ~ print("Set on pareto front is", set_of_solution_on_pareto)
 	
 	# Just printing
-	for i in set_of_solution_on_pareto:
-		print(i, ":", time_space_and_size_score_from_set_of_possible_solution[i], "with nodes", set_of_possible_solutions[i][2])
+	# ~ for i in set_of_solution_on_pareto:
+		# ~ print(i, ":", time_space_and_size_score_from_set_of_possible_solution[i], "with nodes", set_of_possible_solutions[i][2])
 
 	# Get min and max of each of our 3 parameters
 	# set_of_solution_on_pareto[i]][0] is time, [1] is space and [2] is space score
-	# For the first two it's already sorted logically so don't need to use the min and max function
-	# It is already sorted for the first two because the time increase with N and the space decreases
+	# For the space one is already sorted logically so don't need to use the min and max function
+	# It is already sorted because the space decreases with N that increases
+	# However time and score are not sorted
 	size = len(set_of_solution_on_pareto) - 1
-	min_time = time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[0]][0]
-	max_time = time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[size]][0]
 	min_space = time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[size]][1]
 	max_space = time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[0]][1]
 	space_score_on_pareto = []
+	time_on_pareto = []
 	for i in range (0, len(set_of_solution_on_pareto)):
+		time_on_pareto.append(time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][0])
 		space_score_on_pareto.append(time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][2])
+	min_time = min(time_on_pareto)
+	max_time = max(time_on_pareto)
 	min_space_score = min(space_score_on_pareto)
 	max_space_score = max(space_score_on_pareto)
 
-	print(min_time)
-	print(max_time)
-	print(min_space)
-	print(max_space)
-	print(min_space_score)
-	print(max_space_score)
+	# ~ print("min_time:", min_time)
+	# ~ print(max_time)
+	# ~ print(min_space)
+	# ~ print(max_space)
+	# ~ print(min_space_score)
+	# ~ print("max_space_score:", max_space_score)
 
 	# 3. Compute score with % progress
 	total_progress_time = max_time - min_time
@@ -79,12 +81,23 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	max_score = -1
 	best_index = -1
 	for i in range (0, size+1):
-		current_score = 0
-		current_score += 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][0] - min_time)*100)/total_progress_time
-		current_score += 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][1] - min_space)*100)/total_progress_space
-		current_score += 100 - ((space_score_on_pareto[i] - min_space_score)*100)/total_progress_space_score
-		if (max_score < current_score):
-			max_score = current_score
+		# ~ print(set_of_solution_on_pareto[i], ":", time_on_pareto[i], "with nodes", set_of_possible_solutions[i][2])
+		both_space_score = 0
+		time_score = 100 - ((time_on_pareto[i] - min_time)*100)/total_progress_time
+		# ~ print(set_of_solution_on_pareto[i], "made", 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][0] - min_time)*100)/total_progress_time, "progress on time")
+		
+		both_space_score += 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][1] - min_space)*100)/total_progress_space
+		# ~ print(set_of_solution_on_pareto[i], "made", 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][1] - min_space)*100)/total_progress_space, "progress on space")
+		
+		both_space_score += 100 - ((space_score_on_pareto[i] - min_space_score)*100)/total_progress_space_score
+		# ~ print(set_of_solution_on_pareto[i], "made", 100 - ((space_score_on_pareto[i] - min_space_score)*100)/total_progress_space_score, "progress on space score")
+		# ~ print("time_score is", time_score)
+		# ~ print("both_space_score is", both_space_score/2)
+		
+		total_score = time_score + (both_space_score/2)*system_saturation
+		# ~ print("total_score is", total_score)
+		if (max_score < total_score): # Higher score the better
+			max_score = total_score
 			best_index = i
 	
 	min_N = set_of_possible_solutions[set_of_solution_on_pareto[best_index]][0]

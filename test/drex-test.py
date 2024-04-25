@@ -14,7 +14,7 @@ Start of the inputs
 """
 
 # Number of nodes
-number_of_nodes = 10
+number_of_nodes = 15
 print("There are", number_of_nodes, "nodes.")
 
 # Numpy arrays of probability of failure each node over the data timeframe
@@ -86,7 +86,7 @@ Time for 10 / 15 / 20 nodes: 7 / 41 / seconds
 
 """
 Algorithm 4
-Time for 10 / 15 / 20 nodes: / / seconds
+Time for 10 / 15 / 20 nodes: 4 / 35 / seconds
 """
 set_of_nodes_chosen, N, K, node_sizes = algorithm4(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, max_node_size, min_data_size, system_saturation, total_node_size)
 

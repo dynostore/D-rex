@@ -41,13 +41,17 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	# Get min and max
 	# ~ time_on_pareto.sort() # Already sorted by time anyway as it's the first value
 	size = len(time_on_pareto) - 1
-
+	
+	max_time = max(time_on_pareto)
+	min_time = min(time_on_pareto)
+	
 	# Start from smallest time and stop when 10% degradation of time has been made and keep the index
-	total_progress = time_on_pareto[size] - time_on_pareto[0]
+	total_progress = max_time - min_time
 	min_index = -1
 	min_progress = sys.maxsize
 	for i in range (0, size+1):
-		progress = 100 - ((time_on_pareto[i] - time_on_pareto[0])*100)/total_progress
+		progress = 100 - ((time_on_pareto[i] - min_time)*100)/total_progress
+		# ~ print("progress:", progress, "with", time_on_pareto[i])
 		if progress < 90:
 			break
 		if progress < min_progress:
