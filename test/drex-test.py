@@ -45,7 +45,7 @@ real_records = RealRecords(dir_data="data/")
 file_size = 1
 min_data_size = file_size # TODO update this value when new data arrives in the system or if we have access to all data sizes
 
-#We need to allow a maximum difference allowed to consider two nodes are similar
+# We need to allow a maximum difference allowed to consider two nodes are similar
 maximum_difference_allowed = 0.20 # 10%
 
 """
