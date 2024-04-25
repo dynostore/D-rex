@@ -14,7 +14,7 @@ Start of the inputs
 """
 
 # Number of nodes
-number_of_nodes = 15
+number_of_nodes = 10
 print("There are", number_of_nodes, "nodes.")
 
 # Numpy arrays of probability of failure each node over the data timeframe

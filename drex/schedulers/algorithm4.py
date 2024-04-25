@@ -23,7 +23,7 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 				reliability_of_nodes_chosen.append(reliability_of_nodes[set_of_nodes_chosen[j]])
 				bandwidth_of_nodes_chosen.append(bandwidths[set_of_nodes_chosen[j]])
 			K = get_max_K_from_reliability_threshold_and_nodes_chosen(i, reliability_threshold, reliability_of_nodes_chosen)
-			if (K != -1):				
+			if (K != -1):		
 				# Getting the size score of each node and also checking we are not overflowing the nodes
 				size_score = 0
 				set_of_node_valid = True
@@ -78,28 +78,32 @@ def algorithm4(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	# ~ print(min_space_score)
 	# ~ print("max_space_score:", max_space_score)
 
-	# 3. Compute score with % progress
+	# 3. Compute score with % progress TODO progress value fix this value as they can be 0
 	total_progress_time = max_time - min_time
 	total_progress_space = max_space - min_space
 	total_progress_space_score = max_space_score - min_space_score
+	
 	max_score = -1
 	best_index = -1
 	for i in range (0, size+1):
-		# ~ print(set_of_solution_on_pareto[i], ":", time_on_pareto[i], "with nodes", set_of_possible_solutions[i][2])
 		both_space_score = 0
-		time_score = 100 - ((time_on_pareto[i] - min_time)*100)/total_progress_time
-		# ~ print(set_of_solution_on_pareto[i], "made", 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][0] - min_time)*100)/total_progress_time, "progress on time")
+		time_score = 0
 		
-		both_space_score += 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][1] - min_space)*100)/total_progress_space
-		# ~ print(set_of_solution_on_pareto[i], "made", 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][1] - min_space)*100)/total_progress_space, "progress on space")
+		if (total_progress_time > 0): # In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
+			time_score = 100 - ((time_on_pareto[i] - min_time)*100)/total_progress_time
+			# ~ print(set_of_solution_on_pareto[i], "made", time_score, "progress on time")
 		
-		both_space_score += 100 - ((space_score_on_pareto[i] - min_space_score)*100)/total_progress_space_score
-		# ~ print(set_of_solution_on_pareto[i], "made", 100 - ((space_score_on_pareto[i] - min_space_score)*100)/total_progress_space_score, "progress on space score")
-		# ~ print("time_score is", time_score)
-		# ~ print("both_space_score is", both_space_score/2)
+		if (total_progress_space > 0):
+			both_space_score += 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][1] - min_space)*100)/total_progress_space
+			# ~ print(set_of_solution_on_pareto[i], "made", 100 - ((time_space_and_size_score_from_set_of_possible_solution[set_of_solution_on_pareto[i]][1] - min_space)*100)/total_progress_space, "progress on space")
 		
+		if (total_progress_space_score > 0):
+			both_space_score += 100 - ((space_score_on_pareto[i] - min_space_score)*100)/total_progress_space_score
+			# ~ print(set_of_solution_on_pareto[i], "made", 100 - ((space_score_on_pareto[i] - min_space_score)*100)/total_progress_space_score, "progress on space score")
+		
+		# Weight with system saturation
 		total_score = time_score + (both_space_score/2)*system_saturation
-		# ~ print("total_score is", total_score)
+
 		if (max_score < total_score): # Higher score the better
 			max_score = total_score
 			best_index = i
