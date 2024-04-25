@@ -82,13 +82,13 @@ First need to declare the three variable here then you can loop over algorithm2_
 Algorithm 3
 Time for 10 / 15 / 20 nodes: 7 / 41 / seconds
 """
-# set_of_nodes_chosen, N, K, node_sizes = algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes)
+# ~ set_of_nodes_chosen, N, K, node_sizes = algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes)
 
 """
 Algorithm 4
 Time for 10 / 15 / 20 nodes: / / seconds
 """
-# set_of_nodes_chosen, N, K, node_sizes = algorithm4(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, max_node_size, min_data_size, system_saturation, total_node_size)
+set_of_nodes_chosen, N, K, node_sizes = algorithm4(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, max_node_size, min_data_size, system_saturation, total_node_size)
 
 # Random scheduler
 """
