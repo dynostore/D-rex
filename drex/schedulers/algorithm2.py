@@ -19,7 +19,7 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 			# ~ print("Test", i, K, set_of_nodes_chosen)
 			if (K != -1):
 				replication_and_write_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
-				# ~ print(replication_and_write_time)
+				print(replication_and_write_time)
 				if (replication_and_write_time < min_time):
 					min_time = replication_and_write_time
 					min_N = i
