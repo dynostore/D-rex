@@ -1,0 +1,74 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "storage_size": "500",
+      "write_bandwidth": "50",
+      "read_bandwidth": "60",
+      "annual_failure_rate": 0.01
+    },
+    {
+      "id": 1,
+      "storage_size": "1000",
+      "write_bandwidth": "10",
+      "read_bandwidth": "20",
+      "annual_failure_rate": 0.1
+    },
+    {
+      "id": 2,
+      "storage_size": "2000",
+      "write_bandwidth": "25",
+      "read_bandwidth": "30",
+      "annual_failure_rate": 0.2
+    },
+    {
+      "id": 3,
+      "storage_size": "2000",
+      "write_bandwidth": "25",
+      "read_bandwidth": "30",
+      "annual_failure_rate": 0.01
+    }
+    {
+      "id": 4,
+      "storage_size": "2000",
+      "write_bandwidth": "25",
+      "read_bandwidth": "30",
+      "annual_failure_rate": 0.02
+    }
+    {
+      "id": 5,
+      "storage_size": "2000",
+      "write_bandwidth": "25",
+      "read_bandwidth": "30",
+      "annual_failure_rate": 0.02
+    }
+    {
+      "id": 6,
+      "storage_size": "2000",
+      "write_bandwidth": "25",
+      "read_bandwidth": "30",
+      "annual_failure_rate": 0.02
+    }
+    {
+      "id": 7,
+      "storage_size": "2000",
+      "write_bandwidth": "25",
+      "read_bandwidth": "30",
+      "annual_failure_rate": 0.02
+    }
+    {
+      "id": 8,
+      "storage_size": "2000",
+      "write_bandwidth": "25",
+      "read_bandwidth": "30",
+      "annual_failure_rate": 0.02
+    }
+    {
+      "id": 9,
+      "storage_size": "2000",
+      "write_bandwidth": "25",
+      "read_bandwidth": "30",
+      "annual_failure_rate": 0.02
+    }
+  ]
+}
