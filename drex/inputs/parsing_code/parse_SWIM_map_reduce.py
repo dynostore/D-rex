@@ -1,8 +1,9 @@
 # Code used to parse the data from https://github.com/SWIMProjectUCB/SWIM/wiki/Workloads-repository
-# python3 drex/inputs/parsing_code/parse_SWIM_map_reduce.py drex/inputs/data/raw/FB-2009_samples_24_times_1hr_0.tsv drex/inputs/data/raw/FB-2009_samples_24_times_1hr_1.tsv drex/inputs/data/raw/FB-2010_samples_24_times_1hr_0.tsv drex/inputs/data/FB-2009_samples_24_times_1hr_0.json
+# python3 drex/inputs/parsing_code/parse_SWIM_map_reduce.py drex/inputs/data/raw/FB-2009_samples_24_times_1hr_0.tsv drex/inputs/data/raw/FB-2009_samples_24_times_1hr_1.tsv drex/inputs/data/raw/FB-2010_samples_24_times_1hr_0.tsv drex/inputs/data/FB-2009_samples_24_times_1hr_0.csv
 
 import json
 import sys
+import csv
 
 def parse_input_file(input_file_1, input_file_2, input_file_3, number_of_input_file):
     data_list = []
@@ -42,11 +43,20 @@ def parse_input_file(input_file_1, input_file_2, input_file_3, number_of_input_f
 def write_to_json(data_list, output_file):
     with open(output_file, 'w') as f:
         json.dump({"data_list": data_list}, f, indent=2)
+        
+def write_to_csv(data_list, output_file):
+    with open(output_file, 'w', newline='') as f:
+        writer = csv.writer(f)
+        # Write header
+        writer.writerow(["id", "size", "submit_time", "time_spent"])
+        # Write data
+        for data in data_list:
+            writer.writerow([data["id"], data["size"], data["submit_time"], data["time_spent"]])
 
 def main(input_file_1, input_file_2, input_file_3, output_file):
     number_of_input_file = 3
     data_list = parse_input_file(input_file_1, input_file_2, input_file_3, number_of_input_file)
-    write_to_json(data_list, output_file)
+    write_to_csv(data_list, output_file)
 
 if __name__ == "__main__":
     input_file_1 = sys.argv[1]
