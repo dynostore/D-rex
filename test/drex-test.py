@@ -73,16 +73,16 @@ Algorithm 2 with reduced complexity: DOES NOT WORK
 Time for 10 / 15 / 20 nodes: seconds
 First need to declare the three variable here then you can loop over algorithm2_reduced_complexity
 """
-iteration = 0
-reduced_set_of_nodes = []
-for i in range (0, 10):
-	set_of_nodes_chosen, N, K, node_sizes, iteration, reduced_set_of_nodes = algorithm2_reduced_complexity(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, reduced_set_of_nodes, iteration, maximum_difference_allowed)
+#iteration = 0
+#reduced_set_of_nodes = []
+#for i in range (0, 10):
+#	set_of_nodes_chosen, N, K, node_sizes, iteration, reduced_set_of_nodes = algorithm2_reduced_complexity(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, reduced_set_of_nodes, iteration, maximum_difference_allowed)
 
 """
 Algorithm 3
 Time for 10 / 15 / 20 nodes: 7 / 41 / seconds
 """
-# ~ set_of_nodes_chosen, N, K, node_sizes = algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes)
+set_of_nodes_chosen, N, K, node_sizes = algorithm3(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes)
 
 """
 Algorithm 4
