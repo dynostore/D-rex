@@ -1,16 +1,15 @@
 from drex.utils.tool_functions import *
-from drex.utils.prediction import Predictor
+
 import time
 import sys
 import numpy
 
-predictor = Predictor()
 
-def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes):
+
+def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor):
 	"""
 	Uses a pareto front to find best N with biggest K possible
 	"""
-	global predictor
 	start = time.time()
 
 	# 1. Get set of N, K and associated nodes that match the reliability and put them in a list, with fastest N when multiple set of nodes can staisfy the reliability
@@ -32,16 +31,17 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 			K = get_max_K_from_reliability_threshold_and_nodes_chosen(
 			    i, reliability_threshold, reliability_of_nodes_chosen)
 			if (K != -1 and nodes_can_fit_new_data(set_of_nodes_chosen, node_sizes, file_size/K)):
-				# replication_and_write_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
+				#replication_and_write_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
 				replication_and_write_time = predictor.predict(
 				    file_size, i, K, bandwidth_of_nodes_chosen)
+				
 				set_of_possible_solutions.append((i, K, set_of_nodes_chosen, replication_and_write_time, (file_size/K)*i))
 				time_and_space_from_set_of_possible_solution.append([replication_and_write_time, (file_size/K)*i])
 
 	if (len(time_and_space_from_set_of_possible_solution) == 0):
 		print("ERROR: Algorithm 3 could not find a solution that would not overflow the memory of the nodes")
 		exit(1)
-		
+	
 	# 2. Take those that are on the pareto front
 	costs = numpy.asarray(time_and_space_from_set_of_possible_solution)
 	set_of_solution_on_pareto = is_pareto_efficient(costs, False)

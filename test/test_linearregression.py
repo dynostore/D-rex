@@ -1,4 +1,4 @@
-from sklearn.linear_model import LinearRegression
+from drex.utils.prediction import Predictor
 from drex.utils.load_data import RealRecords
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,53 +6,57 @@ import pandas as pd
 
 n = 10
 k = 3
-file_size = 200
+file_size = 2000
 
 # To manage the real time obtained in experiments
-real_records = RealRecords(dir_data="data/")
+#real_records = RealRecords(dir_data="data/")
 
-frames = []
-sizes = []
-for s in real_records.sizes:
-    data_from_csv = pd.read_csv('data/' + str(s) + 'MB.csv', sep='\t')
-    frames.append(data_from_csv)
-    sizes.extend([s]*len(data_from_csv))
-data = pd.concat(frames)
-data.insert(0, 'size', sizes)
+#frames = []
+#sizes = []
+#for s in real_records.sizes:
+#    data_from_csv = pd.read_csv('data/' + str(s) + 'MB.csv', sep='\t')
+#    frames.append(data_from_csv)
+#    sizes.extend([s]*len(data_from_csv))
+#data = pd.concat(frames)
+#data.insert(0, 'size', sizes)
 
-X = data[['size', 'n', 'k']]
-Y = data['avg_time']
+#X = data[['size', 'n', 'k']]
+#Y = data['avg_time']
 
-Xs_test = []
-real_points = []
-for i in range(3, n):
-    Xs_test.append([file_size, i, 2])
+#Xs_test = []
+#eal_points = []
+#for i in range(3, n):
+#    Xs_test.append([file_size, i, 2])
     
-real_points = data[(data["k"] == 2) & (data["size"] == file_size)]
+#real_points = data[(data["k"] == 2) & (data["size"] == file_size)]
 
-Xs_test = np.array(Xs_test)
+#Xs_test = np.array(Xs_test)
 #X_test = np.array([file_size, n, k]).reshape(1, -1)
 
+pred = Predictor()
+for i in range(3, n):
+    bandwiths = [10] * i
+    print(i,2,pred.predict(file_size, i, 2, bandwiths))
 
 # Create an instance of the LinearRegression class
-reg = LinearRegression()
- 
+#reg = LinearRegression()
+#reg = Ridge(alpha=0.8)
 # Fit the model to the data
-reg.fit(X.values, Y.values)
+#reg.fit(X.values, Y.values)
  
 # Print the coefficients of the model
-print(reg.coef_)
+#print(reg.coef_)
 
-Y_pred = reg.predict(Xs_test)
+#Y_pred = reg.predict(Xs_test)
 
 #print(Y_pred)
 #print(Xs_test[:,1])
 #print(Y_pred)
 #print(len(Xs_test), len(Y_pred))
 
-plt.scatter(real_points["n"], real_points["avg_time"], color = "blue")
-plt.scatter(Xs_test[:,1], Y_pred, color = "green")
-plt.show()
+# plt.scatter(real_points["n"], real_points["avg_time"], color = "blue")
+# plt.scatter(Xs_test[:,1], Y_pred, color = "green")
+# plt.show()
 # Formatting the data into a single dataframe
 #sizes = [np.array([s]*len(real_records.data_dict[s])) for s in real_records.sizes]
 #for i,s in enumerate(real_records.sizes):

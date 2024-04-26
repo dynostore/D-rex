@@ -3,15 +3,12 @@ from drex.utils.prediction import Predictor
 import sys
 import time
 
-predictor = Predictor()
 
 
-def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes):
+def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor):
     """
     Choose fastest N and biggest K
     """
-    global predictor
-
     start = time.time()
 
     min_time = sys.maxsize
