@@ -15,7 +15,7 @@ Start of the inputs
 """
 
 # Number of nodes
-number_of_nodes = 18
+number_of_nodes = 12
 print("There are", number_of_nodes, "nodes.")
 
 # Numpy arrays of probability of failure each node over the data timeframe
@@ -64,7 +64,7 @@ End of the inputs
 Algorithm 1
 Time for 10 / 100 / 1000 nodes: 0 / 0 / 30 seconds
 """
-# set_of_nodes_chosen, N, K, node_sizes = algorithm1(number_of_nodes, reliability_threshold, p, node_sizes, file_size)
+set_of_nodes_chosen, N, K, node_sizes = algorithm1(number_of_nodes, reliability_threshold, p, node_sizes, file_size)
 
 """
 Algorithm 2
@@ -86,20 +86,20 @@ First need to declare the three variable here then you can loop over algorithm2_
 Algorithm 3
 Time for 10 / 15 / 20 nodes: 7 / 41 / seconds
 """
-# ~ set_of_nodes_chosen, N, K, node_sizes = algorithm3(
-    # ~ number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor)
+set_of_nodes_chosen, N, K, node_sizes = algorithm3(
+    number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor)
 
 """
 Algorithm 4
 Time for 10 / 15 / 20 nodes: 4 / 35 / seconds
 """
-# ~ set_of_nodes_chosen, N, K, node_sizes = algorithm4(number_of_nodes, p, bandwidths, reliability_threshold,
-                                                   # ~ file_size, real_records, node_sizes, max_node_size, 
-                                                   # ~ min_data_size, system_saturation, total_node_size, predictor)
+set_of_nodes_chosen, N, K, node_sizes = algorithm4(number_of_nodes, p, bandwidths, reliability_threshold,
+                                                   file_size, real_records, node_sizes, max_node_size, 
+                                                   min_data_size, system_saturation, total_node_size, predictor)
 
 # Random scheduler
 """
 Random
 Time for 10 / 15 / 20 nodes: 0 / 0 / 0 seconds
 """
-# set_of_nodes_chosen, N, K, node_sizes = random_schedule(number_of_nodes, p, reliability_threshold, node_sizes, file_size)
+set_of_nodes_chosen, N, K, node_sizes = random_schedule(number_of_nodes, p, reliability_threshold, node_sizes, file_size)

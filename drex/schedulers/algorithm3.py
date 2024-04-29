@@ -22,10 +22,14 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 		for set_of_nodes_chosen in itertools.combinations(set_of_nodes, i):
 			reliability_of_nodes_chosen = []
 			bandwidth_of_nodes_chosen = []
-			for j in range(0, len(set_of_nodes_chosen)):
-				reliability_of_nodes_chosen.append(
-				    reliability_of_nodes[set_of_nodes_chosen[j]])
-				bandwidth_of_nodes_chosen.append(bandwidths[set_of_nodes_chosen[j]])
+			
+			# ~ for j in range(0, len(set_of_nodes_chosen)):
+				# ~ reliability_of_nodes_chosen.append(
+				    # ~ reliability_of_nodes[set_of_nodes_chosen[j]])
+				# ~ bandwidth_of_nodes_chosen.append(bandwidths[set_of_nodes_chosen[j]])
+			reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
+			bandwidth_of_nodes_chosen = [bandwidths[node] for node in set_of_nodes_chosen]
+			
 			K = get_max_K_from_reliability_threshold_and_nodes_chosen(
 			    i, reliability_threshold, reliability_of_nodes_chosen)
 			if (K != -1 and nodes_can_fit_new_data(set_of_nodes_chosen, node_sizes, file_size/K)):

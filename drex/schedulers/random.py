@@ -24,9 +24,10 @@ def random_schedule(number_of_nodes, reliability_of_nodes, reliability_threshold
 	set_of_nodes_chosen = random.sample(range(0, number_of_nodes), N)
 	set_of_nodes_chosen.sort()
 
-	for i in range(0, len(set_of_nodes_chosen)):
-		reliability_of_nodes_chosen.append(reliability_of_nodes[set_of_nodes_chosen[i]])
-	
+	# ~ for i in range(0, len(set_of_nodes_chosen)):
+		# ~ reliability_of_nodes_chosen.append(reliability_of_nodes[set_of_nodes_chosen[i]])
+	reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
+            	
 	while (reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes) == False):	
 		N = random.randint(2, number_of_nodes)
 		K = random.randint(1, N - 1)

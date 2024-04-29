@@ -23,6 +23,7 @@ def algorithm4(
     set_of_nodes_chosen = []
     set_of_nodes = list(range(0, number_of_nodes))
     set_of_possible_solutions = []
+   
     # First value is time, then total space, then space score.
     time_space_and_size_score_from_set_of_possible_solution = []
     system_saturation = system_saturation(
@@ -35,11 +36,14 @@ def algorithm4(
         for set_of_nodes_chosen in itertools.combinations(set_of_nodes, i):
             reliability_of_nodes_chosen = []
             bandwidth_of_nodes_chosen = []
-            for j in range(0, len(set_of_nodes_chosen)):
-                reliability_of_nodes_chosen.append(
-                    reliability_of_nodes[set_of_nodes_chosen[j]])
-                bandwidth_of_nodes_chosen.append(
-                    bandwidths[set_of_nodes_chosen[j]])
+           
+            # ~ for j in range(0, len(set_of_nodes_chosen)):
+                # ~ reliability_of_nodes_chosen.append(
+                    # ~ reliability_of_nodes[set_of_nodes_chosen[j]])
+                # ~ bandwidth_of_nodes_chosen.append(
+                    # ~ bandwidths[set_of_nodes_chosen[j]])
+            reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
+            bandwidth_of_nodes_chosen = [bandwidths[node] for node in set_of_nodes_chosen]           
             K = get_max_K_from_reliability_threshold_and_nodes_chosen(
                 i, reliability_threshold, reliability_of_nodes_chosen)
             if (K != -1):
