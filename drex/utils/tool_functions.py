@@ -248,8 +248,7 @@ def is_pareto_efficient(costs, return_mask = True):
 # Must indicate the reliability of the set of nodes used. Not  of all the nodes
 def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
 	pb = PoiBin(reliability_of_nodes)
-	x = N - K
-	if (pb.cdf(x) >= reliability_threshold):
+	if (pb.cdf(N-K) >= reliability_threshold):
 		return True
 	else:
 		return False
@@ -262,7 +261,7 @@ def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
 def get_max_K_from_reliability_threshold_and_nodes_chosen(number_of_nodes, reliability_threshold, reliability_of_nodes):
 	for i in range (number_of_nodes - 1, 1, -1):
 		K = i
-		print("Testing K =", K)
+		# ~ print("Testing K =", K)
 		if (reliability_thresold_met(number_of_nodes, K, reliability_threshold, reliability_of_nodes)):
 			return K
 	return -1
