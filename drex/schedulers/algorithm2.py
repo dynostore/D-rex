@@ -4,7 +4,6 @@ import sys
 import time
 
 
-
 def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor):
     """
     Choose fastest N and biggest K
@@ -21,16 +20,27 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
         for set_of_nodes_chosen in itertools.combinations(set_of_nodes, i):
             reliability_of_nodes_chosen = []
             bandwidth_of_nodes_chosen = []
+            
+            start_time_loop = time.time()
             for j in range(0, len(set_of_nodes_chosen)):
                 reliability_of_nodes_chosen.append(
                     reliability_of_nodes[set_of_nodes_chosen[j]])
                 bandwidth_of_nodes_chosen.append(
                     bandwidths[set_of_nodes_chosen[j]])
+            end_time_loop = time.time()
+            
+            print("Testing", set_of_nodes_chosen)
+            
+            start_time_get_max_K = time.time()
             K = get_max_K_from_reliability_threshold_and_nodes_chosen(
                 i, reliability_threshold, reliability_of_nodes_chosen)
+            end_time_get_max_K = time.time()
+            
             if (K != -1):
                 #replication_and_write_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
+                start_time_predictor = time.time()
                 replication_and_write_time = predictor.predict(file_size, i, K, bandwidth_of_nodes_chosen)
+                end_time_predictor = time.time()
                 
                 if (replication_and_write_time < min_time and nodes_can_fit_new_data(set_of_nodes_chosen, node_sizes, file_size/K)):
                     min_time = replication_and_write_time
@@ -41,19 +51,21 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
     if (min_K == -1):
         print("ERROR: Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
         exit(1)
-
+	
+    start_time_update_node_sizes = time.time()
     node_sizes = update_node_sizes(
         min_set_of_nodes_chosen, min_K, file_size, node_sizes)
-
+    end_time_update_node_sizes = time.time()
+	
     end = time.time()
 
     print("\nAlgorithm 2 chose N =", min_N, "and K =", min_K, "with the set of nodes:",
-          min_set_of_nodes_chosen, "It took", end - start, "seconds.")
+          min_set_of_nodes_chosen, "It took", end - start, "seconds. Get_max_K took", end_time_get_max_K - start_time_get_max_K, "seconds. Update nodes took", end_time_update_node_sizes - start_time_update_node_sizes, "seconds. Predictor took", end_time_predictor - start_time_predictor, "seconds. Loop took", end_time_loop - start_time_loop, "seconds.")
 
     return list(min_set_of_nodes_chosen), min_N, min_K, node_sizes
 
 
-def algorithm2_reduced_complexity(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes, reduced_set_of_nodes, iteration, maximum_difference_allowed):
+def algorithm2_reduced_complexity(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes, reduced_set_of_nodes, iteration, maximum_difference_allowed, predictor):
     """
     DOES NOT WORK BECAUSE DOES NOT CONSIDER ALL SET OF NODES CORRECTLY BECAUSE OF THE SIMPLIFICATION
     Choose fastest N and biggest K.

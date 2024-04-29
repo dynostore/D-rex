@@ -4,8 +4,6 @@ import time
 import sys
 import numpy
 
-
-
 def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor):
 	"""
 	Uses a pareto front to find best N with biggest K possible

@@ -261,10 +261,12 @@ def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
 # reliability of the set of nodes you inted to use.
 def get_max_K_from_reliability_threshold_and_nodes_chosen(number_of_nodes, reliability_threshold, reliability_of_nodes):
 	max_K = -1
-	for i in range (1, number_of_nodes):
+	for i in range (number_of_nodes, 1, -1):
 		K = i
+		print("Testing K=", K)
 		if (reliability_thresold_met(number_of_nodes, K, reliability_threshold, reliability_of_nodes)):
 			max_K = K
+			break
 	# ~ if max_K == -1:
 		# ~ print("/!\ No value of K can meet the reliability threshold with N =", number_of_nodes, "/!\ ")
 	return max_K
