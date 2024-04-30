@@ -170,7 +170,7 @@ def algorithm2_work_with_reduced_set_of_nodes(number_of_nodes, reliability_of_no
     set_of_nodes_chosen = []
     set_of_nodes = list(range(0, number_of_nodes))
     
-    subset_size = 8
+    subset_size = 8 # No need to put more as algo2 is optimizing for time anyway
     subsets = create_subsets(set_of_nodes, subset_size)
 	
     for j in range (len(subsets)):

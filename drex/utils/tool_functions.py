@@ -261,7 +261,6 @@ def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
 def get_max_K_from_reliability_threshold_and_nodes_chosen(number_of_nodes, reliability_threshold, reliability_of_nodes):
 	for i in range (number_of_nodes - 1, 1, -1):
 		K = i
-		# ~ print("Testing K =", K)
 		if (reliability_thresold_met(number_of_nodes, K, reliability_threshold, reliability_of_nodes)):
 			return K
 	return -1
@@ -394,3 +393,9 @@ def create_subsets(array, subset_size):
     if remainder != 0:
         subsets.append(array[num_subsets*subset_size:])  # Create subset with remaining nodes
     return subsets
+    
+# Function to create subsets of specified size with random integers without repetition
+def create_subsets_with_random_values(start, end, subset_size):
+    array = np.arange(start, end)  # Create array of integers from start to end
+    subset = np.random.choice(array, size=subset_size, replace=False)  # Create subset
+    return subset

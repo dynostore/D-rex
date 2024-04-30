@@ -15,7 +15,7 @@ Start of the inputs
 """
 
 # Number of nodes
-number_of_nodes = 55
+number_of_nodes = 100
 set_of_nodes = list(range(0, number_of_nodes))
 print("There are", number_of_nodes, "nodes.")
 
@@ -84,10 +84,10 @@ First need to declare the three variable here then you can loop over algorithm2_
 # set_of_nodes_chosen, N, K, node_sizes, iteration, reduced_set_of_nodes = algorithm2_group_node_by_similarities(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, reduced_set_of_nodes, iteration, maximum_difference_allowed, predictor)
 
 """
-Algorithm 2 with reduced complexity by working on less nodes and updating as data grows
+Algorithm 2 with reduced complexity by working on less nodes
 Time for 55 nodes: 0.22 seconds
 """
-set_of_nodes_chosen, N, K, node_sizes = algorithm2_work_with_reduced_set_of_nodes(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor)
+# ~ set_of_nodes_chosen, N, K, node_sizes = algorithm2_work_with_reduced_set_of_nodes(number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor)
 
 """
 Algorithm 3
@@ -95,6 +95,13 @@ Time for 10 / 15 / 20 nodes: 7 / 41 / seconds
 """
 # ~ set_of_nodes_chosen, N, K, node_sizes = algorithm3(
     # ~ number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor)
+
+"""
+Algorithm 3 with reduced complexity by looking at less posibilities
+Time for nodes: seconds
+"""
+set_of_nodes_chosen, N, K, node_sizes = algorithm3_look_at_reduced_set_of_possibilities(
+    number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor)
 
 """
 Algorithm 4
