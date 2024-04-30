@@ -98,10 +98,10 @@ Time for 10 / 15 / 20 nodes: 7 / 41 / seconds
 
 """
 Algorithm 3 with reduced complexity by looking at less posibilities
-Time for nodes: seconds
+Time for 100 nodes: 2 seconds
 """
-set_of_nodes_chosen, N, K, node_sizes = algorithm3_look_at_reduced_set_of_possibilities(
-    number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor)
+# ~ set_of_nodes_chosen, N, K, node_sizes = algorithm3_look_at_reduced_set_of_possibilities(
+    # ~ number_of_nodes, p, bandwidths, reliability_threshold, file_size, real_records, node_sizes, predictor)
 
 """
 Algorithm 4
