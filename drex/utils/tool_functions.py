@@ -382,3 +382,15 @@ def nodes_can_fit_new_data(set_of_nodes_chosen, node_sizes, size_to_remove):
 			return False
 	
 	return True
+
+def create_subsets(array, subset_size):
+    """
+    Create a subset of nodes of size subset_size
+    Allow to work on smaller set of nodes, thus reducting the complesity	
+    """
+    num_subsets = len(array) // subset_size  # Calculate number of full subsets
+    remainder = len(array) % subset_size  # Calculate remainder
+    subsets = [array[i*subset_size:(i+1)*subset_size] for i in range(num_subsets)]  # Create full subsets
+    if remainder != 0:
+        subsets.append(array[num_subsets*subset_size:])  # Create subset with remaining nodes
+    return subsets
