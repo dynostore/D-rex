@@ -106,14 +106,7 @@ def algorithm4(
     min_space_score = min(space_score_on_pareto)
     max_space_score = max(space_score_on_pareto)
 
-    # ~ print("min_time:", min_time)
-    # ~ print(max_time)
-    # ~ print(min_space)
-    # ~ print(max_space)
-    # ~ print(min_space_score)
-    # ~ print("max_space_score:", max_space_score)
-
-    # 3. Compute score with % progress TODO progress value fix this value as they can be 0
+    # 3. Compute score with % progress
     total_progress_time = max_time - min_time
     total_progress_space = max_space - min_space
     total_progress_space_score = max_space_score - min_space_score

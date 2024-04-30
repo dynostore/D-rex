@@ -51,7 +51,7 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	time_on_pareto = []
 	for i in range (0, len(set_of_solution_on_pareto)):
 		time_on_pareto.append(time_and_space_from_set_of_possible_solution[set_of_solution_on_pareto[i]][0])
-		
+	
 	# 3. Finding the solution on the plateau
 	# Get min and max
 	# ~ time_on_pareto.sort() # Already sorted by time anyway as it's the first value
@@ -62,18 +62,21 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	
 	# Start from smallest time and stop when 10% degradation of time has been made and keep the index
 	total_progress = max_time - min_time
-	min_index = -1
-	min_progress = sys.maxsize
-	for i in range (0, size+1):
-		progress = 100 - ((time_on_pareto[i] - min_time)*100)/total_progress
-		# ~ print("progress:", progress, "with", time_on_pareto[i])
-		if progress < 90:
-			break
-		if progress < min_progress:
-			min_progress = progress
-			min_index = i
-	if min_index == -1:
-		min_index = 0
+	if (total_progress == 0): # Don't want to divide by 0 so we take the last result
+		min_index = size
+	else:
+		min_index = -1
+		min_progress = sys.maxsize
+		for i in range (0, size+1):
+			progress = 100 - ((time_on_pareto[i] - min_time)*100)/total_progress
+
+			if progress < 90:
+				break
+			if progress < min_progress:
+				min_progress = progress
+				min_index = i
+		if min_index == -1:
+			min_index = 0
 	
 	min_N = set_of_possible_solutions[set_of_solution_on_pareto[min_index]][0]
 	min_K = set_of_possible_solutions[set_of_solution_on_pareto[min_index]][1]
