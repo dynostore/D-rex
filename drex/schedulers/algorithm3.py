@@ -102,11 +102,12 @@ def algorithm3_look_at_reduced_set_of_possibilities(number_of_nodes, reliability
 	subset_size = 10
 	subsets = create_subsets(set_of_nodes, subset_size)
 	
+	# Above 10 we do random values. 
 	subsets_random_values = []
-	for j in range (0, 2):
-		for i in range (subset_size+1, number_of_nodes+1):
+	for i in range (subset_size+1, number_of_nodes+1):
+		for j in range (0, number_of_nodes+1 - i):
 			subsets_random_values.append(create_subsets_with_random_values(0, number_of_nodes, i))
-		
+
 	for j in range (len(subsets)):
 		for i in range(2, len(subsets[j]) + 1):
 			for set_of_nodes_chosen in itertools.combinations(subsets[j], i):
