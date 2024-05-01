@@ -7,6 +7,7 @@ from drex.schedulers.algorithm1 import *
 from drex.schedulers.algorithm2 import *
 from drex.schedulers.algorithm3 import *
 from drex.schedulers.algorithm4 import *
+from drex.schedulers.hdfs import *
 import sys
 import itertools
 
@@ -15,7 +16,7 @@ Start of the inputs
 """
 
 # Number of nodes
-number_of_nodes = 100
+number_of_nodes = 10
 set_of_nodes = list(range(0, number_of_nodes))
 print("There are", number_of_nodes, "nodes.")
 
@@ -23,7 +24,11 @@ print("There are", number_of_nodes, "nodes.")
 p = []
 for i in range(0, number_of_nodes):
     p.append(random.uniform(0.1, 0.15))
-
+p[0] = 1
+p[1] = 1
+p[2] = 1
+p[3] = 1
+p[4] = 0.9
 # Bandwidth to write on the storage nodes in MB/s
 bandwidths = []
 for i in range(0, number_of_nodes):
@@ -36,15 +41,14 @@ for i in range(0, number_of_nodes):
     node_sizes.append(random.uniform(600, 800))
     total_node_size += node_sizes[i]
 max_node_size = max(node_sizes)
-
 # Threshold we want to meet
-reliability_threshold = 0.9
+reliability_threshold = 0.999
 
 # To manage the real time obtained in experiments
 real_records = RealRecords(dir_data="data/")
 
 # File size in MB
-file_size = 1
+file_size = 200
 # TODO update this value when new data arrives in the system or if we have access to all data sizes
 min_data_size = file_size
 
@@ -115,9 +119,9 @@ Time for 10 / 15 nodes: 4 / 35 seconds
 Algorithm 4 with reduced complexity by looking at less posibilities
 Time for 100 nodes: 8.47 seconds
 """
-set_of_nodes_chosen, N, K, node_sizes = algorithm4_look_at_reduced_set_of_possibilities(number_of_nodes, p, bandwidths, reliability_threshold,
-                                                   file_size, real_records, node_sizes, max_node_size, 
-                                                   min_data_size, system_saturation, total_node_size, predictor)
+# ~ set_of_nodes_chosen, N, K, node_sizes = algorithm4_look_at_reduced_set_of_possibilities(number_of_nodes, p, bandwidths, reliability_threshold,
+                                                   # ~ file_size, real_records, node_sizes, max_node_size, 
+                                                   # ~ min_data_size, system_saturation, total_node_size, predictor)
 
 # Random scheduler
 """
@@ -125,3 +129,9 @@ Random
 Time for 10 / 15 / 20 nodes: 0 / 0 / 0 seconds
 """
 # ~ set_of_nodes_chosen, N, K, node_sizes = random_schedule(number_of_nodes, p, reliability_threshold, node_sizes, file_size)
+
+"""
+HDFS replicate everything three times
+Time for 100 nodes: seconds
+"""
+set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths)

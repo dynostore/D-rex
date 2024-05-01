@@ -309,7 +309,6 @@ def get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_dif
         reduced_set_of_nodes.append([])
         reduced_set_of_nodes[index_in_tab].append(i)
         for j in (set_of_nodes[i+1:]):
-            # print("Compare", i, "and", j, "Similarities is", matrix_of_differences[i][j])
             if (matrix_of_differences[i][j] < maximum_difference_allowed):
                 # print("Similarities!")
                 reduced_set_of_nodes[index_in_tab].append(j)
@@ -322,7 +321,6 @@ def update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes):
 	for i in set_of_nodes_chosen:
 		node_sizes[i] = node_sizes[i] - file_size/K
 	return node_sizes
-
 
 def exponential_function(x, x1, y1, x2, y2):
     """
