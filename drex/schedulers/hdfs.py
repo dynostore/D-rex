@@ -47,8 +47,25 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     # ~ print("reliability_of_nodes:", reliability_of_nodes)
 
     set_of_nodes_chosen = list(sorted_nodes_by_sorted_bandwidths[:N])
-    # ~ print(set_of_nodes_chosen)
    	
+    # Check if the data would fit
+    # ~ TODO: loop on this instead
+    # ~ for i in set_of_nodes_chosen:
+    # ~ if (node_sizes[i] - size_to_stores[j] < 0):
+        # ~ # Need to find a new node
+        # ~ new_node_index = N + added_switch
+        # ~ while node_sizes[new_node_index] < len(sorted_nodes_by_sorted_bandwidths):
+            # ~ if node_sizes[sorted_nodes_by_sorted_bandwidths[new_node_index]] >= size_to_stores[j]:
+                # ~ set_of_nodes_chosen[j] = sorted_nodes_by_sorted_bandwidths[new_node_index]
+                # ~ break
+            # ~ new_node_index += 1
+        # ~ else:
+            # ~ print("ERROR: hdfs_three_replications could not find a solution.")
+            # ~ exit(1)
+        # ~ added_switch += 1
+    # ~ j += 1
+    
+    # ~ TODO: remove this below and use code above
     added_switch = 0
     j = 0
     for i in set_of_nodes_chosen:
@@ -87,12 +104,8 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
         
         # Update the corresponding node in set_of_nodes_chosen
         set_of_nodes_chosen[min_reliability_index] = highest_new_reliability_index
-        # ~ print("Node", min_reliability_index, "replaced by", highest_new_reliability_index)
         loop += 1
-        # ~ print("R chosen:", reliability_of_nodes_chosen, "at loop", loop)
-    
-    # ~ print("set_of_nodes_chosen after reliability update:", set_of_nodes_chosen)
-    
+        
     # Custom code for update node size cause we have inconsistent data sizes
     j = 0
     for i in set_of_nodes_chosen:
@@ -102,5 +115,85 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     end = time.time()
 	
     print("\nHDFS 3 replications chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
+	
+    return set_of_nodes_chosen, N, K, node_sizes
+    
+def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nodes, node_sizes, file_size, bandwidths, RS1, RS2):
+    """
+    Uses reed solomon and the fastest nodes first
+    """
+	
+    start = time.time()
+	        
+    N = RS2 # N is equal at the parity number
+    K = RS1/RS2 # K is the number of data block per parity block
+    
+    if (N > number_of_nodes):
+        print("ERROR: hdfs_reed_solomon could not find a solution.")
+        exit(1)
+    
+    set_of_nodes = list(range(0, number_of_nodes))
+    
+    # Combine nodes and bandwidths into tuples
+    combined = list(zip(set_of_nodes, bandwidths))
+
+    # Sort the combined list of tuples by bandwidth
+    sorted_combined = sorted(combined, key=lambda x: x[1], reverse=True)  # Sort by the second element (bandwidth)
+
+    # Unpack the sorted tuples into separate lists
+    sorted_nodes_by_sorted_bandwidths, sorted_bandwidths = zip(*sorted_combined)
+
+    set_of_nodes_chosen = list(sorted_nodes_by_sorted_bandwidths[:N])
+
+    # Checking if the data would fit, if not replace some of the nodes
+    added_switch = 0
+    j = 0
+    for i in set_of_nodes_chosen:
+        if (node_sizes[i] - file_size/K < 0):
+			# Need to find a new node
+            if (N + added_switch > number_of_nodes):
+                print("ERROR: hdfs_reed_solomon could not find a solution.")
+                exit(1)
+            set_of_nodes_chosen[j] = sorted_nodes_by_sorted_bandwidths[N + added_switch]
+            added_switch += 1
+        j += 1
+    
+    set_of_nodes_chosen = sorted(set_of_nodes_chosen)
+    # ~ print(set_of_nodes_chosen)
+    
+    # Need to do this after the potnetial switch of nodes of course
+    reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
+    
+    # Loop until the sum meets the threshold
+    loop = 0
+    # ~ print("R chosen before:", reliability_of_nodes_chosen)
+    while reliability_thresold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
+        # ~ print("Reliability issue")
+        if (loop > number_of_nodes - N):
+            print("ERROR: hdfs_three_replications could not find a solution.")
+            exit(1)
+        # Find the index of the lowest reliability value
+        min_reliability_index = reliability_of_nodes_chosen.index(max(reliability_of_nodes_chosen))
+        
+        # Find the index of the highest new reliability value
+        highest_new_reliability = min(filter(lambda x: x not in reliability_of_nodes_chosen, reliability_of_nodes))
+        highest_new_reliability_index = reliability_of_nodes.index(highest_new_reliability)
+        
+        # Replace the lowest reliability value with the corresponding value from reliability_of_nodes
+        reliability_of_nodes_chosen[min_reliability_index] = highest_new_reliability
+        
+        # Update the corresponding node in set_of_nodes_chosen
+        set_of_nodes_chosen[min_reliability_index] = highest_new_reliability_index
+        loop += 1
+        
+    # Custom code for update node size cause we have inconsistent data sizes
+    j = 0
+    for i in set_of_nodes_chosen:
+        node_sizes[i] = node_sizes[i] - size_to_stores[j]
+        j += 1
+    
+    end = time.time()
+	
+    print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
 	
     return set_of_nodes_chosen, N, K, node_sizes
