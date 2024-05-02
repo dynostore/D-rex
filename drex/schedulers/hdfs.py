@@ -107,15 +107,19 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
 	
     return set_of_nodes_chosen, N, K, node_sizes
     
-def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nodes, node_sizes, file_size, bandwidths, RS1, RS2):
+def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nodes, node_sizes, file_size, bandwidths, RS1, RS2, mode):
     """
     Uses reed solomon and the fastest nodes first
+    N = RS2 and to get K need to do file_size/(((1/(RS1/(RS1+RS2)))*100)/RS2)
     """
-	
+    
     start = time.time()
-	        
-    N = RS2 # N is equal at the parity number
-    K = RS1/RS2 # K is the number of data block per parity block
+	
+    K = file_size/(((1/(RS1/(RS1+RS2)))*file_size)/RS2)
+    if mode == "real":
+        K = round(K)
+    N = RS2
+    # ~ print("With file_size:", file_size, "and RS1 (", RS1, ",", RS2, ") we have N =", N, "and K =", K, "and total size stored is thus", (file_size/K)*N)
     
     if (N > number_of_nodes):
         print("ERROR: hdfs_reed_solomon could not find a solution.")
@@ -134,17 +138,21 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
 
     set_of_nodes_chosen = list(sorted_nodes_by_sorted_bandwidths[:N])
 
-    # Checking if the data would fit, if not replace some of the nodes
-    added_switch = 0
+    # Check if the data would fit. If not look for another node that can fit the data
     j = 0
     for i in set_of_nodes_chosen:
-        if (node_sizes[i] - file_size/K < 0):
-			# Need to find a new node
-            if (N + added_switch > number_of_nodes):
-                print("ERROR: hdfs_reed_solomon could not find a solution.")
+        if (node_sizes[i] - size_to_stores[j] < 0):
+            # ~ print(i, "doesn't have enough memory left")
+            # Need to find a new node
+            for k in set_of_nodes:
+                if k not in set_of_nodes_chosen:
+                    # ~ print("Trying node", k)
+                    if node_sizes[k] - size_to_stores[j] >= 0:
+                        set_of_nodes_chosen[j] = set_of_nodes[k]
+                        break
+            if k == number_of_nodes - 1:
+                print("ERROR: hdfs_three_replications could not find a solution.")
                 exit(1)
-            set_of_nodes_chosen[j] = sorted_nodes_by_sorted_bandwidths[N + added_switch]
-            added_switch += 1
         j += 1
     
     set_of_nodes_chosen = sorted(set_of_nodes_chosen)
@@ -185,4 +193,4 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
 	
     print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
 	
-    return set_of_nodes_chosen, N, K, node_sizes
+    return set_of_nodes_chosen, N, K, node_sizes, K_integer

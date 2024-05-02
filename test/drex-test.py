@@ -44,7 +44,7 @@ reliability_threshold = 0.99
 real_records = RealRecords(dir_data="data/")
 
 # File size in MB
-file_size = 200
+file_size = 150
 # TODO update this value when new data arrives in the system or if we have access to all data sizes
 min_data_size = file_size
 
@@ -130,14 +130,19 @@ Time for 10 / 15 / 20 nodes: 0 / 0 / 0 seconds
 HDFS replicate everything three times
 Time for 100 nodes: 0 seconds
 """
-set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths)
+# ~ set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths)
 
 """
 HDFS with Reed-Solomon
 RS1 and RS2 corresponds the value in RS(x,y) meaning that for RS1 data block 
 you have RS2 parity blocks
+Please provide a mode being either "simulation" or "real" to indicate if you want the 
+real value of K (a float) or a rounded value for real experiments (an integer)
 Time for 100 nodes: seconds
 """
 # ~ RS1 = 10
 # ~ RS2 = 4
-# ~ set_of_nodes_chosen, N, K, node_sizes = hdfs_reed_solomon(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, RS1, RS2)
+RS1 = 6
+RS2 = 3
+set_of_nodes_chosen, N, K, node_sizes = hdfs_reed_solomon(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, RS1, RS2, "simulation")
+# ~ set_of_nodes_chosen, N, K, node_sizes = hdfs_reed_solomon(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, RS1, RS2, "real")
