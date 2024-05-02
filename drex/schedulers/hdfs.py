@@ -47,40 +47,29 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     # ~ print("reliability_of_nodes:", reliability_of_nodes)
 
     set_of_nodes_chosen = list(sorted_nodes_by_sorted_bandwidths[:N])
-   	
-    # Check if the data would fit
-    # ~ TODO: loop on this instead
-    # ~ for i in set_of_nodes_chosen:
-    # ~ if (node_sizes[i] - size_to_stores[j] < 0):
-        # ~ # Need to find a new node
-        # ~ new_node_index = N + added_switch
-        # ~ while node_sizes[new_node_index] < len(sorted_nodes_by_sorted_bandwidths):
-            # ~ if node_sizes[sorted_nodes_by_sorted_bandwidths[new_node_index]] >= size_to_stores[j]:
-                # ~ set_of_nodes_chosen[j] = sorted_nodes_by_sorted_bandwidths[new_node_index]
-                # ~ break
-            # ~ new_node_index += 1
-        # ~ else:
-            # ~ print("ERROR: hdfs_three_replications could not find a solution.")
-            # ~ exit(1)
-        # ~ added_switch += 1
-    # ~ j += 1
-    
-    # ~ TODO: remove this below and use code above
-    added_switch = 0
+    # ~ print("set_of_nodes_chosen", set_of_nodes_chosen)
+
+    # Check if the data would fit. If not look for another node that can fit the data
     j = 0
     for i in set_of_nodes_chosen:
         if (node_sizes[i] - size_to_stores[j] < 0):
-			# Need to find a new node
-            if (N + added_switch > number_of_nodes):
+            # ~ print(i, "doesn't have enough memory left")
+            # Need to find a new node
+            for k in set_of_nodes:
+                if k not in set_of_nodes_chosen:
+                    # ~ print("Trying node", k)
+                    if node_sizes[k] - size_to_stores[j] >= 0:
+                        set_of_nodes_chosen[j] = set_of_nodes[k]
+                        break
+            if k == number_of_nodes - 1:
                 print("ERROR: hdfs_three_replications could not find a solution.")
                 exit(1)
-            set_of_nodes_chosen[j] = sorted_nodes_by_sorted_bandwidths[N + added_switch]
-            added_switch += 1
         j += 1
     
+    # ~ print("set_of_nodes_chosen after mem check", set_of_nodes_chosen)
     set_of_nodes_chosen = sorted(set_of_nodes_chosen)
-    # ~ print(set_of_nodes_chosen)
-    
+    # ~ print("set_of_nodes_chosen after sort", set_of_nodes_chosen)
+
     # Need to do this after the potnetial switch of nodes of course
     reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
     

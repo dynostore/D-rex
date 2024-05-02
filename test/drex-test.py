@@ -36,6 +36,7 @@ for i in range(0, number_of_nodes):
     node_sizes.append(random.uniform(600, 800))
     total_node_size += node_sizes[i]
 max_node_size = max(node_sizes)
+
 # Threshold we want to meet
 reliability_threshold = 0.99
 
@@ -129,7 +130,7 @@ Time for 10 / 15 / 20 nodes: 0 / 0 / 0 seconds
 HDFS replicate everything three times
 Time for 100 nodes: 0 seconds
 """
-# ~ set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths)
+set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths)
 
 """
 HDFS with Reed-Solomon
@@ -137,6 +138,6 @@ RS1 and RS2 corresponds the value in RS(x,y) meaning that for RS1 data block
 you have RS2 parity blocks
 Time for 100 nodes: seconds
 """
-RS1 = 10
-RS2 = 4
-set_of_nodes_chosen, N, K, node_sizes = hdfs_reed_solomon(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, RS1, RS2)
+# ~ RS1 = 10
+# ~ RS2 = 4
+# ~ set_of_nodes_chosen, N, K, node_sizes = hdfs_reed_solomon(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, RS1, RS2)
