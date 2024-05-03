@@ -1,7 +1,7 @@
 from drex.utils.tool_functions import *
 import time
 
-def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_of_nodes, node_sizes, file_size, bandwidths):
+def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_of_nodes, node_sizes, file_size, bandwidths, mode):
     """
     Cut the data in blocks of 128MB max and then replicate all the chunks three times.
     Choses the fastest nodes first.
@@ -9,7 +9,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
 	
     start = time.time()
 	
-    # 1. Cut data in blocks of 128MB maximum
+    # Cut data in blocks of 128MB maximum
     chunk_size = 128
     num_full_chunks = file_size // chunk_size
     last_chunk_size = file_size % chunk_size
@@ -23,8 +23,6 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     K = 1
     
     size_to_stores = [128] * num_full_chunks * 3 + [last_chunk_size] * 3
-    # ~ print("size_to_stores:", size_to_stores)
-    # ~ print("node_sizes:", node_sizes)
     
     if (N > number_of_nodes):
         print("ERROR: hdfs_three_replications could not find a solution.")
@@ -103,9 +101,15 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     
     end = time.time()
 	
-    print("\nHDFS 3 replications chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
-	
-    return set_of_nodes_chosen, N, K, node_sizes
+    if mode == "simulation":
+        print("\nHDFS 3 replications simulation chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
+        return set_of_nodes_chosen, N, K, node_sizes
+    elif mode == "real":
+        print("\nHDFS 3 replications real chose the set of nodes:", set_of_nodes_chosen, "and will remove the coprresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
+        return set_of_nodes_chosen, node_sizes, size_to_stores
+    else: 
+        print("Wrong mode passed to hdfs 3 replications. It must be \"simulation\" or \"real\"")
+        exit(1)
     
 def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nodes, node_sizes, file_size, bandwidths, RS1, RS2, mode):
     """
@@ -116,8 +120,6 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     start = time.time()
 	
     K = file_size/(((1/(RS1/(RS1+RS2)))*file_size)/RS2)
-    if mode == "real":
-        K = round(K)
     N = RS2
     # ~ print("With file_size:", file_size, "and RS1 (", RS1, ",", RS2, ") we have N =", N, "and K =", K, "and total size stored is thus", (file_size/K)*N)
     
@@ -125,6 +127,8 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
         print("ERROR: hdfs_reed_solomon could not find a solution.")
         exit(1)
     
+    size_to_stores = [file_size/K] * N
+
     set_of_nodes = list(range(0, number_of_nodes))
     
     # Combine nodes and bandwidths into tuples
@@ -165,7 +169,6 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     loop = 0
     # ~ print("R chosen before:", reliability_of_nodes_chosen)
     while reliability_thresold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
-        # ~ print("Reliability issue")
         if (loop > number_of_nodes - N):
             print("ERROR: hdfs_three_replications could not find a solution.")
             exit(1)
@@ -190,7 +193,13 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
         j += 1
     
     end = time.time()
-	
-    print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
-	
-    return set_of_nodes_chosen, N, K, node_sizes, K_integer
+		    
+    if mode == "simulation":
+        print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") simulation chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
+        return set_of_nodes_chosen, N, K, node_sizes
+    elif mode == "real":
+        print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") real chose the set of nodes:", set_of_nodes_chosen, "and will remove the coprresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
+        return set_of_nodes_chosen, node_sizes, size_to_stores
+    else: 
+        print("Wrong mode passed to HDFS Reed Solomon (", RS1, ",", RS2, "). It must be \"simulation\" or \"real\"")
+        exit(1)
