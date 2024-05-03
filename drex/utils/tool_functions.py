@@ -248,8 +248,7 @@ def is_pareto_efficient(costs, return_mask = True):
 # Must indicate the reliability of the set of nodes used. Not  of all the nodes
 def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
 	pb = PoiBin(reliability_of_nodes)
-	x = N - K
-	if (pb.cdf(x) >= reliability_threshold):
+	if (pb.cdf(N-K) >= reliability_threshold):
 		return True
 	else:
 		return False
@@ -260,14 +259,11 @@ def reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes):
 # Careful, number_of_nodes and reliability_of_nodes must be the number and 
 # reliability of the set of nodes you inted to use.
 def get_max_K_from_reliability_threshold_and_nodes_chosen(number_of_nodes, reliability_threshold, reliability_of_nodes):
-	max_K = -1
-	for i in range (1, number_of_nodes):
+	for i in range (number_of_nodes - 1, 1, -1):
 		K = i
 		if (reliability_thresold_met(number_of_nodes, K, reliability_threshold, reliability_of_nodes)):
-			max_K = K
-	# ~ if max_K == -1:
-		# ~ print("/!\ No value of K can meet the reliability threshold with N =", number_of_nodes, "/!\ ")
-	return max_K
+			return K
+	return -1
 
 def get_set_of_node_associated_with_chosen_N_and_K(number_of_nodes, N, K, reliability_threshold, reliability_of_nodes):
 	set_of_nodes = list(range(0, number_of_nodes))
@@ -313,7 +309,6 @@ def get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_dif
         reduced_set_of_nodes.append([])
         reduced_set_of_nodes[index_in_tab].append(i)
         for j in (set_of_nodes[i+1:]):
-            # print("Compare", i, "and", j, "Similarities is", matrix_of_differences[i][j])
             if (matrix_of_differences[i][j] < maximum_difference_allowed):
                 # print("Similarities!")
                 reduced_set_of_nodes[index_in_tab].append(j)
@@ -326,7 +321,6 @@ def update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes):
 	for i in set_of_nodes_chosen:
 		node_sizes[i] = node_sizes[i] - file_size/K
 	return node_sizes
-
 
 def exponential_function(x, x1, y1, x2, y2):
     """
@@ -385,3 +379,21 @@ def nodes_can_fit_new_data(set_of_nodes_chosen, node_sizes, size_to_remove):
 			return False
 	
 	return True
+
+def create_subsets(array, subset_size):
+    """
+    Create a subset of nodes of size subset_size
+    Allow to work on smaller set of nodes, thus reducting the complesity	
+    """
+    num_subsets = len(array) // subset_size  # Calculate number of full subsets
+    remainder = len(array) % subset_size  # Calculate remainder
+    subsets = [array[i*subset_size:(i+1)*subset_size] for i in range(num_subsets)]  # Create full subsets
+    if remainder != 0:
+        subsets.append(array[num_subsets*subset_size:])  # Create subset with remaining nodes
+    return subsets
+    
+# Function to create subsets of specified size with random integers without repetition
+def create_subsets_with_random_values(start, end, subset_size):
+    array = np.arange(start, end)  # Create array of integers from start to end
+    subset = np.random.choice(array, size=subset_size, replace=False)  # Create subset
+    return subset
