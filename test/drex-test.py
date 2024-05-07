@@ -44,7 +44,7 @@ reliability_threshold = 0.99
 real_records = RealRecords(dir_data="data/")
 
 # File size in MB
-file_size = 10
+file_size = 200.4
 # TODO update this value when new data arrives in the system or if we have access to all data sizes
 min_data_size = file_size
 

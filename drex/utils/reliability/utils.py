@@ -1,5 +1,5 @@
 import math
-import numpy
+import numpy as np
 
 def isPrime(p): 
     """
@@ -113,6 +113,7 @@ def build_building_blocks(m,n,p):
             row.append(elt)
             elt=(elt*a)%p
         building_blocks.append(row)
+    
     return building_blocks
     
 def elementary_symmetric_functions(m,L,p): 
@@ -193,3 +194,62 @@ def vandermonde_inverse(vandermonde_basis,p):
         result.append(row)
     return transpose(result)
     
+def generate_vandermode(m,n,field): 
+    '''
+    Inputs: 
+    m, n, p: integers
+    Output:
+    a vandermonde matrix with m rows and n columns, where all computations are done modulo p
+    '''
+    matriz = np.zeros((n,m))
+    for i in range(n): 
+        for j in range(m): 
+            matriz[i][j]= (i + 1)**j % field
+    return matriz
+            
+def generate_field(field, k = 8):
+    if k == 4:
+        primitivo = 19
+    elif k == 8:
+        primitivo = 369
+    elif k == 16:
+        primitivo = 69643
+    
+    base_alpha = primitivo & field
+    return base_alpha
+    
+def Generar_Alphas(tam_camp, campo, alpha_base):
+    Tabla_Alphas = np.zeros(campo+1, dtype=np.uint32)
+    LAlphas = np.zeros(campo+1, dtype=np.uint32)
+
+    for indice in range(campo+1):
+        if indice < tam_camp:
+            Tabla_Alphas[indice] = 2**indice
+            LAlphas[Tabla_Alphas[indice]] = indice
+        else:
+            if indice == tam_camp:
+                x = alpha_base
+                Tabla_Alphas[indice] = alpha_base
+                LAlphas[alpha_base] = indice
+            else:
+                x <<= 1
+                if x <= campo:
+                    Tabla_Alphas[indice] = x
+                    LAlphas[x] = indice
+                else:
+                    x &= campo
+                    x ^= alpha_base
+                    Tabla_Alphas[indice] = x
+                    LAlphas[x] = indice
+    return Tabla_Alphas, LAlphas
+
+def Suma_Resta(a, b):
+    return a ^ b
+
+def Multiplicacion(Tabla_Alphas, LAlphas, campo, a, b):
+    if a != 0 and b != 0:
+        a = int(a)
+        b = int(b)
+        return Tabla_Alphas[(LAlphas[a] + LAlphas[b]) % campo]
+    else:
+        return 0

@@ -6,3 +6,5 @@ build/*
 drex.egg-info/*
 *.pyc
 venv/*
+test/test-ida2.py
+test/test-ida.py

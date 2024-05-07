@@ -11,7 +11,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
 	
     # Cut data in blocks of 128MB maximum
     chunk_size = 128
-    num_full_chunks = file_size // chunk_size
+    num_full_chunks = int(file_size // chunk_size) # Cast to integer in case the size is a float
     last_chunk_size = file_size % chunk_size
     # If the last chunk size is greater than 0, it means there's a partial chunk
     if last_chunk_size > 0:
@@ -25,7 +25,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     size_to_stores = [128] * num_full_chunks * 3 + [last_chunk_size] * 3
     
     if (N > number_of_nodes):
-        print("ERROR: hdfs_three_replications could not find a solution.")
+        print(f"ERROR: hdfs_three_replications could not find a solution (N: {N}, number nodes {number_of_nodes}).")
         exit(1)
     
     set_of_nodes = list(range(0, number_of_nodes))
@@ -60,7 +60,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
                         set_of_nodes_chosen[j] = set_of_nodes[k]
                         break
             if k == number_of_nodes - 1:
-                print("ERROR: hdfs_three_replications could not find a solution.")
+                print(f"ERROR: hdfs_three_replications could not find a solution. (k: {k}, number nodes {number_of_nodes})")
                 exit(1)
         j += 1
     
@@ -77,7 +77,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     while reliability_thresold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
         # ~ print("Reliability issue")
         if (loop > number_of_nodes - N):
-            print("ERROR: hdfs_three_replications could not find a solution.")
+            print(f"ERROR: hdfs_three_replications could not find a solution. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
             exit(1)
         # Find the index of the lowest reliability value
         min_reliability_index = reliability_of_nodes_chosen.index(max(reliability_of_nodes_chosen))
