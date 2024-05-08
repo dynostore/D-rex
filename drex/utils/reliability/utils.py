@@ -113,8 +113,8 @@ def build_building_blocks(m,n,p):
             row.append(elt)
             elt=(elt*a)%p
         building_blocks.append(row)
-    
-    return building_blocks
+    building_blocks_array = np.array(building_blocks, dtype=np.uint16)
+    return building_blocks_array
     
 def elementary_symmetric_functions(m,L,p): 
     """

@@ -36,4 +36,3 @@ n = 5  # Total number of segments
 k = 3  # Threshold number of segments required for reconstruction
 
 segments = rabin_encode(data, n, k)
-print(segments)

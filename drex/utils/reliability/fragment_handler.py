@@ -1,4 +1,5 @@
 import hashlib
+import numpy as np
 
 class ContentError(Exception): 
     pass
@@ -114,6 +115,10 @@ def fragment_reader_bytes(fragments):
             p = fragment.p
             idx = fragment.idx
             m = fragment.m
+            over255 = fragment.over255
+            
+            
+            
             
             if idx in indices: 
                 continue
@@ -124,6 +129,11 @@ def fragment_reader_bytes(fragments):
             if (m,n,p)!=(m_, n_,p_):
                 raise ValueError("These fragments are not derived from the same file.")
             
+            print(over255)
+            print(fragment.content[over255])
+            fragment.content = fragment.content.astype(np.uint16)
+            fragment.content[over255] = 256
+            print(fragment.content[over255])
             data_fragments.append((idx+1,fragment.content))
             count+=1
         else: 
@@ -132,4 +142,4 @@ def fragment_reader_bytes(fragments):
     if count<m: 
         raise ValueError("There are duplicate fragments. The total number of different fragments are insufficient to assemble the file.")
     
-    return (m_, n_, p_, data_fragments)
+    return (m_, n_, p_, data_fragments, )
