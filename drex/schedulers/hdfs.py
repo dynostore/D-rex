@@ -111,7 +111,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
         print("Wrong mode passed to hdfs 3 replications. It must be \"simulation\" or \"real\"")
         exit(1)
     
-def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nodes, node_sizes, file_size, bandwidths, RS1, RS2, mode):
+def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nodes, node_sizes, file_size, bandwidths, RS1, RS2):
     """
     Uses reed solomon and the fastest nodes first
     N = RS2 and to get K need to do file_size/(((1/(RS1/(RS1+RS2)))*100)/RS2)
@@ -162,7 +162,7 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     set_of_nodes_chosen = sorted(set_of_nodes_chosen)
     # ~ print(set_of_nodes_chosen)
     
-    # Need to do this after the potnetial switch of nodes of course
+    # Need to do this after the potential switch of nodes of course
     reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
     
     # Loop until the sum meets the threshold
@@ -194,12 +194,12 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     
     end = time.time()
 		    
-    if mode == "simulation":
-        print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") simulation chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
-        return set_of_nodes_chosen, N, K, node_sizes
-    elif mode == "real":
-        print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") real chose the set of nodes:", set_of_nodes_chosen, "and will remove the coprresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
-        return set_of_nodes_chosen, node_sizes, size_to_stores
-    else: 
-        print("Wrong mode passed to HDFS Reed Solomon (", RS1, ",", RS2, "). It must be \"simulation\" or \"real\"")
-        exit(1)
+    # ~ if mode == "simulation":
+        # ~ print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") simulation chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
+        # ~ return set_of_nodes_chosen, N, K, node_sizes
+    # ~ elif mode == "real":
+    print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") real chose the set of nodes:", set_of_nodes_chosen, "and will remove the corresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
+    return set_of_nodes_chosen, N, K, node_sizes, size_to_stores
+    # ~ else: 
+        # ~ print("Wrong mode passed to HDFS Reed Solomon (", RS1, ",", RS2, "). It must be \"simulation\" or \"real\"")
+        # ~ exit(1)
