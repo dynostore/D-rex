@@ -30,7 +30,8 @@ def split_data_hdfs_rs(data, size_to_stores):
     total_size = 0
     
     for i in range(0, len(size_to_stores)):
-        block_size = size_to_stores[i]
+        block_size = round(size_to_stores[i])
+        print("block_size:", block_size)
         block = data[offset:offset+block_size]
         
         #Store the block one time only
