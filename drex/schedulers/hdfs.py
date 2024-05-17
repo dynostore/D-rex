@@ -71,28 +71,42 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     # Need to do this after the potnetial switch of nodes of course
     reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
     
-    # Loop until the sum meets the threshold
+    # Check if the reliability threshold is met. Else replace the worst node in terms of reliability with
+    # the best one that is not yet in the set of nodes chosen. The same code is copy and pasted and used in
+    # hdfs_reed_solomon
     loop = 0
-    # ~ print("R chosen before:", reliability_of_nodes_chosen)
     while reliability_thresold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
-        # ~ print("Reliability issue")
         if (loop > number_of_nodes - N):
             print(f"ERROR: hdfs_three_replications could not find a solution. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
             exit(1)
-        # Find the index of the lowest reliability value
-        min_reliability_index = reliability_of_nodes_chosen.index(max(reliability_of_nodes_chosen))
         
-        # Find the index of the highest new reliability value
-        highest_new_reliability = min(filter(lambda x: x not in reliability_of_nodes_chosen, reliability_of_nodes))
-        highest_new_reliability_index = reliability_of_nodes.index(highest_new_reliability)
+        # Find the index of the lowest reliability value
+        index = 0
+        index_min_reliability = 0
+        min_reliability = -1
+        for i in reliability_of_nodes_chosen:
+            if min_reliability < i:
+                min_reliability = i
+                index_min_reliability = index
+            index += 1
+                
+        # Find the index of the highest new reliability value that is not already being used
+        index = 0
+        index_max_reliability = 0
+        max_reliability = 2
+        for i in reliability_of_nodes:
+            if max_reliability > i and set_of_nodes[index] not in set_of_nodes_chosen:
+                max_reliability = i
+                index_max_reliability = index
+            index += 1
         
         # Replace the lowest reliability value with the corresponding value from reliability_of_nodes
-        reliability_of_nodes_chosen[min_reliability_index] = highest_new_reliability
+        reliability_of_nodes_chosen[index_min_reliability] = max_reliability
         
         # Update the corresponding node in set_of_nodes_chosen
-        set_of_nodes_chosen[min_reliability_index] = highest_new_reliability_index
+        set_of_nodes_chosen[index_min_reliability] = set_of_nodes[index_max_reliability]
         loop += 1
-        
+                
     # Custom code for update node size cause we have inconsistent data sizes
     j = 0
     for i in set_of_nodes_chosen:
@@ -165,27 +179,42 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     # Need to do this after the potential switch of nodes of course
     reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
     
-    # Loop until the sum meets the threshold
+    # Check if the reliability threshold is met. Else replace the worst node in terms of reliability with
+    # the best one that is not yet in the set of nodes chosen. The same code is copy and pasted and used in
+    # hdfs_three_replications
     loop = 0
-    # ~ print("R chosen before:", reliability_of_nodes_chosen)
     while reliability_thresold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
         if (loop > number_of_nodes - N):
-            print("ERROR: hdfs_three_replications could not find a solution.")
+            print(f"ERROR: hdfs_three_replications could not find a solution. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
             exit(1)
-        # Find the index of the lowest reliability value
-        min_reliability_index = reliability_of_nodes_chosen.index(max(reliability_of_nodes_chosen))
         
-        # Find the index of the highest new reliability value
-        highest_new_reliability = min(filter(lambda x: x not in reliability_of_nodes_chosen, reliability_of_nodes))
-        highest_new_reliability_index = reliability_of_nodes.index(highest_new_reliability)
+        # Find the index of the lowest reliability value
+        index = 0
+        index_min_reliability = 0
+        min_reliability = -1
+        for i in reliability_of_nodes_chosen:
+            if min_reliability < i:
+                min_reliability = i
+                index_min_reliability = index
+            index += 1
+                
+        # Find the index of the highest new reliability value that is not already being used
+        index = 0
+        index_max_reliability = 0
+        max_reliability = 2
+        for i in reliability_of_nodes:
+            if max_reliability > i and set_of_nodes[index] not in set_of_nodes_chosen:
+                max_reliability = i
+                index_max_reliability = index
+            index += 1
         
         # Replace the lowest reliability value with the corresponding value from reliability_of_nodes
-        reliability_of_nodes_chosen[min_reliability_index] = highest_new_reliability
+        reliability_of_nodes_chosen[index_min_reliability] = max_reliability
         
         # Update the corresponding node in set_of_nodes_chosen
-        set_of_nodes_chosen[min_reliability_index] = highest_new_reliability_index
+        set_of_nodes_chosen[index_min_reliability] = set_of_nodes[index_max_reliability]
         loop += 1
-        
+                
     # Custom code for update node size cause we have inconsistent data sizes
     j = 0
     for i in set_of_nodes_chosen:

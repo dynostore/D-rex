@@ -16,7 +16,7 @@ Start of the inputs
 """
 
 # Number of nodes
-number_of_nodes = 5
+number_of_nodes = 10
 set_of_nodes = list(range(0, number_of_nodes))
 print("There are", number_of_nodes, "nodes.")
 
@@ -24,6 +24,8 @@ print("There are", number_of_nodes, "nodes.")
 p = []
 for i in range(0, number_of_nodes):
     p.append(random.uniform(0.1, 0.15))
+# ~ p = [0.1, 0.8, 0.7, 0.9, 0.9, 0.05, 0.9, 0.8, 0.9, 0.9]
+
 # Bandwidth to write on the storage nodes in MB/s
 bandwidths = []
 for i in range(0, number_of_nodes):
@@ -44,7 +46,7 @@ reliability_threshold = 0.99
 real_records = RealRecords(dir_data="data/")
 
 # File size in MB
-file_size = 500
+file_size = 5
 # TODO update this value when new data arrives in the system or if we have access to all data sizes
 min_data_size = file_size
 
