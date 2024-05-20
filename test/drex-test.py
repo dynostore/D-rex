@@ -31,11 +31,11 @@ bandwidths = []
 for i in range(0, number_of_nodes):
     bandwidths.append(random.uniform(10, 15))
 
-# Storage size of each node in MB
+# Storage size of each node in B
 node_sizes = []  # Node sizes updated with data
 total_node_size = 0
 for i in range(0, number_of_nodes):
-    node_sizes.append(random.uniform(600, 800))
+    node_sizes.append(random.uniform(600, 800)*1024*1024)
     total_node_size += node_sizes[i]
 max_node_size = max(node_sizes)
 

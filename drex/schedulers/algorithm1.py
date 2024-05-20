@@ -5,7 +5,7 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes, nod
 	"""
 	Return the full set of nodes and choose K as big as possible
 	"""
-	
+	# ~ print("node_sizes:", node_sizes)
 	start = time.time()
 	
 	N = number_of_nodes

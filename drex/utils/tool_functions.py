@@ -319,7 +319,7 @@ def get_reduced_set_of_nodes(number_of_nodes, matrix_of_differences, maximum_dif
     
 def update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes):
 	for i in set_of_nodes_chosen:
-		node_sizes[i] = node_sizes[i] - file_size/K
+		node_sizes[i] = node_sizes[i] - (file_size*1024*1024)/K
 	return node_sizes
 
 def exponential_function(x, x1, y1, x2, y2):
