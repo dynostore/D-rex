@@ -322,6 +322,23 @@ def update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes):
 		node_sizes[i] = node_sizes[i] - (file_size)/K
 	return node_sizes
 
+def probability_of_failure(failure_rate, data_duration_on_system):
+    """
+    Calculate the probability of failure over a given period given the annual failure rate.
+
+    Parameters:
+    failure_rate (float): Annual failure rate as a percentage (e.g., 5 for 5%).
+    data_duration_on_system (int): Time period in days that the data must remain on the system. Default is 1 year.
+
+    Returns:
+    float: Probability of failure over the given period.
+    """
+    data_duration_on_system = data_duration_on_system/365 # Convert in years
+    lambda_rate = failure_rate / 100
+    probability_failure = 1 - math.exp(-lambda_rate * data_duration_on_system)
+    return probability_failure
+
+
 def exponential_function(x, x1, y1, x2, y2):
     """
     x is the free memory on the node

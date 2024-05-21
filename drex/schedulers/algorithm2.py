@@ -9,6 +9,14 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
     """
     start = time.time()
 
+    # ~ print("In alg2")
+    # ~ print("file_size:", file_size)
+    # ~ print("number_of_nodes:", number_of_nodes)
+    # ~ print("node_sizes:", node_sizes)
+    # ~ print("reliability_of_nodes:", reliability_of_nodes)
+    # ~ print("reliability_threshold:", reliability_threshold)
+    # ~ print("bandwidths:", bandwidths)
+
     min_time = sys.maxsize
     min_N = -1
     min_K = -1
