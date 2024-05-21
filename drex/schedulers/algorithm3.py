@@ -192,6 +192,6 @@ def algorithm3_look_at_reduced_set_of_possibilities(number_of_nodes, reliability
 	
 	end = time.time()
 	
-	print("\nAlgorithm 3 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
+	print("\nalgorithm3_look_at_reduced_set_of_possibilities chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
 	
 	return list(min_set_of_nodes_chosen), min_N, min_K, node_sizes
