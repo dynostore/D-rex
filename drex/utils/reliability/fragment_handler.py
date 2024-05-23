@@ -129,11 +129,11 @@ def fragment_reader_bytes(fragments):
             if (m,n,p)!=(m_, n_,p_):
                 raise ValueError("These fragments are not derived from the same file.")
             
-            print(over255)
-            print(fragment.content[over255])
+            # ~ print(over255)
+            # ~ print(fragment.content[over255])
             fragment.content = fragment.content.astype(np.uint16)
             fragment.content[over255] = 256
-            print(fragment.content[over255])
+            # ~ print(fragment.content[over255])
             data_fragments.append((idx+1,fragment.content))
             count+=1
         else: 
