@@ -1,5 +1,8 @@
 # python3 plot/plot.py number_input_data data_size
+#   
 # python3 plot/plot.py 10 1
+# python3 plot/plot.py 1 10
+# python3 plot/plot.py 1 100
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,15 +13,19 @@ import os
 number_input_data = int(sys.argv[1])
 data_size = int(sys.argv[2])
 
-# Move csv
-# ~ shutil.move("../D-Rex-Simulation-experiments/src/outputtimes.csv", "plot/data/outputtimes_" + str(number_input_data) + "_" + str(number_input_data) + "MB.csv")
+# Copy csv files
+shutil.copy("../D-Rex-Simulation-experiments/src/outputtimes.csv", "plot/data/outputtimes_" + str(number_input_data) + "_" + str(data_size) + "MB.csv")
+shutil.copy("../D-Rex-Simulation-experiments/src/outputfiles.csv", "plot/data/outputfiles_" + str(number_input_data) + "_" + str(data_size) + "MB.csv")
 
-# Load the data from the CSV file
-file_path = "plot/data/outputtimes_" + str(number_input_data) + "_" + str(number_input_data) + "MB.csv"
-df = pd.read_csv(file_path)
+# Load the data from the CSV files
+file_path1 = "plot/data/outputtimes_" + str(number_input_data) + "_" + str(data_size) + "MB.csv"
+file_path2 = "plot/data/outputfiles_" + str(number_input_data) + "_" + str(data_size) + "MB.csv"
+df1 = pd.read_csv(file_path1)
+df2 = pd.read_csv(file_path2)
 
 # Rename algorithms with "_reduced_complexity" to "_rc"
-df['algorithm'] = df['algorithm'].str.replace('_reduced_complexity', '_rc')
+df1['algorithm'] = df1['algorithm'].str.replace('_reduced_complexity', '_rc')
+df2['algorithm'] = df2['algorithm'].str.replace('_reduced_complexity', '_rc')
 
 # Define colors
 colors = {
@@ -45,50 +52,50 @@ def get_colors(algorithms):
 
 # Plotting total_storage_used
 plt.figure(figsize=(10, 6))
-plt.bar(df['algorithm'], df['total_storage_used'], color=get_colors(df['algorithm']))
+plt.bar(df1['algorithm'], df1['total_storage_used'], color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
 plt.ylabel('Total Storage Used')
 plt.title('Total Storage Used (MB)')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig('plot/total_storage_used.pdf')
+plt.savefig('plot/total_storage_used_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
 
 # Plotting total_simulation_time
 plt.figure(figsize=(10, 6))
-plt.bar(df['algorithm'], df['total_simulation_time'], color=get_colors(df['algorithm']))
+plt.bar(df1['algorithm'], df1['total_simulation_time'], color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
 plt.ylabel('Total Simulation Time')
 plt.title('Total Simulation Time (ms)')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig('plot/total_simulation_time.pdf')
+plt.savefig('plot/total_simulation_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
 
 # Plotting total_chunking_time
 plt.figure(figsize=(10, 6))
-plt.bar(df['algorithm'], df['total_chunking_time'], color=get_colors(df['algorithm']))
+plt.bar(df1['algorithm'], df1['total_chunking_time'], color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
 plt.ylabel('Total Chunk Time')
 plt.title('Total Chunk Time (ms)')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig('plot/total_chunk_time.pdf')
+plt.savefig('plot/total_chunk_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
 
 # Plotting total_upload_time
 plt.figure(figsize=(10, 6))
-plt.bar(df['algorithm'], df['total_upload_time'], color=get_colors(df['algorithm']))
+plt.bar(df1['algorithm'], df1['total_upload_time'], color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
 plt.ylabel('Total Upload Time')
 plt.title('Total Upload Time (ms)')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig('plot/total_upload_time.pdf')
+plt.savefig('plot/total_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
 
 # Plotting total_scheduling_time
 plt.figure(figsize=(10, 6))
-plt.bar(df['algorithm'], df['total_scheduling_time'], color=get_colors(df['algorithm']))
+plt.bar(df1['algorithm'], df1['total_scheduling_time'], color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
 plt.ylabel('Total Scheduling Time')
 plt.title('Total Scheduling Time (ms)')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig('plot/total_scheduling_time.pdf')
+plt.savefig('plot/total_scheduling_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
