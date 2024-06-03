@@ -8,3 +8,7 @@ drex.egg-info/*
 venv/*
 test/test-ida2.py
 test/test-ida.py
+drex/inputs/data/FB-2009_samples_24_times_1hr_0_withInputPaths.csv
+drex/inputs/data/FB-2009_samples_24_times_1hr_1_withInputPaths.csv
+drex/inputs/data/FB-2010_samples_24_times_1hr_0_withInputPaths.csv
+drex/inputs/data/IBM.csv
