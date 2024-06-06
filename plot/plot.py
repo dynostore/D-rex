@@ -29,7 +29,7 @@ df2['algorithm'] = df2['algorithm'].str.replace('_reduced_complexity', '_rc')
 
 # Define colors
 colors = {
-    'alg1': 'blue',
+    'alg1': 'green',
     'alg2': 'blue',
     'alg3': 'blue',
     'alg4': 'blue',
@@ -44,6 +44,7 @@ colors = {
     'vandermonders_3_2': 'green',
     'vandermonders_6_3': 'green',
     'vandermonders_10_4': 'green'
+    'glusterfs_6_4': 'green'
 }
 
 # Function to get colors based on algorithm names

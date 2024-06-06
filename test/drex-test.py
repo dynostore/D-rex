@@ -7,6 +7,7 @@ from drex.schedulers.algorithm1 import *
 from drex.schedulers.algorithm2 import *
 from drex.schedulers.algorithm3 import *
 from drex.schedulers.algorithm4 import *
+from drex.schedulers.glusterfs import *
 from drex.schedulers.hdfs import *
 import sys
 import itertools
