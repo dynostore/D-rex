@@ -100,3 +100,6 @@ plt.title('Total Scheduling Time (ms)')
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig('plot/total_scheduling_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+
+
+# ~ ++ plot for perfect bw transfer taking max for each data and then sum for all data
