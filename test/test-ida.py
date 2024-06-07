@@ -11,7 +11,7 @@ def generate_random_bytes(n):
     return os.urandom(n)
 
 #Data in MB
-size = 1000
+size = 100
 
 data = generate_random_bytes(size * 1024 * 1024)
 #variable = 4

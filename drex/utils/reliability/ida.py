@@ -35,7 +35,7 @@ def split_bytes(data, n, m):
 
     # find the prime number greater than n
     # all computations are done modulo p
-    p = 257 if n < 257 else nextPrime(n)
+    p = 251 if n < 251 else nextPrime(n)
 
     array_data = np.frombuffer(data, dtype=np.uint8)
 
@@ -67,15 +67,17 @@ def split_bytes(data, n, m):
         #print values over 255
         #fragment_arr -= 1
         #to save memory
-        over255 = fragment_arr > 255
-        fragment_arr = fragment_arr.astype(np.uint8)
+        #over255 = fragment_arr > 255
+        #print(min(fragment_arr))
+        #print(fragment_arr[over255])
+        #fragment_arr = fragment_arr.astype(np.uint8)
         #zeros = fragment_arr == 0
         #print(len(fragment_arr[over256]))
         #print(fragment_arr[zeros])
         
         #fragment_arr = fragment_arr.astype(np.uint8)
         #print(fragment_arr[over256])
-        frag=Fragment(i, fragment_arr, p, n, m, over255)
+        frag=Fragment(i, fragment_arr, p, n, m, None)
         fragments.append(frag)
 
     return fragments
