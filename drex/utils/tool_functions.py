@@ -94,7 +94,7 @@ def replication_and_chuncking_time(n, k, file_size, bandwidths, real_records):
             sizes_times.append([s, result_filter[0]['avg_time']])
             number_sizes += 1
     
-    transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
+    transfer_time_per_chunk = calculate_transfer_time(chunk_size, min(bandwidths))
     if len(sizes_times) > 0 and number_sizes > 1:
         sizes_times = np.array(sizes_times)
         interp_func = interp1d(sizes_times[:,0], sizes_times[:,1], fill_value="extrapolate")
@@ -162,8 +162,8 @@ def replication_and_chuncking_time_v0(n, k, file_size, bandwidths, real_records)
         fit = np.polyfit(sizes_times[:,0], sizes_times[:,1] ,1)
         line = np.poly1d(fit)
         chunking_time = line(file_size)
-    transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
-    #transfer_time_per_chunk = calculate_transfer_time(file_size, max(bandwidths))
+    transfer_time_per_chunk = calculate_transfer_time(chunk_size, min(bandwidths))
+    #transfer_time_per_chunk = calculate_transfer_time(file_size, min(bandwidths))
     return chunking_time + transfer_time_per_chunk
     
     
@@ -179,7 +179,7 @@ def replication_and_chuncking_time_v0(n, k, file_size, bandwidths, real_records)
             sizes_times.append([s, result_filter[0]['avg_time']])
             number_sizes += 1
     
-    transfer_time_per_chunk = calculate_transfer_time(chunk_size, max(bandwidths))
+    transfer_time_per_chunk = calculate_transfer_time(chunk_size, min(bandwidths))
     if len(sizes_times) > 0 and number_sizes > 1:
         sizes_times = np.array(sizes_times)
         interp_func = interp1d(sizes_times[:,0], sizes_times[:,1], fill_value="extrapolate")

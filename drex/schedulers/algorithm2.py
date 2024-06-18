@@ -186,7 +186,8 @@ def algorithm2_work_with_reduced_set_of_nodes(number_of_nodes, reliability_of_no
                 if (K != -1):
 					#replication_and_write_time = replication_and_chuncking_time(i, K, file_size, bandwidth_of_nodes_chosen, real_records)
                     replication_and_write_time = predictor.predict(file_size, i, K, bandwidth_of_nodes_chosen)
-					
+					# ~ print("replication_and_write_time =", replication_and_write_time, i, K)
+                    
                     if (replication_and_write_time < min_time and nodes_can_fit_new_data(set_of_nodes_chosen, node_sizes, file_size/K)):
                         min_time = replication_and_write_time
                         min_N = i
@@ -197,8 +198,7 @@ def algorithm2_work_with_reduced_set_of_nodes(number_of_nodes, reliability_of_no
         print("Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
         return - 1, -1, -1, node_sizes
 	
-    node_sizes = update_node_sizes(
-        min_set_of_nodes_chosen, min_K, file_size, node_sizes)
+    node_sizes = update_node_sizes(min_set_of_nodes_chosen, min_K, file_size, node_sizes)
 	
     end = time.time()
 

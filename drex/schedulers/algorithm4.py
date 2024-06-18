@@ -57,9 +57,10 @@ def algorithm4(
                     # Adding them in the tuple used for pareto front
                     #replication_and_write_time = replication_and_chuncking_time(
                     #    i, K, file_size, bandwidth_of_nodes_chosen, real_records)
+                    # ~ print("file_size", file_size, "bandwidth_of_nodes_chosen", bandwidth_of_nodes_chosen)
                     replication_and_write_time = predictor.predict(file_size, i, K, bandwidth_of_nodes_chosen)
-                    set_of_possible_solutions.append(
-                        (i, K, set_of_nodes_chosen, replication_and_write_time, (file_size/K)*i))
+                    set_of_possible_solutions.append((i, K, set_of_nodes_chosen, replication_and_write_time, (file_size/K)*i))
+                    # ~ print("replication_and_write_time", replication_and_write_time)
                     time_space_and_size_score_from_set_of_possible_solution.append(
                         [replication_and_write_time, (file_size/K)*i, size_score])
 
@@ -143,8 +144,7 @@ def algorithm4(
 
     end = time.time()
 
-    print("\nAlgorithm 4 chose N =", min_N, "and K =", min_K, "with the set of nodes:",
-          min_set_of_nodes_chosen, "It took", end - start, "seconds.")
+    print("\nAlgorithm 4 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
 
     return list(min_set_of_nodes_chosen), min_N, min_K, node_sizes
     
