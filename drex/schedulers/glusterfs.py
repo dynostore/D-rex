@@ -91,5 +91,5 @@ def glusterfs(N, K, number_of_nodes, reliability_of_nodes, bandwidths, reliabili
     
     end = time.time()
 		    
-    print("\nGlusterfs (Redhat) N", N, "K", K, "chose the set of nodes:", set_of_nodes_chosen, "and will remove the corresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
+    # ~ print("\nGlusterfs (Redhat) N", N, "K", K, "chose the set of nodes:", set_of_nodes_chosen, "and will remove the corresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
     return set_of_nodes_chosen, N, K, node_sizes

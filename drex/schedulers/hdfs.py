@@ -230,7 +230,7 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
         # ~ print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") simulation chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
         # ~ return set_of_nodes_chosen, N, K, node_sizes
     # ~ elif mode == "real":
-    print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") real chose the set of nodes:", set_of_nodes_chosen, "and will remove the corresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
+    # ~ print("\nHDFS Reed Solomon (", RS1, ",", RS2, ") real chose the set of nodes:", set_of_nodes_chosen, "and will remove the corresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
     return set_of_nodes_chosen, N, K, node_sizes, size_to_stores
     # ~ else: 
         # ~ print("Wrong mode passed to HDFS Reed Solomon (", RS1, ",", RS2, "). It must be \"simulation\" or \"real\"")
