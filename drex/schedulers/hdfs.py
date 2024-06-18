@@ -142,8 +142,8 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     # ~ print("With file_size:", file_size, "and RS1 (", RS1, ",", RS2, ") we have N =", N, "and K =", K, "and total size stored is thus", (file_size/K)*N)
     
     if (N > number_of_nodes):
-        print("ERROR: hdfs_reed_solomon could not find a solution.")
-        exit(1)
+        print("Hdfs_reed_solomon could not find a solution.")
+        return -1, -1, -1, node_sizes, -1
     
     size_to_stores = [file_size/K] * N
 
@@ -164,7 +164,6 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     j = 0
     for i in set_of_nodes_chosen:
         if (node_sizes[i] - size_to_stores[j] < 0):
-            # ~ print(i, "doesn't have enough memory left")
             # Need to find a new node
             for k in set_of_nodes:
                 if k not in set_of_nodes_chosen:
@@ -173,8 +172,8 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
                         set_of_nodes_chosen[j] = set_of_nodes[k]
                         break
             if k == number_of_nodes - 1:
-                print("ERROR: hdfs_three_replications could not find a solution.")
-                exit(1)
+                print("Hdfs_rs could not find a solution.")
+                return -1, -1, -1, node_sizes, -1
         j += 1
     
     set_of_nodes_chosen = sorted(set_of_nodes_chosen)
@@ -189,8 +188,8 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     loop = 0
     while reliability_thresold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
         if (loop > number_of_nodes - N):
-            print(f"ERROR: hdfs_three_replications could not find a solution. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
-            exit(1)
+            print(f"Hdfs_rs could not find a solution. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
+            return -1, -1, -1, node_sizes, -1
         
         # Find the index of the lowest reliability value
         index = 0

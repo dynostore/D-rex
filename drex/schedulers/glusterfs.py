@@ -9,8 +9,8 @@ def glusterfs(N, K, number_of_nodes, reliability_of_nodes, bandwidths, reliabili
     start = time.time()
 	    
     if (N > number_of_nodes):
-        print("ERROR: hdfs_reed_solomon could not find a solution.")
-        exit(1)
+        print("glusterfs could not find a solution because N provided > number of nodes.")
+        return -1, -1, -1, node_sizes
     
     size_to_stores = [file_size/K] * N
 
@@ -38,8 +38,8 @@ def glusterfs(N, K, number_of_nodes, reliability_of_nodes, bandwidths, reliabili
                         set_of_nodes_chosen[j] = set_of_nodes[k]
                         break
             if k == number_of_nodes - 1:
-                print("ERROR: hdfs_three_replications could not find a solution.")
-                exit(1)
+                print("Glusterfs could not find a solution because data won't fit.")
+                return -1, -1, -1, node_sizes
         j += 1
     
     set_of_nodes_chosen = sorted(set_of_nodes_chosen)
@@ -53,8 +53,8 @@ def glusterfs(N, K, number_of_nodes, reliability_of_nodes, bandwidths, reliabili
     loop = 0
     while reliability_thresold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
         if (loop > number_of_nodes - N):
-            print(f"ERROR: hdfs_three_replications could not find a solution. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
-            exit(1)
+            print(f"gluster could not find a solution because reliability not met. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
+            return -1, -1, -1, node_sizes
         
         # Find the index of the lowest reliability value
         index = 0

@@ -129,15 +129,15 @@ for data in set_of_data:
         end = time.time()
     elif alg == "hdfsrs":
         start = time.time()
-        nodes, n, k, node_sizes, size_to_stores = hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths, RS1, RS2)
+        nodes, N, K, node_sizes, size_to_stores = hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths, RS1, RS2)
         end = time.time()
     elif alg == "vandermonders":
         start = time.time()
-        nodes, n, k, node_sizes, size_to_stores = hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths, RS1, RS2)
+        nodes, N, K, node_sizes, size_to_stores = hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths, RS1, RS2)
         end = time.time()
     elif alg == "glusterfs":
         start = time.time()
-        nodes, n, k, node_sizes = glusterfs(RS1, RS2, number_of_nodes, reliability_nodes, write_bandwidths, reliability_threshold, data, node_sizes)
+        nodes, N, K, node_sizes = glusterfs(RS1, RS2, number_of_nodes, reliability_nodes, write_bandwidths, reliability_threshold, data, node_sizes)
         end = time.time()
 
     total_scheduling_time += end - start

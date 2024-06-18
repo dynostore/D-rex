@@ -65,6 +65,71 @@ colors = {
 def get_colors(algorithms):
     return [colors.get(alg, 'gray') for alg in algorithms]
 
+# Plots unique to mininet
+if mode == "mininet":
+    # Plotting total_simulation_time
+    plt.figure(figsize=(10, 6))
+    plt.bar(df1['algorithm'], df1['total_simulation_time'], color=get_colors(df1['algorithm']))
+    plt.xlabel('Algorithm')
+    plt.ylabel('Total Simulation Time')
+    plt.title('Total Simulation Time (ms)')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig('plot/' + mode + '/total_simulation_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+
+    # Plotting total_chunking_time
+    plt.figure(figsize=(10, 6))
+    plt.bar(df1['algorithm'], df1['total_chunking_time'], color=get_colors(df1['algorithm']))
+    plt.xlabel('Algorithm')
+    plt.ylabel('Total Chunk Time')
+    plt.title('Total Chunk Time (ms)')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig('plot/' + mode + '/total_chunk_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    
+    # Plotting total_parralelized_upload_time
+    plt.figure(figsize=(10, 6))
+    plt.bar(df1['algorithm'], df1['total_upload_time'], color=get_colors(df1['algorithm']))
+    plt.xlabel('Algorithm')
+    plt.ylabel('Total Parralelized Upload Time')
+    plt.title('Total Parralelized Upload Time (ms)')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig('plot/' + mode + '/total_parralelized_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+else: # Plots unique to drex_only
+    # Plotting total_parralelized_upload_time
+    plt.figure(figsize=(10, 6))
+    plt.bar(df1['algorithm'], df1['total_parralelized_upload_time'], color=get_colors(df1['algorithm']))
+    plt.xlabel('Algorithm')
+    plt.ylabel('Total Parralelized Upload Time')
+    plt.title('Total Parralelized Upload Time (ms)')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig('plot/' + mode + '/total_parralelized_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+
+    # Plotting total_upload_time
+    plt.figure(figsize=(10, 6))
+    plt.bar(df1['algorithm'], df1['total_upload_time'], color=get_colors(df1['algorithm']))
+    plt.xlabel('Algorithm')
+    plt.ylabel('Total Upload Time')
+    plt.title('Total Upload Time (ms)')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig('plot/' + mode + '/total_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+
+    # Plotting number_of_data_stored
+    plt.figure(figsize=(10, 6))
+    plt.bar(df1['algorithm'], df1['number_of_data_stored'], color=get_colors(df1['algorithm']))
+    plt.xlabel('Algorithm')
+    plt.axhline(y=number_input_data, color='black', linestyle='dotted')
+    plt.ylabel('Number of data stored')
+    plt.title('Number of data stored')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig('plot/' + mode + '/number_of_data_stored' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+
+
+# Plot for both minient and drex_only
 # Plotting total_storage_used
 plt.figure(figsize=(10, 6))
 plt.bar(df1['algorithm'], df1['total_storage_used'], color=get_colors(df1['algorithm']))
@@ -74,36 +139,6 @@ plt.title('Total Storage Used (MB)')
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig('plot/' + mode + '/total_storage_used_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
-
-# Plotting total_simulation_time
-plt.figure(figsize=(10, 6))
-plt.bar(df1['algorithm'], df1['total_simulation_time'], color=get_colors(df1['algorithm']))
-plt.xlabel('Algorithm')
-plt.ylabel('Total Simulation Time')
-plt.title('Total Simulation Time (ms)')
-plt.xticks(rotation=90)
-plt.tight_layout()
-plt.savefig('plot/' + mode + '/total_simulation_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
-
-# Plotting total_chunking_time
-plt.figure(figsize=(10, 6))
-plt.bar(df1['algorithm'], df1['total_chunking_time'], color=get_colors(df1['algorithm']))
-plt.xlabel('Algorithm')
-plt.ylabel('Total Chunk Time')
-plt.title('Total Chunk Time (ms)')
-plt.xticks(rotation=90)
-plt.tight_layout()
-plt.savefig('plot/' + mode + '/total_chunk_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
-
-# Plotting total_upload_time
-plt.figure(figsize=(10, 6))
-plt.bar(df1['algorithm'], df1['total_upload_time'], color=get_colors(df1['algorithm']))
-plt.xlabel('Algorithm')
-plt.ylabel('Total Upload Time')
-plt.title('Total Upload Time (ms)')
-plt.xticks(rotation=90)
-plt.tight_layout()
-plt.savefig('plot/' + mode + '/total_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
 
 # Plotting total_scheduling_time
 plt.figure(figsize=(10, 6))
