@@ -34,9 +34,9 @@ class Predictor():
                            key=lambda x: abs(x-file_size))
         Xs_test = np.array([n, k]).reshape(1, -1)
         Y_pred = self.models[nearest_size].predict(Xs_test)[0] * file_size / nearest_size
-        transfer_time = calculate_transfer_time(file_size, min(bandwiths)) # Min because we take the slowest bandwidth into account
+        transfer_time = calculate_transfer_time(file_size/k, min(bandwiths)) # Min because we take the slowest bandwidth into account. Also I pass the chunk size and not the full data size
         Y_pred = Y_pred/1000 # divided because we want to take seconds just like the transfer_time that is in seconds
-        # ~ print(Y_pred, "+", transfer_time)
+        print(Y_pred, "+", transfer_time)
         return Y_pred + transfer_time
 
     def get_model(self):

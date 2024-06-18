@@ -65,8 +65,8 @@ set_of_data = []
 if sys.argv[next_arg + 1] == "fixed_data":
     number_of_data = int(sys.argv[next_arg + 2])
     data_size = int(sys.argv[next_arg + 3])
-    print("Input data will be", number_of_data, "of size", data_size)
-    set_of_data = [data_size for _ in range(number_of_nodes)]
+    print("We have", number_of_data, "data of size", data_size)
+    set_of_data = [data_size for _ in range(number_of_data)]
 else:
     input_data_file = sys.argv[next_arg + 2]
     print("Reading input data from file", input_data_file)
@@ -152,6 +152,7 @@ for data in set_of_data:
             if (upload_time > max_upload_time):
                 max_upload_time = upload_time
             total_upload_time += differences[i] / write_bandwidths[i]
+        # ~ print("max_upload_time", max_upload_time)
         total_parralelized_upload_time += max_upload_time
         number_of_data_stored += 1
         
@@ -163,6 +164,7 @@ total_storage_used = total_storage_size - sum(node_sizes)
 # ~ print("total_upload_time:", total_upload_time)
 # ~ print("total_parralelized_upload_time:", total_parralelized_upload_time)
 # ~ print("number_of_data_stored:", number_of_data_stored)
+
 output_filename = 'output_drex_only.csv'
 if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
     alg_to_print = alg + "_" + str(RS1) + "_" + str(RS2)
