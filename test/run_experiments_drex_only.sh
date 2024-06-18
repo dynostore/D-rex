@@ -5,7 +5,7 @@ python3 -m venv venv
 
 # Truncate current output files and add header
 truncate -s 0 output_drex_only.csv
-echo "algorithm, total_scheduling_time, total_storage_used, total_upload_time, total_parralelized_upload_time, number_of_data_stored" > output_drex_only.csv
+echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored" > output_drex_only.csv
 
 # Parameters
 number_of_data=10
@@ -39,4 +39,4 @@ for alg in glusterfs; do
 done
 
 # Plotting results
-python3 plot/plot.py $((number_of_data)) $((data_size)) "drex_only"
+python3 plot/mininet/plot.py $((number_of_data)) $((data_size)) "drex_only"

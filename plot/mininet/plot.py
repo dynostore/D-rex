@@ -34,7 +34,7 @@ else:
     shutil.copy("output_drex_only.csv", "plot/drex_only/data/output_drex_only_" + str(number_input_data) + "_" + str(data_size) + "MB.csv")
     
     # Load the data from the CSV file
-    file_path1 = "output_drex_only.csv", "plot/drex_only/data/output_drex_only_" + str(number_input_data) + "_" + str(data_size) + "MB.csv"
+    file_path1 = "plot/drex_only/data/output_drex_only_" + str(number_input_data) + "_" + str(data_size) + "MB.csv"
 
 df1 = pd.read_csv(file_path1)
 
@@ -49,6 +49,7 @@ colors = {
     'alg4': 'blue',
     'random': 'green',
     'hdfs': 'green',
+    'hdfs_three_replications': 'green',
     'alg2_rc': 'blue',
     'alg3_rc': 'blue',
     'alg4_rc': 'blue',
@@ -105,7 +106,7 @@ else: # Plots unique to drex_only
     plt.title('Total Parralelized Upload Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_parralelized_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    plt.savefig('plot/' + mode + '/total_parralelized_upload_time' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
 
     # Plotting total_upload_time
     plt.figure(figsize=(10, 6))

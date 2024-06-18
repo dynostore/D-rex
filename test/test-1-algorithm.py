@@ -158,11 +158,11 @@ for data in set_of_data:
 total_storage_used = total_storage_size - sum(node_sizes)
 
 # Writing results in a file
-print("total_scheduling_time =", total_scheduling_time, "seconds") 
-print("total_storage_used =", total_storage_used, "MB") 
-print("total_upload_time:", total_upload_time)
-print("total_parralelized_upload_time:", total_parralelized_upload_time)
-print("number_of_data_stored:", number_of_data_stored)
+# ~ print("total_scheduling_time =", total_scheduling_time, "seconds") 
+# ~ print("total_storage_used =", total_storage_used, "MB") 
+# ~ print("total_upload_time:", total_upload_time)
+# ~ print("total_parralelized_upload_time:", total_parralelized_upload_time)
+# ~ print("number_of_data_stored:", number_of_data_stored)
 output_filename = 'output_drex_only.csv'
 if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
     alg_to_print = alg + "_" + str(RS1) + "_" + str(RS2)
