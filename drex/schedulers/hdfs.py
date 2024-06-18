@@ -6,7 +6,8 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     Cut the data in blocks of 128MB max and then replicate all the chunks three times.
     Choses the fastest nodes first.
     """
-	
+    
+    print("node_sizes:", node_sizes)
     start = time.time()
 	
     # Cut data in blocks of 128MB maximum
@@ -21,12 +22,24 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
         
     N = num_chunks*3 # Times 3 because everything is replicated three times
     K = 1
-    
-    size_to_stores = [128] * num_full_chunks * 3 + [last_chunk_size] * 3
-    
+        
     if (N > number_of_nodes):
-        print(f"ERROR: hdfs_three_replications could not find a solution (N: {N}, number nodes {number_of_nodes}).")
-        exit(1)
+        print("N >")
+        # Need to replicate the data on the nodes and stack them
+        index = 0
+        size_to_stores = [0] * number_of_nodes
+        for i in range (0, num_full_chunks):
+            for j in range (0, 3):
+                size_to_stores[index%number_of_nodes] += 128
+                index += 1
+        if last_chunk_size > 0:
+            for j in range (0, 3):
+                size_to_stores[index%number_of_nodes] += last_chunk_size
+                index += 1
+        N = number_of_nodes
+    else:
+        size_to_stores = [128] * num_full_chunks * 3 + [last_chunk_size] * 3
+    print("size_to_stores:", size_to_stores)
     
     set_of_nodes = list(range(0, number_of_nodes))
     
@@ -39,36 +52,27 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     # Unpack the sorted tuples into separate lists
     sorted_nodes_by_sorted_bandwidths, sorted_bandwidths = zip(*sorted_combined)
 
-    # Print the sorted lists
-    # ~ print("Sorted Nodes:", sorted_nodes_by_sorted_bandwidths)
-    # ~ print("Sorted Bandwidths:", sorted_bandwidths)
-    # ~ print("reliability_of_nodes:", reliability_of_nodes)
-
     set_of_nodes_chosen = list(sorted_nodes_by_sorted_bandwidths[:N])
-    # ~ print("set_of_nodes_chosen", set_of_nodes_chosen)
 
     # Check if the data would fit. If not look for another node that can fit the data
     j = 0
     for i in set_of_nodes_chosen:
         if (node_sizes[i] - size_to_stores[j] < 0):
-            # ~ print(i, "doesn't have enough memory left")
+            print("Node", i, "doesn't have enough memory left")
             # Need to find a new node
             for k in set_of_nodes:
                 if k not in set_of_nodes_chosen:
-                    # ~ print("Trying node", k)
                     if node_sizes[k] - size_to_stores[j] >= 0:
                         set_of_nodes_chosen[j] = set_of_nodes[k]
                         break
             if k == number_of_nodes - 1:
-                print(f"ERROR: hdfs_three_replications could not find a solution. (k: {k}, number nodes {number_of_nodes})")
-                exit(1)
+                print(f"hdfs_three_replications could not find a solution. (k: {k}, number nodes {number_of_nodes})")
+                return -1, -1, -1, node_sizes
         j += 1
     
-    # ~ print("set_of_nodes_chosen after mem check", set_of_nodes_chosen)
     set_of_nodes_chosen = sorted(set_of_nodes_chosen)
-    # ~ print("set_of_nodes_chosen after sort", set_of_nodes_chosen)
 
-    # Need to do this after the potnetial switch of nodes of course
+    # Need to do this after the potential switch of nodes of course
     reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
     
     # Check if the reliability threshold is met. Else replace the worst node in terms of reliability with

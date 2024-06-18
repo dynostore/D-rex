@@ -9,14 +9,6 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
     """
     start = time.time()
 
-    # ~ print("In alg2")
-    # ~ print("file_size:", file_size)
-    # ~ print("number_of_nodes:", number_of_nodes)
-    # ~ print("node_sizes:", node_sizes)
-    # ~ print("reliability_of_nodes:", reliability_of_nodes)
-    # ~ print("reliability_threshold:", reliability_threshold)
-    # ~ print("bandwidths:", bandwidths)
-
     min_time = sys.maxsize
     min_N = -1
     min_K = -1
@@ -45,16 +37,15 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
                     min_set_of_nodes_chosen = set_of_nodes_chosen
 
     if (min_K == -1):
-        print("ERROR: Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
-        exit(1)
+        print("Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
+        return - 1, -1, -1, node_sizes
 	
     node_sizes = update_node_sizes(
         min_set_of_nodes_chosen, min_K, file_size, node_sizes)
 	
     end = time.time()
 
-    print("\nAlgorithm 2 chose N =", min_N, "and K =", min_K, "with the set of nodes:",
-          min_set_of_nodes_chosen, "It took", end - start, "seconds.")
+    print("\nAlgorithm 2 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
 
     return list(min_set_of_nodes_chosen), min_N, min_K, node_sizes
 
@@ -203,8 +194,8 @@ def algorithm2_work_with_reduced_set_of_nodes(number_of_nodes, reliability_of_no
                         min_set_of_nodes_chosen = set_of_nodes_chosen
 
     if (min_K == -1):
-        print("ERROR: Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
-        exit(1)
+        print("Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
+        return - 1, -1, -1, node_sizes
 	
     node_sizes = update_node_sizes(
         min_set_of_nodes_chosen, min_K, file_size, node_sizes)

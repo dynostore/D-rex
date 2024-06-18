@@ -18,13 +18,13 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes, nod
 	
 	for i in set_of_nodes:
 		if (node_sizes[i] - (file_size/K) < 0):
-			print("ERROR: Algorithm 1 could not find a solution that would not overflow the memory of the nodes")
-			exit(1)
+			print("Algorithm 1 could not find a solution that would not overflow the memory of the nodes")
+			return -1, -1, -1, node_sizes
 		
 	node_sizes = update_node_sizes(set_of_nodes, K, file_size, node_sizes)
-	
+	# ~ print(node_sizes)
 	# ~ end = time.time()
 	
-	# ~ print("\nAlgorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes, "It took", end - start, "seconds.")
+	# ~ print("\nAlgorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes)
 	
 	return set_of_nodes, N, K, node_sizes

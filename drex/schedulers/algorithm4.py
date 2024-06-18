@@ -64,8 +64,8 @@ def algorithm4(
                         [replication_and_write_time, (file_size/K)*i, size_score])
 
     if (len(time_space_and_size_score_from_set_of_possible_solution) == 0):
-        print("ERROR: Algorithm 4 could not find a solution that would not overflow the memory of the nodes")
-        exit(1)
+        print("Algorithm 4 could not find a solution that would not overflow the memory of the nodes")
+        return - 1, -1, -1, node_sizes
 
     # 2. Take those that are on the 3D pareto front
     costs = numpy.asarray(
@@ -243,8 +243,8 @@ def algorithm4_look_at_reduced_set_of_possibilities(
                 time_space_and_size_score_from_set_of_possible_solution.append([replication_and_write_time, (file_size/K)*N, size_score])  
 						    
     if (len(time_space_and_size_score_from_set_of_possible_solution) == 0):
-        print("ERROR: Algorithm 4 could not find a solution that would not overflow the memory of the nodes")
-        exit(1)
+        print("Algorithm 4 could not find a solution that would not overflow the memory of the nodes")
+        return - 1, -1, -1, node_sizes
 
     # 2. Take those that are on the 3D pareto front
     costs = numpy.asarray(

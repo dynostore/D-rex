@@ -68,9 +68,16 @@ if sys.argv[next_arg + 1] == "fixed_data":
     print("Input data will be", number_of_data, "of size", data_size)
     set_of_data = [data_size for _ in range(number_of_nodes)]
 else:
-    print("Reading input data from file")
+    input_data_file = sys.argv[next_arg + 2]
+    print("Reading input data from file", input_data_file)
+    with open(input_data_file, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            # Add the 'size' value to the set
+            set_of_data.append(float(row['size']))
 
 # Start code and fetch results
+number_of_data_stored = 0
 total_scheduling_time = 0
 total_upload_time = 0
 total_upload_time = 0
@@ -106,7 +113,7 @@ for data in set_of_data:
         end = time.time()
     elif alg == "alg3_rc":
         start = time.time()
-        set_of_nodes_chosen, N, K, node_sizes = algorithm3_look_at_reduced_set_of_possibilities(number_of_nodes, reliability_nodes, bandwidths, reliability_threshold, data, real_records, node_sizes, predictor)
+        set_of_nodes_chosen, N, K, node_sizes = algorithm3_look_at_reduced_set_of_possibilities(number_of_nodes, reliability_nodes, write_bandwidths, reliability_threshold, data, real_records, node_sizes, predictor)
         end = time.time()
     elif alg == "alg4_rc":
         start = time.time()
@@ -134,16 +141,20 @@ for data in set_of_data:
         end = time.time()
 
     total_scheduling_time += end - start
-    differences = [node_sizes_before[i] - node_sizes[i] for i in range(number_of_nodes)]
-    print("differences:", differences)
-    max_upload_time = -1
-    for i in range(number_of_nodes):
-        print(differences[i] / write_bandwidths[i])
-        upload_time = differences[i] / write_bandwidths[i]
-        if (upload_time > max_upload_time):
-            max_upload_time = upload_time
-        total_upload_time += differences[i] / write_bandwidths[i]
-    total_parralelized_upload_time += max_upload_time
+    
+    if N != -1: # Else it means that the scheduler could not find a solution that works
+        differences = [node_sizes_before[i] - node_sizes[i] for i in range(number_of_nodes)]
+        # ~ print("differences:", differences)
+        max_upload_time = -1
+        for i in range(number_of_nodes):
+            # ~ print(differences[i] / write_bandwidths[i])
+            upload_time = differences[i] / write_bandwidths[i]
+            if (upload_time > max_upload_time):
+                max_upload_time = upload_time
+            total_upload_time += differences[i] / write_bandwidths[i]
+        total_parralelized_upload_time += max_upload_time
+        number_of_data_stored += 1
+        
 total_storage_used = total_storage_size - sum(node_sizes)
 
 # Writing results in a file
@@ -151,6 +162,7 @@ print("total_scheduling_time =", total_scheduling_time, "seconds")
 print("total_storage_used =", total_storage_used, "MB") 
 print("total_upload_time:", total_upload_time)
 print("total_parralelized_upload_time:", total_parralelized_upload_time)
+print("number_of_data_stored:", number_of_data_stored)
 output_filename = 'output_drex_only.csv'
 if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
     alg_to_print = alg + "_" + str(RS1) + "_" + str(RS2)
@@ -158,4 +170,4 @@ else:
     alg_to_print = alg
 # Write the values to the output file
 with open(output_filename, 'a') as file:
-    file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}\n")
+    file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}, {number_of_data_stored}\n")
