@@ -19,8 +19,8 @@ echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total
 input_nodes="drex/inputs/nodes/10_most_used_nodes.csv"
 
 # Input data
-number_of_data=100
-data_size=500000 # In MB
+number_of_data=1
+data_size=100 # In MB
 # Or input file
 #~ input_data="drex/inputs/data/test.txt"
 #~ number_of_data=$(count_lines "$drex/inputs/data/test.txt")

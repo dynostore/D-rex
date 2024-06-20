@@ -1,2 +1,2 @@
 algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored
-alg2, 14.466867446899414, 75000000.0, 353885.5834453347, 125038.80766084217, 100
+alg2, 0.1785728931427002, 150.0, 0.6575550082058792, 0.2403846153846154, 1

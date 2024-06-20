@@ -19,7 +19,7 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
         for set_of_nodes_chosen in itertools.combinations(set_of_nodes, i):
             reliability_of_nodes_chosen = []
             bandwidth_of_nodes_chosen = []
-            
+            print("looking at", set_of_nodes_chosen)
             reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
             bandwidth_of_nodes_chosen = [bandwidths[node] for node in set_of_nodes_chosen]
             
