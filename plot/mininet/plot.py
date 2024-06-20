@@ -1,9 +1,10 @@
 # python3 plot/plot.py number_input_data data_size
 #   
-# python3 plot/mininet/plot.py 10 1
-# python3 plot/mininet/plot.py 1 10
-# python3 plot/mininet/plot.py 1 100
-# python3 plot/mininet/plot.py 10 200
+# python3 plot/mininet/plot.py 10 1 mininet
+# python3 plot/mininet/plot.py 1 10 mininet
+# python3 plot/mininet/plot.py 1 100 mininet
+# python3 plot/mininet/plot.py 10 200 mininet
+# python3 plot/mininet/plot.py 10 100 mininet
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -81,6 +82,7 @@ if mode == "mininet":
     # Plotting total_chunking_time
     plt.figure(figsize=(10, 6))
     plt.bar(df1['algorithm'], df1['total_chunking_time'], color=get_colors(df1['algorithm']))
+    print(df1['total_chunking_time'])
     plt.xlabel('Algorithm')
     plt.ylabel('Total Chunk Time')
     plt.title('Total Chunk Time (ms)')
@@ -97,6 +99,16 @@ if mode == "mininet":
     plt.xticks(rotation=90)
     plt.tight_layout()
     plt.savefig('plot/' + mode + '/total_parralelized_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    
+    # Plotting total_parralelized_upload_time
+    plt.figure(figsize=(10, 6))
+    plt.bar(df1['algorithm'], df1['total_upload_times_non_parallelized'], color=get_colors(df1['algorithm']))
+    plt.xlabel('Algorithm')
+    plt.ylabel('Total Upload Time')
+    plt.title('Total Upload Time (ms)')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig('plot/' + mode + '/total_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
 else: # Plots unique to drex_only
     # Plotting total_parralelized_upload_time
     plt.figure(figsize=(10, 6))

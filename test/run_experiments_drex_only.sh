@@ -19,39 +19,39 @@ echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total
 input_nodes="drex/inputs/nodes/10_most_used_nodes.csv"
 
 # Input data
-number_of_data=1
-data_size=100 # In MB
+number_of_data=100
+data_size=1000000 # In MB
 # Or input file
 #~ input_data="drex/inputs/data/test.txt"
 #~ number_of_data=$(count_lines "$drex/inputs/data/test.txt")
 
 # Loop over execution
-for alg in alg2; do
-#~ for alg in alg1 alg2 alg3 alg4 alg2_rc alg3_rc alg4_rc random hdfs_three_replications; do
+#~ for alg in alg2; do
+for alg in alg1 alg2 alg3 alg4 alg2_rc alg3_rc alg4_rc random hdfs_three_replications; do
     python3 test/test-1-algorithm.py ${alg} ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
     # python3 test/test-1-algorithm.py ${alg} ${input_nodes} "real_data" ${input_data}
 done
-#~ pairs="3 2 6 3 10 4"
-#~ pairs_array=($pairs)
-#~ for alg in hdfsrs vandermonders; do
-    #~ for ((i=0; i<${#pairs_array[@]}; i+=2)); do
-        #~ RS1=${pairs_array[i]}
-        #~ RS2=${pairs_array[i+1]}
-        #~ python3 test/test-1-algorithm.py ${alg} $((RS1)) $((RS2)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-        #~ # python3 test/test-1-algorithm.py ${alg} $((RS1)) $((RS2)) ${input_nodes} "real_data" ${input_data}
-    #~ done
-#~ done
-#~ # pairs="6 4 11 8 12 8" # Commented cause I don't test with more than 10 nodes for now so it would not work
-#~ pairs="6 4"
-#~ pairs_array=($pairs)
-#~ for alg in glusterfs; do
-    #~ for ((i=0; i<${#pairs_array[@]}; i+=2)); do
-        #~ N=${pairs_array[i]}
-        #~ K=${pairs_array[i+1]}
-        #~ python3 test/test-1-algorithm.py ${alg} $((N)) $((K)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-        #~ # python3 test/test-1-algorithm.py ${alg} $((N)) $((K)) ${input_nodes} "real_data" ${input_data}
-    #~ done
-#~ done
+pairs="3 2 6 3 10 4"
+pairs_array=($pairs)
+for alg in hdfsrs vandermonders; do
+    for ((i=0; i<${#pairs_array[@]}; i+=2)); do
+        RS1=${pairs_array[i]}
+        RS2=${pairs_array[i+1]}
+        python3 test/test-1-algorithm.py ${alg} $((RS1)) $((RS2)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+        # python3 test/test-1-algorithm.py ${alg} $((RS1)) $((RS2)) ${input_nodes} "real_data" ${input_data}
+    done
+done
+# pairs="6 4 11 8 12 8" # Commented cause I don't test with more than 10 nodes for now so it would not work
+pairs="6 4"
+pairs_array=($pairs)
+for alg in glusterfs; do
+    for ((i=0; i<${#pairs_array[@]}; i+=2)); do
+        N=${pairs_array[i]}
+        K=${pairs_array[i+1]}
+        python3 test/test-1-algorithm.py ${alg} $((N)) $((K)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+        # python3 test/test-1-algorithm.py ${alg} $((N)) $((K)) ${input_nodes} "real_data" ${input_data}
+    done
+done
 
 # Plotting results
 python3 plot/mininet/plot.py $((number_of_data)) $((data_size)) "drex_only"
