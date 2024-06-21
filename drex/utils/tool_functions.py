@@ -16,8 +16,8 @@ def calculate_transfer_time(data_size, bandwidth):
     Calculate the estimated transfer time given data size and bandwidth.
     
     Args:
-    data_size (float): Size of data to be transferred, in bits.
-    bandwidth (float): Bandwidth of the connection, in bits per second.
+    data_size (float): Size of data to be transferred, in megabytes.
+    bandwidth (float): Bandwidth of the connection, in megabytes per second.
     
     Returns:
     float: Estimated transfer time in seconds.

@@ -6,7 +6,7 @@ import pandas as pd
 
 n = 10
 k = 3
-file_size = 2000
+file_size = 100
 
 # To manage the real time obtained in experiments
 #real_records = RealRecords(dir_data="data/")
