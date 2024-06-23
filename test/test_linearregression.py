@@ -8,6 +8,52 @@ n = 10
 k = 3
 file_size = 1000
 
+pred = Predictor()
+data = pred.real_records.data
+
+
+data_to_plot = list()
+
+for s in pred.real_records.sizes:
+    Y = pred.real_records.data[pred.real_records.data['size']
+                                       == s]['avg_time']
+    X = pred.real_records.data[pred.real_records.data['size'] == s][[
+                'n', 'k']] 
+    size_data = list()
+    time_data = list()
+    labels = list()
+    for x in X.index:
+        if X['n'][x] - 2 == X['k'][x]:
+            size_data.append(X['n'][x] * int(s) / X['k'][x])
+            time_data.append(Y[x])
+            #str = f"{X['n'][x]}"
+            str = f"{int(X['n'][x])},{int(X['k'][x])}"
+            labels.append(str)
+    #print(X_str)
+    plt.figure(figsize=(10, 6))  # width: 10 inches, height: 6 inches
+
+    plt.scatter(time_data, size_data, color = "blue")
+    
+    for i in range(len(time_data)):
+        plt.annotate(labels[i], (time_data[i], size_data[i]), textcoords="offset points", xytext=(0,10), ha='center', fontsize=9)
+
+    
+    # Add title and labels
+    plt.title('Sample Scatter Plot')
+    plt.xlabel('Avg. time (ms)')
+    plt.ylabel('Storage overhead (MB)')
+    plt.xticks(rotation=45)
+
+    plt.savefig(f"scatter_{s}MBv2.png")
+    plt.clf()
+
+#for d in data.index:
+    #print(d)
+    #print(data["size"][d])
+    #data_to_plot.append([data["size"][d], f"{data['n'][d]}-{data['k'][d]}", data["avg_time"][d]])
+    
+#print(data_to_plot)
+
 # To manage the real time obtained in experiments
 #real_records = RealRecords(dir_data="data/")
 
@@ -33,10 +79,11 @@ file_size = 1000
 #Xs_test = np.array(Xs_test)
 #X_test = np.array([file_size, n, k]).reshape(1, -1)
 
-pred = Predictor()
-for i in range(3, n):
-    bandwiths = [10] * i
-    print(i,2,pred.predict(file_size, i, 2, bandwiths))
+
+#pred = Predictor()
+#for i in range(3, n):
+#    bandwiths = [10] * i
+#    print(i,2,pred.predict(file_size, i, 2, bandwiths))
 
 # Create an instance of the LinearRegression class
 #reg = LinearRegression()
