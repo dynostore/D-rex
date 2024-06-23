@@ -137,12 +137,14 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     
     start = time.time()
 	
-    K = file_size/(((1/(RS1/(RS1+RS2)))*file_size)/RS2)
-    N = RS2
+    # ~ K = file_size/(((1/(RS1/(RS1+RS2)))*file_size)/RS2)
+    # ~ K = file_size/((file_size + file_size*(50/100))/(RS1+RS2))
+    K = RS1
+    N = RS1 + RS2
     # ~ print("With file_size:", file_size, "and RS1 (", RS1, ",", RS2, ") we have N =", N, "and K =", K, "and total size stored is thus", (file_size/K)*N)
     
     if (N > number_of_nodes):
-        print("Hdfs_reed_solomon could not find a solution.")
+        # ~ print("Hdfs_reed_solomon could not find a solution.")
         return -1, -1, -1, node_sizes, -1
     
     size_to_stores = [file_size/K] * N
@@ -172,7 +174,7 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
                         set_of_nodes_chosen[j] = set_of_nodes[k]
                         break
             if k == number_of_nodes - 1:
-                print("Hdfs_rs could not find a solution.")
+                # ~ print("Hdfs_rs could not find a solution.")
                 return -1, -1, -1, node_sizes, -1
         j += 1
     
@@ -186,9 +188,9 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
     # the best one that is not yet in the set of nodes chosen. The same code is copy and pasted and used in
     # hdfs_three_replications
     loop = 0
-    while reliability_thresold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
+    while reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes_chosen) == False:
         if (loop > number_of_nodes - N):
-            print(f"Hdfs_rs could not find a solution. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
+            # ~ print(f"Hdfs_rs could not find a solution in term of resilience. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
             return -1, -1, -1, node_sizes, -1
         
         # Find the index of the lowest reliability value

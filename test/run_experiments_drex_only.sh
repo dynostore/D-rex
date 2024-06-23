@@ -13,27 +13,30 @@ python3 -m venv venv
 
 # Truncate current output files and add header
 truncate -s 0 output_drex_only.csv
-echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored" > output_drex_only.csv
+echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored,total_N,mean_storage_used,mean_upload_time,mean_N" > output_drex_only.csv
 
 # Storage nodes
-input_nodes="drex/inputs/nodes/10_most_used_nodes.csv"
+#~ input_nodes="drex/inputs/nodes/10_most_used_nodes.csv"
+input_nodes="drex/inputs/nodes/10_most_unreliable_nodes.csv"
 
 # Input data
-number_of_data=100
-data_size=1000000 # In MB
+number_of_data=500
+data_size=200000 # In MB
 # Or input file
 #~ input_data="drex/inputs/data/test.txt"
 #~ number_of_data=$(count_lines "$drex/inputs/data/test.txt")
 
 # Loop over execution
-#~ for alg in alg2; do
-for alg in alg1 alg2 alg3 alg4 alg2_rc alg3_rc alg4_rc random hdfs_three_replications; do
+for alg in alg1 alg4 random hdfs_three_replications; do
+#~ for alg in alg1 alg2 alg3 alg4 alg2_rc alg3_rc alg4_rc random hdfs_three_replications; do
     python3 test/test-1-algorithm.py ${alg} ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
     # python3 test/test-1-algorithm.py ${alg} ${input_nodes} "real_data" ${input_data}
 done
-pairs="3 2 6 3 10 4"
+#~ pairs="3 2 6 3 10 4"
+pairs="3 2 6 3"
 pairs_array=($pairs)
-for alg in hdfsrs vandermonders; do
+for alg in hdfsrs; do
+#~ for alg in hdfsrs vandermonders; do
     for ((i=0; i<${#pairs_array[@]}; i+=2)); do
         RS1=${pairs_array[i]}
         RS2=${pairs_array[i+1]}

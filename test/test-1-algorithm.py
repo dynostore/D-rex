@@ -82,6 +82,7 @@ total_scheduling_time = 0
 total_upload_time = 0
 total_upload_time = 0
 total_parralelized_upload_time = 0
+total_N = 0
 total_storage_used = 0
 differences = []
 min_data_size = sys.maxsize
@@ -152,11 +153,11 @@ for data in set_of_data:
             if (upload_time > max_upload_time):
                 max_upload_time = upload_time
             total_upload_time += differences[i] / write_bandwidths[i]
+            total_storage_used += differences[i]
         # ~ print("max_upload_time", max_upload_time)
         total_parralelized_upload_time += max_upload_time
         number_of_data_stored += 1
-        
-total_storage_used = total_storage_size - sum(node_sizes)
+        total_N += N
 
 # Writing results in a file
 # ~ print("total_scheduling_time =", total_scheduling_time, "seconds") 
@@ -172,4 +173,4 @@ else:
     alg_to_print = alg
 # Write the values to the output file
 with open(output_filename, 'a') as file:
-    file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}, {number_of_data_stored}\n")
+    file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}, {number_of_data_stored}, {total_N}, {total_storage_used/number_of_data_stored}, {total_upload_time/number_of_data_stored}, {total_N/number_of_data_stored}\n")

@@ -37,7 +37,7 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
                     min_set_of_nodes_chosen = set_of_nodes_chosen
 
     if (min_K == -1):
-        print("Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
+        # ~ print("Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
         return - 1, -1, -1, node_sizes
 	
     node_sizes = update_node_sizes(
@@ -45,7 +45,7 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 	
     end = time.time()
 
-    print("\nAlgorithm 2 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
+    # ~ print("\nAlgorithm 2 chose N =", min_N, "and K =", min_K, "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
 
     return list(min_set_of_nodes_chosen), min_N, min_K, node_sizes
 

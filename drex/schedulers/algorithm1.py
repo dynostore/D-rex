@@ -21,7 +21,7 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes, nod
 	N = 0
 	
 	for N in range (number_of_nodes, 2, -1):
-		print("Try N =", N)
+		# ~ print("Try N =", N)
 		
 		set_of_nodes_chosen = list(sorted_nodes_by_sorted_sizes[:N])
 		reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]

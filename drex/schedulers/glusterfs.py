@@ -9,7 +9,7 @@ def glusterfs(N, K, number_of_nodes, reliability_of_nodes, bandwidths, reliabili
     start = time.time()
 	    
     if (N > number_of_nodes):
-        print("glusterfs could not find a solution because N provided > number of nodes.")
+        # ~ print("glusterfs could not find a solution because N provided > number of nodes.")
         return -1, -1, -1, node_sizes
     
     size_to_stores = [file_size/K] * N
@@ -38,7 +38,7 @@ def glusterfs(N, K, number_of_nodes, reliability_of_nodes, bandwidths, reliabili
                         set_of_nodes_chosen[j] = set_of_nodes[k]
                         break
             if k == number_of_nodes - 1:
-                print("Glusterfs could not find a solution because data won't fit.")
+                # ~ print("Glusterfs could not find a solution because data won't fit.")
                 return -1, -1, -1, node_sizes
         j += 1
     
