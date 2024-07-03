@@ -75,7 +75,9 @@ else:
         for row in reader:
             # Add the 'size' value to the set
             set_of_data.append(float(row['size']))
-
+            # ~ print(float(row['size']))
+# ~ exit(1)
+# ~ print(set_of_data)
 # Start code and fetch results
 number_of_data_stored = 0
 total_scheduling_time = 0
