@@ -30,7 +30,7 @@ for s in pred.real_records.sizes:
             str = f"{int(X['n'][x])},{int(X['k'][x])}"
             labels.append(str)
     #print(X_str)
-    plt.figure(figsize=(10, 6))  # width: 10 inches, height: 6 inches
+    plt.figure(figsize=(10, 6.5))  # width: 10 inches, height: 6 inches
 
     plt.scatter(time_data, size_data, color = "blue", label="Values of N,K")
     
@@ -39,13 +39,13 @@ for s in pred.real_records.sizes:
 
     
     # Add title and labels
-    plt.xlabel('Avgerage chunking time (ms)')
+    plt.xlabel('Average chunking time (ms)')
     plt.ylabel('Storage overhead (MB)')
     plt.xticks(rotation=45)
     
     plt.legend(loc="upper left")
 
-
+    plt.tight_layout()
     plt.savefig(f"plot/ida_overheads/scatter_{s}MB.png")
     plt.clf()
 
