@@ -32,19 +32,21 @@ for s in pred.real_records.sizes:
     #print(X_str)
     plt.figure(figsize=(10, 6))  # width: 10 inches, height: 6 inches
 
-    plt.scatter(time_data, size_data, color = "blue")
+    plt.scatter(time_data, size_data, color = "blue", label="Values of N,K")
     
     for i in range(len(time_data)):
-        plt.annotate(labels[i], (time_data[i], size_data[i]), textcoords="offset points", xytext=(0,10), ha='center', fontsize=9)
+        plt.annotate(labels[i], (time_data[i], size_data[i]), textcoords="offset points", xytext=(0,5), ha='center', fontsize=9)
 
     
     # Add title and labels
-    plt.title('Sample Scatter Plot')
-    plt.xlabel('Avg. time (ms)')
+    plt.xlabel('Avgerage chunking time (ms)')
     plt.ylabel('Storage overhead (MB)')
     plt.xticks(rotation=45)
+    
+    plt.legend(loc="upper left")
 
-    plt.savefig(f"scatter_{s}MBv2.png")
+
+    plt.savefig(f"plot/ida_overheads/scatter_{s}MB.png")
     plt.clf()
 
 #for d in data.index:
