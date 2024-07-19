@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import sys
 import shutil
 import os
+import ast
+import numpy as np
 
 number_input_data = int(sys.argv[1])
 data_size = int(sys.argv[2])
@@ -39,14 +41,14 @@ else:
 
 df1 = pd.read_csv(file_path1)
 
-# Rename algorithms
-df1['algorithm'] = df1['algorithm'].str.replace('_reduced_complexity', '_rc')
-df1['algorithm'] = df1['algorithm'].str.replace('alg1', 'Min Storage')
-df1['algorithm'] = df1['algorithm'].str.replace('alg4', 'D-rex')
-df1['algorithm'] = df1['algorithm'].str.replace('hdfs_three_replications', '3 replications')
-df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'HDFS RS(3,2)')
-df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_6_3', 'HDFS RS(6,3)')
-df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
+# ~ # Rename algorithms
+# ~ df1['algorithm'] = df1['algorithm'].str.replace('_reduced_complexity', '_rc')
+# ~ df1['algorithm'] = df1['algorithm'].str.replace('alg1', 'Min Storage')
+# ~ df1['algorithm'] = df1['algorithm'].str.replace('alg4', 'D-rex')
+# ~ df1['algorithm'] = df1['algorithm'].str.replace('hdfs_three_replications', '3 replications')
+# ~ df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'HDFS RS(3,2)')
+# ~ df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_6_3', 'HDFS RS(6,3)')
+# ~ df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
 
 # Define colors
 colors = {
@@ -178,7 +180,7 @@ else: # Plots unique to drex_only
     plt.savefig('plot/' + mode + '/mean_upload_time' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
 
 
-# Plot for both minient and drex_only
+# Plot for both mininet and drex_only
 # Plotting total_storage_used
 plt.figure(figsize=(10, 6))
 plt.bar(df1['algorithm'], df1['total_storage_used'], color=get_colors(df1['algorithm']))
@@ -199,5 +201,58 @@ plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig('plot/' + mode + '/total_scheduling_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
 
+# Plot for distribution of data on the different storage nodes
+# Number of algorithms and storage nodes
+num_algorithms = len(df1)
+# ~ num_nodes = len(df1.loc[0, 'initial_node_sizes'])
+# ~ num_nodes = 10
+# Calculate bar width and positions
+bar_width = 0.2
+print("n algo:", num_algorithms)
 
-# ~ ++ plot for perfect bw transfer taking max for each data and then sum for all data
+num_nodes = 10 # A lire depuis le fichier ou ligne de commande plutot
+
+print(num_nodes)
+
+# Initialize lists to store the values
+initial_node_sizes_values = []
+final_node_sizes_values = []
+
+# Iterate over each row in the DataFrame
+for index, row in df1.iterrows():
+    # Convert the string representation of the list to an actual list for both columns
+    initial_node_sizes_list = ast.literal_eval(row['initial_node_sizes'])
+    final_node_sizes_list = ast.literal_eval(row['final_node_sizes'])
+    
+    # Append the lists to the respective lists
+    initial_node_sizes_values.append(initial_node_sizes_list)
+    final_node_sizes_values.append(final_node_sizes_list)
+
+# Print the values
+print("Initial Node Sizes:")
+for value in initial_node_sizes_values:
+    print(value)
+
+print("\nFinal Node Sizes:")
+for value in final_node_sizes_values:
+    print(value)
+    
+# ~ indices = np.arange(num_nodes)
+# ~ # Plot each algorithm's storage usage
+# ~ for i, row in df1.iterrows():
+    # ~ initial_sizes = row['initial_node_sizes']
+    # ~ final_sizes = row['final_node_sizes']
+    # ~ print(initial_sizes)
+    # ~ used_storage = [initial - final for initial, final in zip(initial_sizes, final_sizes)]
+    # ~ # Calculate position for each algorithm
+    # ~ bar_positions = indices + i * bar_width
+    # ~ # Plot bars
+    # ~ plt.bar(bar_positions, used_storage, bar_width, label=row['algorithm'])
+# ~ # Add labels and title
+# ~ plt.xlabel('Storage Node')
+# ~ plt.ylabel('Storage Used')
+# ~ plt.title('Storage Used in Each Node for Different Algorithms')
+# ~ plt.xticks(indices + bar_width * (num_algorithms - 1) / 2, range(1, num_nodes + 1))
+# ~ plt.legend(title='Algorithm')# ~ ++ plot for perfect bw transfer taking max for each data and then sum for all data
+# ~ plt.tight_layout()
+# ~ plt.savefig('plot/' + mode + '/distribution_of_data_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
