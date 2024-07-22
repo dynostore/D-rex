@@ -88,6 +88,8 @@ total_N = 0
 total_storage_used = 0
 differences = []
 min_data_size = sys.maxsize
+node_sizes_initialy = node_sizes.copy()
+
 for data in set_of_data:
     node_sizes_before = node_sizes.copy()
     
@@ -132,19 +134,19 @@ for data in set_of_data:
         end = time.time()
     elif alg == "hdfsrs":
         start = time.time()
-        nodes, N, K, node_sizes, size_to_stores = hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths, RS1, RS2)
+        set_of_nodes_chosen, N, K, node_sizes, size_to_stores = hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths, RS1, RS2)
         end = time.time()
     elif alg == "vandermonders":
         start = time.time()
-        nodes, N, K, node_sizes, size_to_stores = hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths, RS1, RS2)
+        set_of_nodes_chosen, N, K, node_sizes, size_to_stores = hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths, RS1, RS2)
         end = time.time()
     elif alg == "glusterfs":
         start = time.time()
-        nodes, N, K, node_sizes = glusterfs(RS1, RS2, number_of_nodes, reliability_nodes, write_bandwidths, reliability_threshold, data, node_sizes)
+        set_of_nodes_chosen, N, K, node_sizes = glusterfs(RS1, RS2, number_of_nodes, reliability_nodes, write_bandwidths, reliability_threshold, data, node_sizes)
         end = time.time()
 
     total_scheduling_time += end - start
-    
+        
     if N != -1: # Else it means that the scheduler could not find a solution that works
         differences = [node_sizes_before[i] - node_sizes[i] for i in range(number_of_nodes)]
         # ~ print("differences:", differences)
@@ -160,6 +162,8 @@ for data in set_of_data:
         total_parralelized_upload_time += max_upload_time
         number_of_data_stored += 1
         total_N += N
+        
+        # ~ print(node_sizes)
 
 # Writing results in a file
 # ~ print("total_scheduling_time =", total_scheduling_time, "seconds") 
@@ -174,5 +178,6 @@ if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
 else:
     alg_to_print = alg
 # Write the values to the output file
+print("Writing output in file", output_filename)
 with open(output_filename, 'a') as file:
-    file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}, {number_of_data_stored}, {total_N}, {total_storage_used/number_of_data_stored}, {total_upload_time/number_of_data_stored}, {total_N/number_of_data_stored}\n")
+    file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}, {number_of_data_stored}, {total_N}, {total_storage_used/number_of_data_stored}, {total_upload_time/number_of_data_stored}, {total_N/number_of_data_stored}, \"{node_sizes_initialy}\", \"{node_sizes}\"\n")

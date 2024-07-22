@@ -8,55 +8,62 @@ count_lines() {
     echo $number_of_lines
 }
 
-python3 -m venv venv  
+python3 -m venv venv
+#~ pip3 install seaborn
 . venv/bin/activate
+pip install seaborn
 
 # Truncate current output files and add header
 truncate -s 0 output_drex_only.csv
-echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored,total_N,mean_storage_used,mean_upload_time,mean_N" > output_drex_only.csv
+echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored,total_N,mean_storage_used,mean_upload_time,mean_N,initial_node_sizes,final_node_sizes" > output_drex_only.csv
 
 # Storage nodes
 #~ input_nodes="drex/inputs/nodes/10_most_used_nodes.csv"
 input_nodes="drex/inputs/nodes/10_most_unreliable_nodes.csv"
 
 # Input data
-#~ number_of_data=500
-#~ data_size=200000 # In MB
+number_of_data=40
+data_size=2000000 # In MB
 # Or input file
 #~ input_data="drex/inputs/data/test.txt"
-input_data="drex/inputs/data/MEVA2.csv"
-number_of_data=$(count_lines "drex/inputs/data/MEVA2.csv")
-data_size=0
+#~ input_data="drex/inputs/data/MEVA2.csv"
+#~ number_of_data=$(count_lines "drex/inputs/data/MEVA2.csv")
+#~ data_size=0
 
 # Loop over execution
-for alg in alg1 alg4 random hdfs_three_replications; do
+#~ for alg in alg1 alg4 random hdfs_three_replications; do
+for alg in alg1 alg4; do
 #~ for alg in alg1 alg2 alg3 alg4 alg2_rc alg3_rc alg4_rc random hdfs_three_replications; do
-    #~ python3 test/test-1-algorithm.py ${alg} ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-    python3 test/test-1-algorithm.py ${alg} ${input_nodes} "real_data" ${input_data}
-done
-#~ pairs="3 2 6 3 10 4"
-pairs="3 2 6 3"
-pairs_array=($pairs)
-for alg in hdfsrs; do
-#~ for alg in hdfsrs vandermonders; do
-    for ((i=0; i<${#pairs_array[@]}; i+=2)); do
-        RS1=${pairs_array[i]}
-        RS2=${pairs_array[i+1]}
-        #~ python3 test/test-1-algorithm.py ${alg} $((RS1)) $((RS2)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-        python3 test/test-1-algorithm.py ${alg} $((RS1)) $((RS2)) ${input_nodes} "real_data" ${input_data}
-    done
-done
-# pairs="6 4 11 8 12 8" # Commented cause I don't test with more than 10 nodes for now so it would not work
-pairs="6 4"
-pairs_array=($pairs)
-for alg in glusterfs; do
-    for ((i=0; i<${#pairs_array[@]}; i+=2)); do
-        N=${pairs_array[i]}
-        K=${pairs_array[i+1]}
-        #~ python3 test/test-1-algorithm.py ${alg} $((N)) $((K)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-        python3 test/test-1-algorithm.py ${alg} $((N)) $((K)) ${input_nodes} "real_data" ${input_data}
-    done
+    python3 test/test-1-algorithm.py ${alg} ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+    #~ python3 test/test-1-algorithm.py ${alg} ${input_nodes} "real_data" ${input_data}
 done
 
+#~ '
+#~ pairs="3 2 6 3 10 4"
+#~ pairs="3 2 6 3"
+#~ pairs_array=($pairs)
+#~ for alg in hdfsrs; do
+#~ for alg in hdfsrs vandermonders; do
+    #~ for ((i=0; i<${#pairs_array[@]}; i+=2)); do
+        #~ RS1=${pairs_array[i]}
+        #~ RS2=${pairs_array[i+1]}
+        #~ python3 test/test-1-algorithm.py ${alg} $((RS1)) $((RS2)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+        #~ python3 test/test-1-algorithm.py ${alg} $((RS1)) $((RS2)) ${input_nodes} "real_data" ${input_data}
+    #~ done
+#~ done
+#~ # pairs="6 4 11 8 12 8" # Commented cause I dont test with more than 10 nodes for now so it would not work
+#~ pairs="6 4"
+#~ pairs_array=($pairs)
+#~ for alg in glusterfs; do
+    #~ for ((i=0; i<${#pairs_array[@]}; i+=2)); do
+        #~ N=${pairs_array[i]}
+        #~ K=${pairs_array[i+1]}
+        #~ python3 test/test-1-algorithm.py ${alg} $((N)) $((K)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+        #~ python3 test/test-1-algorithm.py ${alg} $((N)) $((K)) ${input_nodes} "real_data" ${input_data}
+    #~ done
+#~ done
+#~ '
+
 # Plotting results
-python3 plot/mininet/plot.py $((number_of_data)) $((data_size)) "drex_only"
+python3 plot/mininet/plot.py $((number_of_data)) $((data_size)) "drex_only" "individual"
+python3 plot/mininet/plot.py $((number_of_data)) $((data_size)) "drex_only" "combined"
