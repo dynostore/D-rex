@@ -17,45 +17,67 @@ import ast
 import seaborn as sns
 import numpy as np
 
-number_input_data = int(sys.argv[1])
-data_size = int(sys.argv[2])
-mode = sys.argv[3] # mininet or drex_only
-plot_type = sys.argv[4] # 'combined' or 'individual'
+def is_int(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
+def count_lines_minus_one(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        return len(lines) - 1
+
+mode = sys.argv[1] # mininet or drex_only
+plot_type = sys.argv[2] # 'combined' or 'individual'
+input_nodes = sys.argv[3]
+if is_int(sys.argv[4]):
+    number_input_data = int(sys.argv[4])
+    data_size = int(sys.argv[5])
+    input_data_to_print = str(number_input_data) + "_" + str(data_size)
+else:
+    input_data = sys.argv[4]
+    input_data_to_print = input_data.split('/')[-1]
+    input_data_to_print = input_data_to_print.rsplit('.', 1)[0]
+    number_input_data = count_lines_minus_one(input_data)
+
+print(number_input_data, "input data")
+
+input_nodes_to_print = input_nodes.split('/')[-1]
+input_nodes_to_print = input_nodes_to_print.rsplit('.', 1)[0]
 
 if mode != "mininet" and mode != "drex_only":
     print("mode must be drex_only or mininet")
 
 if mode == "mininet":
     # Copy csv files
-    shutil.copy("../D-Rex-Simulation-experiments/src/outputtimes.csv", "plot/mininet/data/outputtimes_" + str(number_input_data) + "_" + str(data_size) + "MB.csv")
-    shutil.copy("../D-Rex-Simulation-experiments/src/outputfiles.csv", "plot/mininet/data/outputfiles_" + str(number_input_data) + "_" + str(data_size) + "MB.csv")
+    shutil.copy("../D-Rex-Simulation-experiments/src/outputtimes.csv", "plot/mininet/data/outputtimes_" + input_nodes_to_print + "_" + input_data_to_print + ".csv")
+    shutil.copy("../D-Rex-Simulation-experiments/src/outputfiles.csv", "plot/mininet/data/outputfiles_" + input_nodes_to_print + "_" + input_data_to_print + ".csv")
 
     # Load the data from the CSV files
-    file_path1 = "plot/mininet/data/outputtimes_" + str(number_input_data) + "_" + str(data_size) + "MB.csv"
-    file_path2 = "plot/mininet/data/outputfiles_" + str(number_input_data) + "_" + str(data_size) + "MB.csv"
+    file_path1 = "plot/mininet/data/outputtimes_" + input_nodes_to_print + "_" + input_data_to_print + ".csv"
+    file_path2 = "plot/mininet/data/outputfiles_" + input_nodes_to_print + "_" + input_data_to_print + ".csv"
     
     df2 = pd.read_csv(file_path2)
     df2['algorithm'] = df2['algorithm'].str.replace('_reduced_complexity', '_rc')
 else:
-    # ~ pass
-    # ~ # Copy csv file
-    shutil.copy("output_drex_only.csv", "plot/drex_only/data/output_drex_only_" + str(number_input_data) + "_" + str(data_size) + "MB.csv")
+    # Copy csv file
+    shutil.copy("output_drex_only.csv", "plot/drex_only/data/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + ".csv")
     
-    # ~ # Load the data from the CSV file
-    file_path1 = "plot/drex_only/data/output_drex_only_" + str(number_input_data) + "_" + str(data_size) + "MB.csv"
-
-# ~ file_path1="output_drex_only_4_200000MB.csv"
+    # Load the data from the CSV file
+    file_path1 = "plot/drex_only/data/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + ".csv"
 
 df1 = pd.read_csv(file_path1, quotechar='"', doublequote=True, skipinitialspace=True)
 
-# ~ # Rename algorithms
-# ~ df1['algorithm'] = df1['algorithm'].str.replace('_reduced_complexity', '_rc')
-# ~ df1['algorithm'] = df1['algorithm'].str.replace('alg1', 'Min Storage')
-# ~ df1['algorithm'] = df1['algorithm'].str.replace('alg4', 'D-rex')
-# ~ df1['algorithm'] = df1['algorithm'].str.replace('hdfs_three_replications', '3 replications')
-# ~ df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'HDFS RS(3,2)')
-# ~ df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_6_3', 'HDFS RS(6,3)')
-# ~ df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
+# Rename algorithms
+df1['algorithm'] = df1['algorithm'].str.replace('_reduced_complexity', '_rc')
+df1['algorithm'] = df1['algorithm'].str.replace('alg1', 'Min Storage')
+df1['algorithm'] = df1['algorithm'].str.replace('alg4', 'D-rex')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfs_three_replications', '3 replications')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'HDFS RS(3,2)')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_6_3', 'HDFS RS(6,3)')
+df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
 
 # Define colors
 colors = {
@@ -92,7 +114,7 @@ if mode == "mininet":
     plt.title('Total Simulation Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_simulation_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    plt.savefig('plot/' + mode + '/total_simulation_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
 
     # Plotting total_chunking_time
     plt.figure(figsize=(10, 6))
@@ -103,7 +125,7 @@ if mode == "mininet":
     plt.title('Total Chunk Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_chunk_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    plt.savefig('plot/' + mode + '/total_chunk_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
     
     # Plotting total_parralelized_upload_time
     plt.figure(figsize=(10, 6))
@@ -113,7 +135,7 @@ if mode == "mininet":
     plt.title('Total Parralelized Upload Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_parralelized_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    plt.savefig('plot/' + mode + '/total_parralelized_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
     
     # Plotting total_parralelized_upload_time
     plt.figure(figsize=(10, 6))
@@ -123,7 +145,7 @@ if mode == "mininet":
     plt.title('Total Upload Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    plt.savefig('plot/' + mode + '/total_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
 else: # Plots unique to drex_only
     # ~ # Plotting total_parralelized_upload_time
     # ~ plt.figure(figsize=(10, 6))
@@ -133,7 +155,7 @@ else: # Plots unique to drex_only
     # ~ plt.title('Total Parralelized Upload Time (s)')
     # ~ plt.xticks(rotation=90)
     # ~ plt.tight_layout()
-    # ~ plt.savefig('plot/' + mode + '/total_parralelized_upload_time' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    # ~ plt.savefig('plot/' + mode + '/total_parralelized_upload_time' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
 
     # ~ # Plotting total_upload_time
     # ~ plt.figure(figsize=(10, 6))
@@ -143,7 +165,7 @@ else: # Plots unique to drex_only
     # ~ plt.title('Total Upload Time (s)')
     # ~ plt.xticks(rotation=90)
     # ~ plt.tight_layout()
-    # ~ plt.savefig('plot/' + mode + '/total_upload_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    # ~ plt.savefig('plot/' + mode + '/total_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
 
     # Plotting number_of_data_stored
     plt.figure(figsize=(10, 6))
@@ -154,7 +176,7 @@ else: # Plots unique to drex_only
     plt.title('Number of data stored')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/number_of_data_stored_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    plt.savefig('plot/' + mode + '/number_of_data_stored_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
 
     # Plotting mean number of chunks
     plt.figure(figsize=(10, 6))
@@ -164,7 +186,7 @@ else: # Plots unique to drex_only
     plt.title('Number of chunks per data')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/number_of_chunks_per_data_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    plt.savefig('plot/' + mode + '/number_of_chunks_per_data_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
 
     # Plotting mean_storage_used
     plt.figure(figsize=(10, 6))
@@ -174,7 +196,7 @@ else: # Plots unique to drex_only
     plt.title('Storage per data')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/storage_per_data_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    plt.savefig('plot/' + mode + '/storage_per_data_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
     
     # Plotting mean_upload_time
     plt.figure(figsize=(10, 6))
@@ -184,7 +206,7 @@ else: # Plots unique to drex_only
     plt.title('Upload time per data')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/mean_upload_time' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+    plt.savefig('plot/' + mode + '/mean_upload_time' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
 
 
 # Plot for both mininet and drex_only
@@ -196,7 +218,7 @@ plt.ylabel('Total Storage Used')
 plt.title('Total Storage Used (MB)')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig('plot/' + mode + '/total_storage_used_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+plt.savefig('plot/' + mode + '/total_storage_used_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
 
 # Plotting total_scheduling_time
 plt.figure(figsize=(10, 6))
@@ -206,21 +228,15 @@ plt.ylabel('Total Scheduling Time')
 plt.title('Total Scheduling Time (ms for minient, s for drex_only)')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig('plot/' + mode + '/total_scheduling_time_' + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
+plt.savefig('plot/' + mode + '/total_scheduling_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+
 
 # Plot for distribution of data on the different storage nodes
 # Number of algorithms and storage nodes
 num_algorithms = len(df1)
-# ~ num_nodes = len(df1.loc[0, 'initial_node_sizes'])
-# ~ num_nodes = 10
 # Calculate bar width and positions
 bar_width = 0.2
 print("n algo:", num_algorithms)
-
-# ~ num_nodes = 10 # A lire depuis le fichier ou ligne de commande plutot
-
-# ~ print(num_nodes)
-
 # Initialize lists to store the values
 initial_node_sizes_values = []
 final_node_sizes_values = []
@@ -236,34 +252,58 @@ for index, row in df1.iterrows():
     # Append the lists to the respective lists
     initial_node_sizes_values.append(initial_node_sizes_list)
     final_node_sizes_values.append(final_node_sizes_list)
-num_nodes=len(initial_node_sizes_values)
-print(num_nodes)
+    
+# ~ print(initial_node_sizes_values)
+num_nodes=len(initial_node_sizes_list)
+number_of_algorithms = len(initial_node_sizes_values)
+print("There are", num_nodes, "nodes and", number_of_algorithms, "algorithms")
 
 # Plot bars
-# ~ print("Initial Node Sizes:")
 df = None
 value1 = []
 value2 = []
 categories = []
 algs = []
+print(num_nodes, "nodes")
+categories = [f'HDD-{i+1}' for i in range(num_nodes)]
+print(categories)
+
 for a, limit in enumerate(zip(initial_node_sizes_values, final_node_sizes_values)):
     line_initial = limit[0]
     line_final = limit[1]
-    #value1 = []
-    #value2 = []
     for value_initial, value_final in zip(line_initial, line_final):
         value1.append(value_initial/1000000)
         value2.append((value_initial - value_final)/1000000)
-        categories = ['HDD-1', 'HDD-2', 'HDD-3', 'HDD-4', 'HDD-5', 'HDD-6', 'HDD-7', 'HDD-8', 'HDD-9', 'HDD-10']
         algs.append(a)
 
-df = pd.DataFrame({'Category': categories*2, 'Value1': value1, 'Value2': value2, 'Algorithm': algs})
+df = pd.DataFrame({'Category': categories*(number_of_algorithms), 'Value1': value1, 'Value2': value2, 'Algorithm': algs})
 
-df_1 = df.loc[df['Algorithm'] == 0].reset_index()
-df_2 = df.loc[df['Algorithm'] == 1].reset_index()
+# ~ df_1 = df.loc[df['Algorithm'] == 0].reset_index()
+# ~ df_2 = df.loc[df['Algorithm'] == 1].reset_index()
+# Create a list to store DataFrames for each algorithm
+dfs = []
+# Loop through each algorithm and create filtered DataFrames
+for alg in range(number_of_algorithms):
+    df_filtered = df.loc[df['Algorithm'] == alg].reset_index()
+    dfs.append(df_filtered)
+    
+# ~ df = df_1.merge(df_2, left_on='Category', right_on='Category', suffixes=['_0', '_1'])
+# Start with the first DataFrame
+merged_df = dfs[0]
+print(len(dfs))
+# Merge all DataFrames based on 'Category'
+for i in range(1, len(dfs)):
+    print("i =", i)
+    merged_df = merged_df.merge(dfs[i], left_on='Category', right_on='Category', suffixes=[f'_{i-1}', f'_{i}'])
+    # ~ print(dfs[i])
 
-df = df_1.merge(df_2, left_on='Category', right_on='Category', suffixes=['_0', '_1'])
+merged_df.rename(columns={
+    'Value1': f'Value1_{number_of_algorithms-1}',
+    'Value2': f'Value2_{number_of_algorithms-1}',
+    'Algorithm': f'Algorithm_{number_of_algorithms-1}'
+}, inplace=True)
 
+print(merged_df)
 # Change font of plot to Times
 plt.rcParams.update({
     # ~ "text.usetex": True,
@@ -274,7 +314,9 @@ plt.rcParams.update({
 })
 
 # Initialize the matplotlib figure
-algos = [0, 1]
+# ~ algos = [0, 1
+algos = list(range(number_of_algorithms))
+print(algos)
 
 if plot_type == 'combined':
     fig, ax = plt.subplots()
@@ -321,34 +363,29 @@ if plot_type == 'combined':
     # Adding legend
     plt.legend(handles=[v1, v2, a1, a2])
     # Display the plot
-    plt.savefig('plot/' + mode + '/storage_distribution_'  + str(number_input_data) + '_' + str(data_size) + 'MB.pdf')
-    
+    plt.savefig('plot/' + mode + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
 else:
-    # ~ plt.figure(figsize=(8, 4))
     for a in algos:
-        # ~ fig, ax = plt.subplots()
         plt.figure(figsize=(8, 4))
         # Plot the first set of bars
         sns.barplot(
             x='Category',
             y=f'Value1_{a}',
-            data=df,
-            # ~ ax=ax,
+            # ~ data=df,
+            data=merged_df,
             color='#1a80bb',
             edgecolor='black',
             linewidth=1.5,
             label='Storage space'
         )
-        ## label = 'Value 1'
 
         # Plot the second set of bars on top of the first set
         sns.barplot(
             x='Category',
             y=f'Value2_{a}',
-            data=df,
-            # ~ ax=ax,
+            # ~ data=df,
+            data=merged_df,
             color='#ea801c',
-            # ~ bottom=value1[10*a: 10*a + 10],
             bottom=0,
             edgecolor='black',
             linewidth=1.5,
@@ -358,4 +395,5 @@ else:
         plt.ylabel('Size (TB)')
         plt.xlabel(str(df1['algorithm'][a]))
         plt.legend()
-        plt.savefig('plot/' + mode + '/storage_distribution_'  + str(number_input_data) + '_' + str(data_size) + 'MB_' + str(df1['algorithm'][a]) + '.pdf')
+        print(str(df1['algorithm'][a]))
+        plt.savefig('plot/' + mode + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(df1['algorithm'][a]) + ".pdf")
