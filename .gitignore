@@ -13,3 +13,8 @@ drex/inputs/data/FB-2009_samples_24_times_1hr_0_withInputPaths.csv
 drex/inputs/data/FB-2009_samples_24_times_1hr_1_withInputPaths.csv
 drex/inputs/data/FB-2010_samples_24_times_1hr_0_withInputPaths.csv
 drex/inputs/data/IBM.csv
+drex/inputs/data/all_merged.csv
+drex/inputs/data/processed_sentinal-2.csv
+drex/inputs/data/FB_merged.csv
+drex/inputs/data/MEVA_merged.csv
+drex/inputs/get_stats_input_data

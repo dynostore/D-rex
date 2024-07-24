@@ -151,8 +151,8 @@ def algorithm2_group_node_by_similarities(number_of_nodes, reliability_of_nodes,
 
     end = time.time()
 
-    print("\nAlgorithm 2 with reduced complexity chose N =", min_N, "and K =", min_K,
-          "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
+    # ~ print("\nAlgorithm 2 with reduced complexity chose N =", min_N, "and K =", min_K,
+          # ~ "with the set of nodes:", min_set_of_nodes_chosen, "It took", end - start, "seconds.")
 
     return list(min_set_of_nodes_chosen), min_N, min_K, node_sizes, iteration, reduced_set_of_nodes
         

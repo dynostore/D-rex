@@ -1,4 +1,4 @@
-id, storage_size, write_bandwidth, read_bandwidth, annual_failure_rate
+id,storage_size, write_bandwidth, read_bandwidth,annual_failure_rate
 0, 14000000, 208, 202, 0.97
 1, 16000000, 209, 220, 0.80
 2, 16000000, 168, 170, 0.31

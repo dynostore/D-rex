@@ -20,11 +20,11 @@ import csv
 
 # Parsing args
 alg = sys.argv[1]
-next_arg = 2
+next_arg = 4
 if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
-    RS1 = int(sys.argv[2])
-    RS2 = int(sys.argv[3])
-    next_arg = 4
+    RS1 = int(sys.argv[4])
+    RS2 = int(sys.argv[5])
+    next_arg = 6
     print("Evaluating", alg, RS1, RS2)
 else:
     print("Evaluating", alg)
@@ -36,10 +36,12 @@ node_sizes = []
 write_bandwidths = []
 read_bandwidths = []
 annual_failure_rates = []
-data_duration_on_system = 365 # In days
-reliability_threshold = 0.99 # threshold we want to meet
+data_duration_on_system = int(sys.argv[2]) # In days
+reliability_threshold = float(sys.argv[3]) # threshold we want to meet
 real_records = RealRecords(dir_data="data/") # To manage the real time obtained in experiments
 predictor = Predictor()  # Update for different file sizes
+
+print("data_duration_on_system:", data_duration_on_system, "reliability_threshold:", reliability_threshold)
 
 # Read data from CSV file
 with open(input_nodes, 'r') as csvfile:
@@ -76,7 +78,7 @@ else:
             # Add the 'size' value to the set
             set_of_data.append(float(row['size']))
             # ~ print(float(row['size']))
-# ~ exit(1)
+
 # ~ print(set_of_data)
 # Start code and fetch results
 number_of_data_stored = 0

@@ -1,4 +1,4 @@
-# python3 plot/plot.py number_input_data data_size
+# python3 plot/plot.py ${data_duration_on_system} ${reliability_threshold} number_input_data data_size
 #   
 # python3 plot/mininet/plot.py 10 1 mininet
 # python3 plot/mininet/plot.py 1 10 mininet
@@ -17,6 +17,14 @@ import ast
 import seaborn as sns
 import numpy as np
 
+def create_folder(folder_path):
+    try:
+        # Create the folder if it does not exist
+        os.makedirs(folder_path, exist_ok=True)
+        print(f"Folder '{folder_path}' is ready.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
 def is_int(value):
     try:
         int(value)
@@ -29,15 +37,17 @@ def count_lines_minus_one(file_path):
         lines = file.readlines()
         return len(lines) - 1
 
-mode = sys.argv[1] # mininet or drex_only
-plot_type = sys.argv[2] # 'combined' or 'individual'
-input_nodes = sys.argv[3]
-if is_int(sys.argv[4]):
-    number_input_data = int(sys.argv[4])
-    data_size = int(sys.argv[5])
+data_duration_on_system = int(sys.argv[1])
+reliability_threshold = float(sys.argv[2])
+mode = sys.argv[3] # mininet or drex_only
+plot_type = sys.argv[4] # 'combined' or 'individual'
+input_nodes = sys.argv[5]
+if is_int(sys.argv[6]):
+    number_input_data = int(sys.argv[6])
+    data_size = int(sys.argv[7])
     input_data_to_print = str(number_input_data) + "_" + str(data_size)
 else:
-    input_data = sys.argv[4]
+    input_data = sys.argv[6]
     input_data_to_print = input_data.split('/')[-1]
     input_data_to_print = input_data_to_print.rsplit('.', 1)[0]
     number_input_data = count_lines_minus_one(input_data)
@@ -68,6 +78,9 @@ else:
     # Load the data from the CSV file
     file_path1 = "plot/drex_only/data/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + ".csv"
 
+folder_path = "plot/" + mode + "/" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold)
+create_folder(folder_path)
+
 df1 = pd.read_csv(file_path1, quotechar='"', doublequote=True, skipinitialspace=True)
 
 # Rename algorithms
@@ -81,18 +94,18 @@ df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
 
 # Define colors
 colors = {
-    'Min Storage': 'green',
-    'Min Time': 'green',
+    'Min_Storage': 'green',
+    'Min_Time': 'green',
     'alg3': 'blue',
     'D-rex': 'blue',
     'random': 'green',
     'hdfs': 'green',
-    '3 replications': 'red',
+    '3_replications': 'red',
     'alg2_rc': 'blue',
     'alg3_rc': 'blue',
     'alg4_rc': 'blue',
-    'HDFS RS(3,2)': 'red',
-    'HDFS RS(6,3)': 'red',
+    'HDFS_RS(3,2)': 'red',
+    'HDFS_RS(6,3)': 'red',
     'RS(10,4)': 'red',
     'vandermonders_3_2': 'red',
     'vandermonders_6_3': 'red',
@@ -114,7 +127,7 @@ if mode == "mininet":
     plt.title('Total Simulation Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_simulation_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    plt.savefig('plot/' + mode + '/total_simulation_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
     # Plotting total_chunking_time
     plt.figure(figsize=(10, 6))
@@ -125,7 +138,7 @@ if mode == "mininet":
     plt.title('Total Chunk Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_chunk_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    plt.savefig(folder_path + '/total_chunk_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
     
     # Plotting total_parralelized_upload_time
     plt.figure(figsize=(10, 6))
@@ -135,7 +148,7 @@ if mode == "mininet":
     plt.title('Total Parralelized Upload Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_parralelized_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    plt.savefig(folder_path + '/total_parralelized_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
     
     # Plotting total_parralelized_upload_time
     plt.figure(figsize=(10, 6))
@@ -145,7 +158,7 @@ if mode == "mininet":
     plt.title('Total Upload Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    plt.savefig(folder_path + '/total_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 else: # Plots unique to drex_only
     # ~ # Plotting total_parralelized_upload_time
     # ~ plt.figure(figsize=(10, 6))
@@ -155,7 +168,7 @@ else: # Plots unique to drex_only
     # ~ plt.title('Total Parralelized Upload Time (s)')
     # ~ plt.xticks(rotation=90)
     # ~ plt.tight_layout()
-    # ~ plt.savefig('plot/' + mode + '/total_parralelized_upload_time' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    # ~ plt.savefig(folder_path + '/total_parralelized_upload_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
     # ~ # Plotting total_upload_time
     # ~ plt.figure(figsize=(10, 6))
@@ -165,7 +178,7 @@ else: # Plots unique to drex_only
     # ~ plt.title('Total Upload Time (s)')
     # ~ plt.xticks(rotation=90)
     # ~ plt.tight_layout()
-    # ~ plt.savefig('plot/' + mode + '/total_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    # ~ plt.savefig(folder_path + '/total_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
     # Plotting number_of_data_stored
     plt.figure(figsize=(10, 6))
@@ -176,7 +189,7 @@ else: # Plots unique to drex_only
     plt.title('Number of data stored')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/number_of_data_stored_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    plt.savefig(folder_path + '/number_of_data_stored_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
     # Plotting mean number of chunks
     plt.figure(figsize=(10, 6))
@@ -186,7 +199,7 @@ else: # Plots unique to drex_only
     plt.title('Number of chunks per data')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/number_of_chunks_per_data_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    plt.savefig(folder_path + '/number_of_chunks_per_data_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
     # Plotting mean_storage_used
     plt.figure(figsize=(10, 6))
@@ -196,7 +209,7 @@ else: # Plots unique to drex_only
     plt.title('Storage per data')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/storage_per_data_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    plt.savefig(folder_path + '/storage_per_data_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
     
     # Plotting mean_upload_time
     plt.figure(figsize=(10, 6))
@@ -206,7 +219,7 @@ else: # Plots unique to drex_only
     plt.title('Upload time per data')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/mean_upload_time' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    plt.savefig(folder_path + '/mean_upload_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
 
 # Plot for both mininet and drex_only
@@ -218,7 +231,7 @@ plt.ylabel('Total Storage Used')
 plt.title('Total Storage Used (MB)')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig('plot/' + mode + '/total_storage_used_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+plt.savefig(folder_path + '/total_storage_used_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
 # Plotting total_scheduling_time
 plt.figure(figsize=(10, 6))
@@ -228,7 +241,7 @@ plt.ylabel('Total Scheduling Time')
 plt.title('Total Scheduling Time (ms for minient, s for drex_only)')
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig('plot/' + mode + '/total_scheduling_time_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+plt.savefig(folder_path + '/total_scheduling_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
 
 # Plot for distribution of data on the different storage nodes
@@ -236,15 +249,15 @@ plt.savefig('plot/' + mode + '/total_scheduling_time_' + input_nodes_to_print + 
 num_algorithms = len(df1)
 # Calculate bar width and positions
 bar_width = 0.2
-print("n algo:", num_algorithms)
+# ~ print("n algo:", num_algorithms)
 # Initialize lists to store the values
 initial_node_sizes_values = []
 final_node_sizes_values = []
 
 # Iterate over each row in the DataFrame
 for index, row in df1.iterrows():
-    print(row)
-    print(row['initial_node_sizes'])
+    # ~ print(row)
+    # ~ print(row['initial_node_sizes'])
     # Convert the string representation of the list to an actual list for both columns
     initial_node_sizes_list = ast.literal_eval(row['initial_node_sizes'])
     final_node_sizes_list = ast.literal_eval(row['final_node_sizes'])
@@ -256,7 +269,7 @@ for index, row in df1.iterrows():
 # ~ print(initial_node_sizes_values)
 num_nodes=len(initial_node_sizes_list)
 number_of_algorithms = len(initial_node_sizes_values)
-print("There are", num_nodes, "nodes and", number_of_algorithms, "algorithms")
+# ~ print("There are", num_nodes, "nodes and", number_of_algorithms, "algorithms")
 
 # Plot bars
 df = None
@@ -264,9 +277,9 @@ value1 = []
 value2 = []
 categories = []
 algs = []
-print(num_nodes, "nodes")
+# ~ print(num_nodes, "nodes")
 categories = [f'HDD-{i+1}' for i in range(num_nodes)]
-print(categories)
+# ~ print(categories)
 
 for a, limit in enumerate(zip(initial_node_sizes_values, final_node_sizes_values)):
     line_initial = limit[0]
@@ -363,7 +376,7 @@ if plot_type == 'combined':
     # Adding legend
     plt.legend(handles=[v1, v2, a1, a2])
     # Display the plot
-    plt.savefig('plot/' + mode + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + ".pdf")
+    plt.savefig(folder_path + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 else:
     for a in algos:
         plt.figure(figsize=(8, 4))
@@ -396,4 +409,4 @@ else:
         plt.xlabel(str(df1['algorithm'][a]))
         plt.legend()
         print(str(df1['algorithm'][a]))
-        plt.savefig('plot/' + mode + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(df1['algorithm'][a]) + ".pdf")
+        plt.savefig(folder_path + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(df1['algorithm'][a]) + ".pdf")

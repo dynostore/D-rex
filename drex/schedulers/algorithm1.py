@@ -37,7 +37,7 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes, nod
 				
 			if found == True:
 				node_sizes = update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes)
-				print("\nAlgorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen)
+				# ~ print("\nAlgorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen)
 				return set_of_nodes_chosen, N, K, node_sizes
 
 	
