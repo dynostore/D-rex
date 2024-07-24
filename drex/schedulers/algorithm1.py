@@ -41,5 +41,5 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes, nod
 				return set_of_nodes_chosen, N, K, node_sizes
 
 	
-	print("Algorithm 1 could not find a solution that would not overflow the memory of the nodes after looking at all N > 1")
+	# ~ print("Algorithm 1 could not find a solution that would not overflow the memory of the nodes after looking at all N > 1")
 	return -1, -1, -1, node_sizes

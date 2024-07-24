@@ -36,7 +36,7 @@ def algorithm3(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
 				time_and_space_from_set_of_possible_solution.append([replication_and_write_time, (file_size/K)*i])
 
 	if (len(time_and_space_from_set_of_possible_solution) == 0):
-		print("Algorithm 3 could not find a solution that would not overflow the memory of the nodes")
+		# ~ print("Algorithm 3 could not find a solution that would not overflow the memory of the nodes")
 		return - 1, -1, -1, node_sizes
 	
 	# 2. Take those that are on the pareto front

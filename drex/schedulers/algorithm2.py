@@ -195,7 +195,7 @@ def algorithm2_work_with_reduced_set_of_nodes(number_of_nodes, reliability_of_no
                         min_set_of_nodes_chosen = set_of_nodes_chosen
 
     if (min_K == -1):
-        print("Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
+        # ~ print("Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
         return - 1, -1, -1, node_sizes
 	
     node_sizes = update_node_sizes(min_set_of_nodes_chosen, min_K, file_size, node_sizes)
