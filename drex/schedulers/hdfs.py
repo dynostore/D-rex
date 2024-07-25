@@ -5,9 +5,10 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     """
     Cut the data in blocks of 128MB max and then replicate all the chunks three times.
     Choses the fastest nodes first.
+    When a node is full, uses the remaining nodes while the reiability is matched.
     """
     
-    print("node_sizes:", node_sizes)
+    # ~ print("node_sizes:", node_sizes)
     start = time.time()
 	
     # Cut data in blocks of 128MB maximum
@@ -24,7 +25,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     K = 1
         
     if (N > number_of_nodes):
-        print("N >")
+        # ~ print("N >")
         # Need to replicate the data on the nodes and stack them
         index = 0
         size_to_stores = [0] * number_of_nodes
@@ -39,7 +40,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
         N = number_of_nodes
     else:
         size_to_stores = [128] * num_full_chunks * 3 + [last_chunk_size] * 3
-    print("size_to_stores:", size_to_stores)
+    # ~ print("size_to_stores:", size_to_stores)
     
     set_of_nodes = list(range(0, number_of_nodes))
     
@@ -58,7 +59,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     j = 0
     for i in set_of_nodes_chosen:
         if (node_sizes[i] - size_to_stores[j] < 0):
-            print("Node", i, "doesn't have enough memory left")
+            # ~ print("Node", i, "doesn't have enough memory left")
             # Need to find a new node
             for k in set_of_nodes:
                 if k not in set_of_nodes_chosen:
@@ -66,7 +67,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
                         set_of_nodes_chosen[j] = set_of_nodes[k]
                         break
             if k == number_of_nodes - 1:
-                print(f"hdfs_three_replications could not find a solution. (k: {k}, number nodes {number_of_nodes})")
+                # ~ print(f"hdfs_three_replications could not find a solution. (k: {k}, number nodes {number_of_nodes})")
                 return -1, -1, -1, node_sizes
         j += 1
     
@@ -164,22 +165,27 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
 
     # Check if the data would fit. If not look for another node that can fit the data
     j = 0
+    # ~ print(set_of_nodes)
+    # ~ print(set_of_nodes_chosen)
     for i in set_of_nodes_chosen:
         if (node_sizes[i] - size_to_stores[j] < 0):
             # Need to find a new node
+            replace_ok = False
             for k in set_of_nodes:
                 if k not in set_of_nodes_chosen:
                     # ~ print("Trying node", k)
                     if node_sizes[k] - size_to_stores[j] >= 0:
                         set_of_nodes_chosen[j] = set_of_nodes[k]
+                        # ~ print("Replace")
+                        replace_ok = True
                         break
-            if k == number_of_nodes - 1:
+            if replace_ok == False:
                 # ~ print("Hdfs_rs could not find a solution.")
                 return -1, -1, -1, node_sizes, -1
         j += 1
     
     set_of_nodes_chosen = sorted(set_of_nodes_chosen)
-    # ~ print(set_of_nodes_chosen)
+    # ~ print("After:", set_of_nodes_chosen)
     
     # Need to do this after the potential switch of nodes of course
     reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]

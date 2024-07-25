@@ -123,8 +123,7 @@ def algorithm2_group_node_by_similarities(number_of_nodes, reliability_of_nodes,
                                 if (node_sizes[next_possible_node] - file_size/K >= 0):
                                     set_of_nodes_chosen[node_index] = next_possible_node
                                     reliability_of_nodes_chosen[node_index] = reliability_of_nodes[next_possible_node]
-                                    print("Switch ok with new node",
-                                          next_possible_node)
+                                    # ~ print("Switch ok with new node", next_possible_node)
                                     node_ok = True
                                     break
                             if node_ok == False:
@@ -132,8 +131,7 @@ def algorithm2_group_node_by_similarities(number_of_nodes, reliability_of_nodes,
                                 break
                         node_index += 1
                     if node_ok == True:  # There has been a switch
-                        print("New set of nodes after switch is",
-                              set_of_nodes_chosen)
+                        # ~ print("New set of nodes after switch is", set_of_nodes_chosen)
                         if reliability_thresold_met(len(set_of_nodes_chosen), K, reliability_threshold, reliability_of_nodes_chosen) == False:
                             fit_on_nodes = False
                     if (fit_on_nodes == True):

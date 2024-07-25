@@ -1,0 +1,2 @@
+algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored,total_N,mean_storage_used,mean_upload_time,mean_N,initial_node_sizes,final_node_sizes
+hdfs_three_replications, 0.029612302780151367, 39900003.0, 234376.54729835156, 36271.7138986014, 3, 23, 13300001.0, 78125.51576611718, 7.666666666666667, "[14000000, 16000000, 16000000, 12000000, 12000000, 8000000, 12000000, 4000000, 12000000, 14000000]", "[10009855.0, 12009855.0, 12009856, 8009952.0, 8009952.0, 4010080.0, 8010112, 10112, 8010112, 10010111.0]"

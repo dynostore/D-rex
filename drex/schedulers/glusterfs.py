@@ -31,14 +31,15 @@ def glusterfs(N, K, number_of_nodes, reliability_of_nodes, bandwidths, reliabili
     j = 0
     for i in set_of_nodes_chosen:
         if (node_sizes[i] - size_to_stores[j] < 0):
+            replace_ok = False
             # Need to find a new node
             for k in set_of_nodes:
                 if k not in set_of_nodes_chosen:
                     if node_sizes[k] - size_to_stores[j] >= 0:
                         set_of_nodes_chosen[j] = set_of_nodes[k]
+                        replace_ok = True
                         break
-            if k == number_of_nodes - 1:
-                # ~ print("Glusterfs could not find a solution because data won't fit.")
+             if replace_ok == False:
                 return -1, -1, -1, node_sizes
         j += 1
     

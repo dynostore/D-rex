@@ -85,11 +85,11 @@ df1 = pd.read_csv(file_path1, quotechar='"', doublequote=True, skipinitialspace=
 
 # Rename algorithms
 df1['algorithm'] = df1['algorithm'].str.replace('_reduced_complexity', '_rc')
-df1['algorithm'] = df1['algorithm'].str.replace('alg1', 'Min Storage')
+df1['algorithm'] = df1['algorithm'].str.replace('alg1', 'Min_Storage')
 df1['algorithm'] = df1['algorithm'].str.replace('alg4', 'D-rex')
-df1['algorithm'] = df1['algorithm'].str.replace('hdfs_three_replications', '3 replications')
-df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'HDFS RS(3,2)')
-df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_6_3', 'HDFS RS(6,3)')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfs_three_replications', '3_replications')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'HDFS_RS(3,2)')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_6_3', 'HDFS_RS(6,3)')
 df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
 
 # Define colors
@@ -316,7 +316,7 @@ merged_df.rename(columns={
     'Algorithm': f'Algorithm_{number_of_algorithms-1}'
 }, inplace=True)
 
-print(merged_df)
+# ~ print(merged_df)
 # Change font of plot to Times
 plt.rcParams.update({
     # ~ "text.usetex": True,
