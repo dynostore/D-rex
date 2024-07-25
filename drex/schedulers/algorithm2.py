@@ -40,8 +40,7 @@ def algorithm2(number_of_nodes, reliability_of_nodes, bandwidths, reliability_th
         # ~ print("Algorithm 2 could not find a solution that would not overflow the memory of the nodes")
         return - 1, -1, -1, node_sizes
 	
-    node_sizes = update_node_sizes(
-        min_set_of_nodes_chosen, min_K, file_size, node_sizes)
+    node_sizes = update_node_sizes(min_set_of_nodes_chosen, min_K, file_size, node_sizes)
 	
     end = time.time()
 

@@ -39,7 +39,7 @@ def glusterfs(N, K, number_of_nodes, reliability_of_nodes, bandwidths, reliabili
                         set_of_nodes_chosen[j] = set_of_nodes[k]
                         replace_ok = True
                         break
-             if replace_ok == False:
+            if replace_ok == False:
                 return -1, -1, -1, node_sizes
         j += 1
     
