@@ -23,31 +23,34 @@ print("There are", number_of_nodes, "nodes.")
 
 # Numpy arrays of probability of failure each node over the data timeframe
 p = []
-for i in range(0, number_of_nodes):
-    p.append(random.uniform(0.1, 0.15))
-# ~ p = [0.1, 0.8, 0.7, 0.9, 0.9, 0.05, 0.9, 0.8, 0.9, 0.9]
+# ~ for i in range(0, number_of_nodes):
+    # ~ p.append(random.uniform(0.1, 0.15))
+p = [0.1, 0.1, 0.1, 0.1, 0.9, 0.9, 0.9, 0.1, 0.1, 0.1]
 
 # Bandwidth to write on the storage nodes in MB/s
 bandwidths = []
-for i in range(0, number_of_nodes):
-    bandwidths.append(random.uniform(10, 15))
+# ~ for i in range(0, number_of_nodes):
+    # ~ bandwidths.append(random.uniform(10, 15))
+bandwidths = [20, 10, 10, 10, 10, 10, 10, 10, 10, 10]
 
 # Storage size of each node in B
 node_sizes = []  # Node sizes updated with data
 total_node_size = 0
+node_sizes = [900, 1000, 1000, 5000, 1000, 1000, 1000, 1000, 1000, 1000]
 for i in range(0, number_of_nodes):
-    node_sizes.append(random.uniform(600, 800)*1024*1024)
+    # ~ node_sizes.append(random.uniform(600, 800)*1024*1024)
+    # ~ node_sizes.append(1000)
     total_node_size += node_sizes[i]
 max_node_size = max(node_sizes)
 
 # Threshold we want to meet
-reliability_threshold = 0.99
+reliability_threshold = 0.999
 
 # To manage the real time obtained in experiments
 real_records = RealRecords(dir_data="data/")
 
 # File size in MB
-file_size = 5
+file_size = 500
 # TODO update this value when new data arrives in the system or if we have access to all data sizes
 min_data_size = file_size
 
@@ -133,7 +136,8 @@ Time for 10 / 15 / 20 nodes: 0 / 0 / 0 seconds
 HDFS replicate everything three times
 Time for 100 nodes: 0 seconds
 """
-# ~ set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, "simulation")
+for i in range (0, 10):
+	set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, "simulation")
 # ~ set_of_nodes_chosen, node_sizes, size_to_remove_from_nodes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, "real")
 
 """
@@ -148,6 +152,6 @@ Time for 100 nodes: seconds
 # ~ RS2 = 4
 # ~ RS1 = 6
 # ~ RS2 = 3
-RS1 = 6
-RS2 = 3
-set_of_nodes_chosen, N, K, node_sizes, size_to_remove_from_nodes = hdfs_reed_solomon(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, RS1, RS2)
+# ~ RS1 = 6
+# ~ RS2 = 3
+# ~ set_of_nodes_chosen, N, K, node_sizes, size_to_remove_from_nodes = hdfs_reed_solomon(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, RS1, RS2)

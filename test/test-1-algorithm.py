@@ -29,7 +29,7 @@ if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
 else:
     print("Evaluating", alg)
 input_nodes = sys.argv[next_arg]
-print("Input nodes from file:", input_nodes)
+# ~ print("Input nodes from file:", input_nodes)
 
 # Initialize lists and constants
 node_sizes = []
@@ -57,10 +57,10 @@ set_of_nodes = list(range(0, number_of_nodes))
 reliability_nodes = [probability_of_failure(annual_failure_rates[i], data_duration_on_system) for i in range(0, number_of_nodes)]
 max_node_size = max(node_sizes)
 total_storage_size = sum(node_sizes)
-print("There are", number_of_nodes, "nodes:")
-print("Sizes:", node_sizes)
-print("Write bandwidths:", write_bandwidths)
-print("Reliability:", reliability_nodes)
+# ~ print("There are", number_of_nodes, "nodes:")
+# ~ print("Sizes:", node_sizes)
+# ~ print("Write bandwidths:", write_bandwidths)
+print("Nodes failure probability:", reliability_nodes)
 
 # Read or create input data
 set_of_data = []
@@ -91,8 +91,13 @@ total_storage_used = 0
 differences = []
 min_data_size = sys.maxsize
 node_sizes_initialy = node_sizes.copy()
+counter = 0
 
 for data in set_of_data:
+    counter += 1
+    if counter % 500 == 0:
+        print(f"Processed {counter} data")
+
     node_sizes_before = node_sizes.copy()
     
     if data < min_data_size:
@@ -132,7 +137,7 @@ for data in set_of_data:
         end = time.time()
     elif alg == "hdfs_three_replications":
         start = time.time()
-        set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths,"simulation")
+        set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_nodes, node_sizes, data, write_bandwidths, "simulation")
         end = time.time()
     elif alg == "hdfsrs":
         start = time.time()

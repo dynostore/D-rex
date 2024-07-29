@@ -42,14 +42,6 @@
 #   100 1000
 #   1000 1000
 
-# Function to count lines in file
-#~ count_lines() {
-    #~ local filename="$1"
-    #~ local total_lines=$(wc -l < "$filename")
-    #~ local number_of_lines=$((total_lines - 1))
-    #~ echo $number_of_lines
-#~ }
-
 python3 -m venv venv
 . venv/bin/activate
 #~ pip install seaborn
@@ -74,17 +66,19 @@ else
 fi
 
 
-for alg in alg1 alg2 alg3 alg4 random hdfs_three_replications; do
-#~ for alg in alg1 alg2 alg3 alg4 alg2_rc alg3_rc alg4_rc random hdfs_three_replications; do
-    if [[ "$4" == *.csv ]]; then
-        python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "real_data" ${input_data}
-    else
-        python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-    fi
-done
+#~ for alg in alg1 alg2 alg4 random hdfs_three_replications; do
+#~ # for alg in alg1 alg2 alg3 alg4 random hdfs_three_replications; do
+#~ # for alg in alg1 alg2 alg3 alg4 alg2_rc alg3_rc alg4_rc random hdfs_three_replications; do
+    #~ if [[ "$4" == *.csv ]]; then
+        #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "real_data" ${input_data}
+    #~ else
+        #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+    #~ fi
+#~ done
 
+# pairs="3 2 6 3"
+pairs="3 2"
 # pairs="3 2 6 3 10 4"
-pairs="3 2 6 3"
 pairs_array=($pairs)
 for alg in hdfsrs; do
 # for alg in hdfsrs vandermonders; do
@@ -98,20 +92,21 @@ for alg in hdfsrs; do
         fi
     done
 done
-# pairs="6 4 11 8 12 8" # Commented cause I dont test with more than 10 nodes for now so it would not work
-pairs="6 4"
-pairs_array=($pairs)
-for alg in glusterfs; do
-    for ((i=0; i<${#pairs_array[@]}; i+=2)); do
-        N=${pairs_array[i]}
-        K=${pairs_array[i+1]}
-        if [[ "$4" == *.csv ]]; then
-            python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "real_data" ${input_data}
-        else
-            python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-        fi
-    done
-done
+
+#~ pairs="6 4"
+#~ # pairs="6 4 11 8 12 8" # Commented cause I dont test with more than 10 nodes for now so it would not work
+#~ pairs_array=($pairs)
+#~ for alg in glusterfs; do
+    #~ for ((i=0; i<${#pairs_array[@]}; i+=2)); do
+        #~ N=${pairs_array[i]}
+        #~ K=${pairs_array[i+1]}
+        #~ if [[ "$4" == *.csv ]]; then
+            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "real_data" ${input_data}
+        #~ else
+            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+        #~ fi
+    #~ done
+#~ done
 
 # Plotting results
 if [[ "$4" == *.csv ]]; then

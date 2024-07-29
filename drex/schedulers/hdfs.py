@@ -11,9 +11,9 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     Thus, we first take the 3 fastest nodes if the reliability match.
     """
     
-    print("Start 3 rep")
-    print("Node sizes:", node_sizes)
-    print("bandwidths:", bandwidths)
+    # ~ print("Start 3 rep")
+    # ~ print("Node sizes:", node_sizes)
+    # ~ print("bandwidths:", bandwidths)
     
     start = time.time()
 	
@@ -37,7 +37,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     filtered_nodes = [node for node, size in zip(set_of_nodes, node_sizes) if size < float('inf') and size >= 128]
     
     set_of_nodes = filtered_nodes
-    print("set_of_nodes after 128MB filter:", set_of_nodes)
+    # ~ print("set_of_nodes after 128MB filter:", set_of_nodes)
     
     # Combine nodes and bandwidths into tuples
     combined = list(zip(set_of_nodes, bandwidths))
@@ -47,77 +47,12 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     sorted_nodes_by_sorted_bandwidths, sorted_bandwidths = zip(*sorted_combined)
     set_of_nodes_chosen = list(sorted_nodes_by_sorted_bandwidths[:3])
     
-    print("Initial fastest nodes chosen:", set_of_nodes_chosen)
+    if (len(set_of_nodes_chosen) < 3):
+        # ~ print("Not enough memory left to fit the data")
+        return -1, -1, -1, node_sizes
     
-    # ~ # Check if the data would fit. If not look for another node that can fit the data
-    # ~ j = 0
-    # ~ for i in set_of_nodes_chosen:
-        # ~ if (node_sizes[i] - size_to_stores[j] < 0):
-            # ~ # Need to find a new node
-            # ~ replace_ok = False
-            # ~ for k in set_of_nodes:
-                # ~ if k not in set_of_nodes_chosen:
-                    # ~ if node_sizes[k] - size_to_stores[j] >= 0:
-                        # ~ set_of_nodes_chosen[j] = set_of_nodes[k]
-                        # ~ replace_ok = True
-                        # ~ break
-            # ~ if replace_ok == False:
-                # ~ return -1, -1, -1, node_sizes, -1
-        # ~ j += 1
+    # ~ print("Initial fastest nodes chosen:", set_of_nodes_chosen)
     
-    # ~ set_of_nodes_chosen = sorted(set_of_nodes_chosen)
-    
-    # ~ # Need to do this after the potential switch of nodes of course
-    # ~ reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
-    
-    # ~ N = num_chunks*3 # Times 3 because everything is replicated three times
-    # ~ K = 1
-        
-    # ~ if (N > number_of_nodes):
-        # ~ # Need to replicate the data on the nodes and stack them
-        # ~ index = 0
-        # ~ size_to_stores = [0] * number_of_nodes
-        # ~ for i in range (0, num_full_chunks):
-            # ~ for j in range (0, 3):
-                # ~ size_to_stores[index%number_of_nodes] += 128
-                # ~ index += 1
-        # ~ if last_chunk_size > 0:
-            # ~ for j in range (0, 3):
-                # ~ size_to_stores[index%number_of_nodes] += last_chunk_size
-                # ~ index += 1
-        # ~ N = number_of_nodes
-    # ~ else:
-        # ~ size_to_stores = [128] * num_full_chunks * 3 + [last_chunk_size] * 3
-    
-    # ~ set_of_nodes = list(range(0, number_of_nodes))
-    
-    # ~ # Combine nodes and bandwidths into tuples
-    # ~ combined = list(zip(set_of_nodes, bandwidths))
-
-    # ~ # Sort the combined list of tuples by bandwidth
-    # ~ sorted_combined = sorted(combined, key=lambda x: x[1], reverse=True)  # Sort by the second element (bandwidth)
-
-    # ~ # Unpack the sorted tuples into separate lists
-    # ~ sorted_nodes_by_sorted_bandwidths, sorted_bandwidths = zip(*sorted_combined)
-
-    # ~ set_of_nodes_chosen = list(sorted_nodes_by_sorted_bandwidths[:N])
-
-    # ~ # Check if the data would fit. If not look for another node that can fit the data
-    # ~ j = 0
-    # ~ for i in set_of_nodes_chosen:
-        # ~ if (node_sizes[i] - size_to_stores[j] < 0):
-            # ~ # Need to find a new node
-            # ~ for k in set_of_nodes:
-                # ~ if k not in set_of_nodes_chosen:
-                    # ~ if node_sizes[k] - size_to_stores[j] >= 0:
-                        # ~ set_of_nodes_chosen[j] = set_of_nodes[k]
-                        # ~ break
-            # ~ if k == number_of_nodes - 1:
-                # ~ return -1, -1, -1, node_sizes
-        # ~ j += 1
-    
-    # ~ set_of_nodes_chosen = sorted(set_of_nodes_chosen)
-
     # ~ # Need to do this after the potential switch of nodes of course
     reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
     
@@ -126,9 +61,10 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
     # hdfs_reed_solomon
     loop = 0
     while reliability_thresold_met(3, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
+        # ~ print("Need new nodes because reliability doesn't match")
         if (loop > number_of_nodes - 3):
             # ~ print(f"ERROR: hdfs_three_replications could not find a solution. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
-            exit(1)
+            return -1, -1, -1, node_sizes
         
         # Find the index of the lowest reliability value
         index = 0
@@ -155,7 +91,7 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
         
         # Update the corresponding node in set_of_nodes_chosen
         set_of_nodes_chosen[index_min_reliability] = set_of_nodes[index_max_reliability]
-        print("Reliability doesn't match, replace with", index_max_reliability)
+        # ~ print("Reliability doesn't match, replace with", index_max_reliability)
         loop += 1
     
     # Start filling with data the 3 nodes
@@ -174,6 +110,8 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
             rest_to_store += file_size - node_sizes[i]
             # ~ node_sizes[i] = 0
             size_to_stores.append(node_sizes[i])
+    # ~ print("size_to_stores:", size_to_stores)
+    # ~ print("rest_to_store:", rest_to_store)
     if rest_to_store != 0: # We have left overs to put on a fourth node or more
         all_good = False
         for i in set_of_nodes:
@@ -182,10 +120,11 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
                 reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
                 N += 1
                 K += 1
+                # ~ print("Try", set_of_nodes_chosen, reliability_of_nodes_chosen, N, K)
                 if reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes_chosen) == True:
                     if rest_to_store <= node_sizes[i]:
                         # ~ node_sizes[i] = node_sizes[i] - file_size
-                        size_to_stores.append(file_size)
+                        size_to_stores.append(rest_to_store)
                         all_good = True
                         break
                     else: # Need again another node
@@ -193,25 +132,45 @@ def hdfs_three_replications(number_of_nodes, reliability_threshold, reliability_
                         # ~ node_sizes[i] = 0
                         size_to_stores.append(node_sizes[i])
                 else:
+                    # ~ print("False")
+                    K -= 1
+                    N -= 1
                     set_of_nodes_chosen.remove(i)
         if all_good == False:
-            print("Error size HDFS 3 replications")
-            exit(1)
-            
+            # Need to loop and find a solution that works in terms of reliability
+            for set_of_nodes_chosen in itertools.combinations(set_of_nodes, 3):
+                # ~ print("After everything failed, try", set_of_nodes_chosen)
+                reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
+                if reliability_thresold_met(3, 1, reliability_threshold, reliability_of_nodes_chosen) == True:
+                    size_to_stores = []
+                    all_good_2 = True
+                    for i in set_of_nodes_chosen:
+                        if file_size <= node_sizes[i]: # all fit
+                            size_to_stores.append(file_size)
+                        else:
+                            all_good_2 = False
+                            break
+                    if all_good_2 == True:
+                        # ~ print("It works!")
+                        break
+            if all_good_2 == False:
+                # ~ print("Error size HDFS 3 replications")
+                return -1, -1, -1, node_sizes
+    # ~ print("size_to_stores:", size_to_stores)        
     # Custom code for update node size cause we have inconsistent data sizes
     j = 0
     for i in set_of_nodes_chosen:
-        print("Remove size", size_to_stores[j])
+        # ~ print("Remove size", size_to_stores[j], "from node", i)
         node_sizes[i] = node_sizes[i] - size_to_stores[j]
         j += 1
     
     end = time.time()
 	
     if mode == "simulation":
-        print("\nHDFS 3 replications simulation chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
+        # ~ print("\nHDFS 3 replications simulation chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
         return set_of_nodes_chosen, N, K, node_sizes
     elif mode == "real":
-        print("\nHDFS 3 replications real chose the set of nodes:", set_of_nodes_chosen, "and will remove the coprresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
+        # ~ print("\nHDFS 3 replications real chose the set of nodes:", set_of_nodes_chosen, "and will remove the coprresponding size from these nodes:", size_to_stores, "It took", end - start, "seconds.")
         return set_of_nodes_chosen, node_sizes, size_to_stores
     else: 
         print("Wrong mode passed to hdfs 3 replications. It must be \"simulation\" or \"real\"")
@@ -252,8 +211,7 @@ def hdfs_reed_solomon(number_of_nodes, reliability_threshold, reliability_of_nod
 
     # Check if the data would fit. If not look for another node that can fit the data
     j = 0
-    # ~ print(set_of_nodes)
-    # ~ print(set_of_nodes_chosen)
+
     for i in set_of_nodes_chosen:
         if (node_sizes[i] - size_to_stores[j] < 0):
             # Need to find a new node
