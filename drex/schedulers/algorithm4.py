@@ -176,7 +176,7 @@ def algorithm4_look_at_reduced_set_of_possibilities(
     subset_size = 10
     subsets = create_subsets(set_of_nodes, subset_size)
 
-	# Above 10 we do random values. As the number of node increase we reduce the set of possibilities we look at because there are less possible combinations
+    # Above 10 we do random values. As the number of node increase we reduce the set of possibilities we look at because there are less possible combinations
     subsets_random_values = []
     for i in range (subset_size+1, number_of_nodes+1):
         for j in range (0, number_of_nodes+1 - i):
@@ -216,7 +216,7 @@ def algorithm4_look_at_reduced_set_of_possibilities(
 					    time_space_and_size_score_from_set_of_possible_solution.append(
 						    [replication_and_write_time, (file_size/K)*i, size_score])
 	
-	# Now loop on random subsest
+    # Now loop on random subsest
     for set_of_nodes_chosen in subsets_random_values:
         N = len(set_of_nodes_chosen)
         

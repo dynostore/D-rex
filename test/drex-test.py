@@ -116,7 +116,6 @@ Time for 10 / 15 nodes: 4 / 35 seconds
 # ~ set_of_nodes_chosen, N, K, node_sizes = algorithm4(number_of_nodes, p, bandwidths, reliability_threshold,
                                                    # ~ file_size, real_records, node_sizes, max_node_size, 
                                                    # ~ min_data_size, system_saturation, total_node_size, predictor)
-
 """
 Algorithm 4 with reduced complexity by looking at less posibilities
 Time for 100 nodes: 8.47 seconds
@@ -136,8 +135,8 @@ Time for 10 / 15 / 20 nodes: 0 / 0 / 0 seconds
 HDFS replicate everything three times
 Time for 100 nodes: 0 seconds
 """
-for i in range (0, 10):
-	set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, "simulation")
+# ~ for i in range (0, 10):
+	# ~ set_of_nodes_chosen, N, K, node_sizes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, "simulation")
 # ~ set_of_nodes_chosen, node_sizes, size_to_remove_from_nodes = hdfs_three_replications(number_of_nodes, reliability_threshold, p, node_sizes, file_size, bandwidths, "real")
 
 """

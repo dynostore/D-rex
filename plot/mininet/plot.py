@@ -14,6 +14,7 @@ import sys
 import shutil
 import os
 import ast
+import csv
 import seaborn as sns
 import numpy as np
 
@@ -50,8 +51,19 @@ else:
     input_data = sys.argv[6]
     input_data_to_print = input_data.split('/')[-1]
     input_data_to_print = input_data_to_print.rsplit('.', 1)[0]
-    number_input_data = count_lines_minus_one(input_data)
-
+    # ~ number_input_data = count_lines_minus_one(input_data)
+    number_input_data = 0
+    with open(input_data, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            # Check if the 'Access Type' column has the value '2'
+            if row['Access Type'] == '2':
+                number_input_data += 1
+    if input_data == "drex/inputs/data/MEVA_merged.csv":
+        number_of_loops = 250
+    else:
+        number_of_loops = 1
+    number_input_data = number_input_data*number_of_loops
 print(number_input_data, "input data")
 
 input_nodes_to_print = input_nodes.split('/')[-1]
@@ -150,36 +162,16 @@ if mode == "mininet":
     plt.tight_layout()
     plt.savefig(folder_path + '/total_parralelized_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
     
-    # Plotting total_parralelized_upload_time
-    plt.figure(figsize=(10, 6))
-    plt.bar(df1['algorithm'], df1['total_upload_times_non_parallelized'], color=get_colors(df1['algorithm']))
-    plt.xlabel('Algorithm')
-    plt.ylabel('Total Upload Time')
-    plt.title('Total Upload Time (ms)')
-    plt.xticks(rotation=90)
-    plt.tight_layout()
-    plt.savefig(folder_path + '/total_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
-else: # Plots unique to drex_only
-    # ~ # Plotting total_parralelized_upload_time
+    # ~ # Unparalelized upload time
     # ~ plt.figure(figsize=(10, 6))
-    # ~ plt.bar(df1['algorithm'], df1['total_parralelized_upload_time'], color=get_colors(df1['algorithm']))
-    # ~ plt.xlabel('Algorithm')
-    # ~ plt.ylabel('Total Parralelized Upload Time')
-    # ~ plt.title('Total Parralelized Upload Time (s)')
-    # ~ plt.xticks(rotation=90)
-    # ~ plt.tight_layout()
-    # ~ plt.savefig(folder_path + '/total_parralelized_upload_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
-
-    # ~ # Plotting total_upload_time
-    # ~ plt.figure(figsize=(10, 6))
-    # ~ plt.bar(df1['algorithm'], df1['total_upload_time'], color=get_colors(df1['algorithm']))
+    # ~ plt.bar(df1['algorithm'], df1['total_upload_times_non_parallelized'], color=get_colors(df1['algorithm']))
     # ~ plt.xlabel('Algorithm')
     # ~ plt.ylabel('Total Upload Time')
-    # ~ plt.title('Total Upload Time (s)')
+    # ~ plt.title('Total Upload Time (ms)')
     # ~ plt.xticks(rotation=90)
     # ~ plt.tight_layout()
     # ~ plt.savefig(folder_path + '/total_upload_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
-
+else: # Plots unique to drex_only
     # Plotting number_of_data_stored
     plt.figure(figsize=(10, 6))
     plt.bar(df1['algorithm'], df1['number_of_data_stored'], color=get_colors(df1['algorithm']))
@@ -242,6 +234,26 @@ plt.title('Total Scheduling Time (ms for minient, s for drex_only)')
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig(folder_path + '/total_scheduling_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# Unparalelized upload time
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['total_upload_time'], color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Total Upload Time')
+plt.title('Total Upload Time (s or ms for mininet)')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/total_upload_time_non_parallelized_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# Plotting total_parralelized_upload_time
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['total_parralelized_upload_time'], color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Total Parralelized Upload Time')
+plt.title('Total Parralelized Upload Time (s or ms for mininet)')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/total_parralelized_upload_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
 
 # Plot for distribution of data on the different storage nodes

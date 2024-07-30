@@ -10,7 +10,7 @@ import time, sys
 def get_random_excluding_exclusions(number_of_nodes, already_looked_at, node_sizes):
     valid_choices = set(range(2, number_of_nodes + 1)) - already_looked_at
     if not valid_choices:
-        print("No random valid choices available")
+        # ~ print("No random valid choices available")
         return -1
     return random.choice(list(valid_choices))
     
@@ -34,7 +34,7 @@ def random_schedule(number_of_nodes, reliability_of_nodes, reliability_threshold
 		if N == -1:
 			return -1, -1, -1, node_sizes
 		already_looked_at.add(N)
-		print("Try N=", N)
+		# ~ print("Try N=", N)
 		K = random.randint(1, N - 1)
 		set_of_nodes_chosen = random.sample(range(0, number_of_nodes), N)
 		set_of_nodes_chosen.sort()
@@ -58,6 +58,6 @@ def random_schedule(number_of_nodes, reliability_of_nodes, reliability_threshold
 	
 	end = time.time()
 	
-	print("\nRandom chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
+	# ~ print("\nRandom chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen, "It took", end - start, "seconds.")
 	
 	return list(set_of_nodes_chosen), N, K, node_sizes

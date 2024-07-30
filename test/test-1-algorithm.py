@@ -25,9 +25,9 @@ if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
     RS1 = int(sys.argv[4])
     RS2 = int(sys.argv[5])
     next_arg = 6
-    print("Evaluating", alg, RS1, RS2)
+    print("Algo:", alg, RS1, RS2)
 else:
-    print("Evaluating", alg)
+    print("Algo:", alg)
 input_nodes = sys.argv[next_arg]
 # ~ print("Input nodes from file:", input_nodes)
 
@@ -72,12 +72,16 @@ if sys.argv[next_arg + 1] == "fixed_data":
 else:
     input_data_file = sys.argv[next_arg + 2]
     print("Reading input data from file", input_data_file)
-    with open(input_data_file, 'r') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            # Add the 'size' value to the set
-            set_of_data.append(float(row['size']))
-            # ~ print(float(row['size']))
+    if input_data_file == "drex/inputs/data/MEVA_merged.csv":
+        number_of_loops = 250
+    else:
+        number_of_loops = 1
+    for loop in range(number_of_loops):
+        with open(input_data_file, 'r') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row['Access Type'] == '2':
+                    set_of_data.append(float(row['size']))
 
 # ~ print(set_of_data)
 # Start code and fetch results
@@ -95,7 +99,7 @@ counter = 0
 
 for data in set_of_data:
     counter += 1
-    if counter % 500 == 0:
+    if counter % 2500 == 0:
         print(f"Processed {counter} data")
 
     node_sizes_before = node_sizes.copy()
