@@ -13,6 +13,12 @@ typedef struct {
     double probability_failure;
 } Node;
 
+
+typedef struct {
+    int num_elements;
+    Node **nodes; // Array of pointers to Node structs
+} Combination;
+
 // Function to count the number of nodes in the file
 int count_nodes(const char *filename) {
     FILE *file = fopen(filename, "r");
@@ -122,7 +128,10 @@ void read_node(const char *filename, int number_of_nodes, Node *nodes, int data_
 
 // Function to read data from file and populate the sizes array
 void read_data(const char *filename, double *sizes, int number_of_repetition) {
+    #ifdef PRINT
     printf("Iteration 1\n");
+    #endif
+    
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         perror("Error opening file");
@@ -191,8 +200,122 @@ double get_system_saturation(int number_of_nodes, double min_data_size, double t
     return saturation;
 }
 
+// Helper function to compute factorial
+int factorial(int n) {
+    int result = 1;
+    for (int i = 1; i <= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+
+
+// Function to calculate number of combinations (n choose r)
+int combination(int n, int r) {
+    if (r > n) return 0;
+    return factorial(n) / (factorial(r) * factorial(n - r));
+}
+
+// Function to print a combination
+void print_combination(Combination *comb) {
+    for (int i = 0; i < comb->num_elements; i++) {
+        printf("Node ID: %d, Size: %f, Write BW: %d, Read BW: %d, Failure Rate: %f\n",
+               comb->nodes[i]->id, comb->nodes[i]->storage_size, comb->nodes[i]->write_bandwidth,
+               comb->nodes[i]->read_bandwidth, comb->nodes[i]->probability_failure);
+    }
+}
+
+// Function to free allocated memory for combinations
+void free_combinations(Combination **combinations, int count) {
+    for (int i = 0; i < count; i++) {
+        free(combinations[i]->nodes);
+        free(combinations[i]);
+    }
+    free(combinations);
+}
+
+// Function to recursively generate combinations
+void generate_combinations_recursive(Node *nodes, int num_nodes, Combination **combinations, int *comb_index, int start, int end, int index, int r) {
+    if (index == r) {
+        for (int i = 0; i < r; i++) {
+            combinations[*comb_index]->nodes[i] = &nodes[i];
+        }
+        (*comb_index)++;
+        return;
+    }
+
+    for (int i = start; i <= end && end - i + 1 >= r - index; i++) {
+        combinations[*comb_index]->nodes[index] = &nodes[i];
+        generate_combinations_recursive(nodes, num_nodes, combinations, comb_index, i + 1, end, index + 1, r);
+    }
+}
+
+// Function to generate combinations
+void generate_combinations(Node *nodes, int num_nodes, int min_size, int max_size) {
+    int i, j, k;
+    int total_combinations = 0;
+    Combination **combinations = NULL;
+
+    // Calculate the total number of combinations
+    for (i = min_size; i <= max_size; i++) {
+        total_combinations += combination(num_nodes, i);
+    }
+
+    // Allocate memory for storing all combinations
+    combinations = malloc(total_combinations * sizeof(Combination *));
+    if (combinations == NULL) {
+        perror("Error allocating memory for combinations");
+        exit(EXIT_FAILURE);
+    }
+
+    int comb_index = 0;
+    for (i = min_size; i <= max_size; i++) {
+        int num_combinations = combination(num_nodes, i);
+        Combination **temp_combinations = malloc(num_combinations * sizeof(Combination *));
+        if (temp_combinations == NULL) {
+            perror("Error allocating memory for temporary combinations");
+            exit(EXIT_FAILURE);
+        }
+
+        for (j = 0; j < num_combinations; j++) {
+            temp_combinations[j] = malloc(sizeof(Combination));
+            if (temp_combinations[j] == NULL) {
+                perror("Error allocating memory for combination");
+                exit(EXIT_FAILURE);
+            }
+            temp_combinations[j]->nodes = malloc(i * sizeof(Node *));
+            if (temp_combinations[j]->nodes == NULL) {
+                perror("Error allocating memory for nodes in combination");
+                exit(EXIT_FAILURE);
+            }
+            temp_combinations[j]->num_elements = i;
+        }
+
+        // Generate combinations and store them
+        int index = 0;
+        generate_combinations_recursive(nodes, num_nodes, temp_combinations, &index, 0, num_nodes - 1, 0, i);
+
+        // Copy temporary combinations to the main array
+        for (j = 0; j < num_combinations; j++) {
+            combinations[comb_index++] = temp_combinations[j];
+        }
+        free(temp_combinations);
+    }
+
+    // Print all combinations
+    for (i = 0; i < total_combinations; i++) {
+        printf("Combination %d:\n", i + 1);
+        print_combination(combinations[i]);
+        printf("\n");
+    }
+
+    // Free allocated memory
+    free_combinations(combinations, total_combinations);
+}
+
 void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, double total_storage_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N) {
     double total_remaining_size = total_storage_size; // Used for system saturation
+    int i = 0;
     
     // Heart of the function
     clock_t start, end;
@@ -201,9 +324,12 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
     // TODO: remove
     *N = 4;
     *K = 2;
-    
+
+    // 1. Get system saturation
     double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, total_remaining_size);    
     printf("System saturation = %f\n", system_saturation);
+    
+    // 2. Iterates over a range of nodes combination
     
     exit(1);
     end = clock();
@@ -225,6 +351,7 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
 
 int main(int argc, char *argv[]) {
     int i = 0;
+    int j = 0;
     if (argc < 6) {
         fprintf(stderr, "Usage: %s <input_node> <input_data> <data_duration_on_system> <reliability_threshold> <number_of_repetition>\n", argv[0]);
         return EXIT_FAILURE;
@@ -289,6 +416,20 @@ int main(int argc, char *argv[]) {
     int number_of_data_stored = 0;
     int total_N = 0; // Number of chunks
     
+    // Calculate total number of combinations
+    int total_combinations = 0;
+    int min_number_node_in_combination = 2;
+    int max_number_node_in_combination = 2;
+    for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
+        total_combinations += combination(number_of_nodes, i);
+    }
+    printf("There are %d possible combinations\n", total_combinations);
+    
+    // Generate all possibles combinations
+    generate_combinations(nodes, number_of_nodes, min_number_node_in_combination, max_number_node_in_combination);
+    exit(1);
+    
+    // Looping on all data
     for (i = 0; i < count; i++) {
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];

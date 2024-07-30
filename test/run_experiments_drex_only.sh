@@ -70,55 +70,59 @@ else
     echo "Input nodes: $input_nodes / Input data: $number_of_data data of size $data_size"
 fi
 
+number_of_repetition=1
+
 # Choosing our alg4 version
 if [ $number_nodes -ge 1 ]; then
     alg4=alg4_rc
 else
     alg4=alg4
 fi
-#~ echo "${alg4}"
 
-# for alg in alg1 alg2 ${alg4} random hdfs_three_replications; do
-#~ for alg in alg1 ${alg4} random hdfs_three_replications; do
-for alg in alg1 random hdfs_three_replications; do
-# for alg in alg1 alg2 alg3 ${alg4} random hdfs_three_replications; do
-    if [[ "$4" == *.csv ]]; then
-        python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "real_data" ${input_data}
-    else
-        python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-    fi
-done
+#~ # for alg in alg1 alg2 ${alg4} random hdfs_three_replications; do
+#~ # for alg in alg1 ${alg4} random hdfs_three_replications; do
+#~ for alg in alg1 random hdfs_three_replications; do
+#~ # for alg in alg1 alg2 alg3 ${alg4} random hdfs_three_replications; do
+    #~ if [[ "$4" == *.csv ]]; then
+        #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "real_data" ${input_data}
+    #~ else
+        #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+    #~ fi
+#~ done
 
-pairs="3 2 6 3"
-# pairs="3 2 6 3 10 4"
-pairs_array=($pairs)
-for alg in hdfsrs; do
-# for alg in hdfsrs vandermonders; do
-    for ((i=0; i<${#pairs_array[@]}; i+=2)); do
-        RS1=${pairs_array[i]}
-        RS2=${pairs_array[i+1]}
-        if [[ "$4" == *.csv ]]; then
-            python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((RS1)) $((RS2)) ${input_nodes} "real_data" ${input_data}
-        else
-            python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((RS1)) $((RS2)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-        fi
-    done
-done
+#~ pairs="3 2 6 3"
+#~ # pairs="3 2 6 3 10 4"
+#~ pairs_array=($pairs)
+#~ for alg in hdfsrs; do
+#~ # for alg in hdfsrs vandermonders; do
+    #~ for ((i=0; i<${#pairs_array[@]}; i+=2)); do
+        #~ RS1=${pairs_array[i]}
+        #~ RS2=${pairs_array[i+1]}
+        #~ if [[ "$4" == *.csv ]]; then
+            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((RS1)) $((RS2)) ${input_nodes} "real_data" ${input_data}
+        #~ else
+            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((RS1)) $((RS2)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+        #~ fi
+    #~ done
+#~ done
 
-pairs="6 4"
-# pairs="6 4 11 8 12 8" # Commented cause I dont test with more than 10 nodes for now so it would not work
-pairs_array=($pairs)
-for alg in glusterfs; do
-    for ((i=0; i<${#pairs_array[@]}; i+=2)); do
-        N=${pairs_array[i]}
-        K=${pairs_array[i+1]}
-        if [[ "$4" == *.csv ]]; then
-            python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "real_data" ${input_data}
-        else
-            python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
-        fi
-    done
-done
+#~ pairs="6 4"
+#~ # pairs="6 4 11 8 12 8" # Commented cause I dont test with more than 10 nodes for now so it would not work
+#~ pairs_array=($pairs)
+#~ for alg in glusterfs; do
+    #~ for ((i=0; i<${#pairs_array[@]}; i+=2)); do
+        #~ N=${pairs_array[i]}
+        #~ K=${pairs_array[i+1]}
+        #~ if [[ "$4" == *.csv ]]; then
+            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "real_data" ${input_data}
+        #~ else
+            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size))
+        #~ fi
+    #~ done
+#~ done
+
+gcc -Wall drex/schedulers/algorithm4.c -o alg4 -lm
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition))
 
 # Plotting results
 if [[ "$4" == *.csv ]]; then
