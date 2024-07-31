@@ -31,6 +31,12 @@ typedef struct {
     int* write_bandwidth; // Array of bandwidths
     double min_remaining_size; // Smallest node's remaining memory in the combination. Used to quickly skip an unvalid combination
     int min_write_bandwidth; // Smallest node's write bandwidth in the combination
+    
+    // Values in the pareto front
+    double size_score;
+    double replication_and_write_time;
+    double storage_overhead;
+    int K;
 } Combination;
 
 // Function to count the number of nodes in the file
@@ -335,22 +341,59 @@ int get_max_K_from_reliability_threshold_and_nodes_chosen(int number_of_nodes, f
     return -1;
 }
 
+// Function to check if a combination is dominated
+bool is_dominated(Combination* a, Combination* b) {
+    return (a->size_score >= b->size_score && 
+            a->replication_and_write_time >= b->replication_and_write_time && 
+            a->storage_overhead >= b->storage_overhead) && 
+           (a->size_score > b->size_score || 
+            a->replication_and_write_time > b->replication_and_write_time || 
+            a->storage_overhead > b->storage_overhead);
+}
+
+// Function to find the Pareto front
+void find_pareto_front(Combination **combinations, int num_combinations, int *pareto_indices, int *pareto_count) {
+    *pareto_count = 0;
+    for (int i = 0; i < num_combinations; i++) {
+        
+        if (combinations[i]->K == -1) {
+            continue;
+        }
+        
+        printf("Evaluating combination %d with N=%d, K=%d: %f %f %f\n", i, combinations[i]->num_elements, combinations[i]->K, combinations[i]->storage_overhead, combinations[i]->size_score, combinations[i]->replication_and_write_time);
+        
+        bool dominated = false;
+        for (int j = 0; j < num_combinations; j++) {
+            if (combinations[j]->K == -1) {
+                continue;
+            }
+            if (i != j && is_dominated(combinations[i], combinations[j])) {
+                dominated = true;
+                printf("Dominated\n");
+                break;
+            }
+        }
+        if (!dominated) {
+            pareto_indices[*pareto_count] = i;
+            (*pareto_count)++;
+        }
+    }
+}
+
 void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, double total_storage_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations) {
     double total_remaining_size = total_storage_size; // Used for system saturation
     int i = 0;
     int j = 0;
-    double size_score = 0;
-    double replication_and_write_time = 0;
     double chunk_size = 0;
     double one_on_number_of_nodes = 1.0/number_of_nodes;
+    //~ int num_combinations_valid = 0;
     
     // Heart of the function
     clock_t start, end;
-    
     start = clock();
+    
     // TODO: remove
     *N = 4;
-    *K = 2;
 
     // 1. Get system saturation
     double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, total_remaining_size);    
@@ -361,25 +404,47 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
     for (i = 0; i < total_combinations; i++) {
         *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability);
         printf("Max K for combination %d is %d\n", i, *K);
+        
+        // Reset from last expe the values used in pareto front
+        combinations[i]->storage_overhead = 0.0;
+        combinations[i]->size_score = 0.0;
+        combinations[i]->replication_and_write_time = 0.0;
+        combinations[i]->K = *K;
+        
         if (*K != -1) {
             chunk_size = size/(*K);
             printf("Chunk size: %f\n", chunk_size);
             if (combinations[i]->min_remaining_size - chunk_size >= 0) {
-                size_score = 0;
                 for (j = 0; j < combinations[i]->num_elements; j++) {
-                    size_score += 1 - exponential_function(combinations[i]->nodes[j]->storage_size - chunk_size, max_node_size, 1, min_data_size, one_on_number_of_nodes);
+                    combinations[i]->size_score += 1 - exponential_function(combinations[i]->nodes[j]->storage_size - chunk_size, max_node_size, 1, min_data_size, one_on_number_of_nodes);
                     printf("%f %f %f %f %f\n", combinations[i]->nodes[j]->storage_size, chunk_size, max_node_size, min_data_size, one_on_number_of_nodes);
-                    printf("size_score: %f\n", size_score);
+                    printf("size_score: %f\n", combinations[i]->size_score);
                 }
-                size_score = size_score/combinations[i]->num_elements;
-                printf("size_score: %f\n", size_score);
-                //~ replication_and_write_time = predict();
-                printf("replication_and_write_time: %f\n", replication_and_write_time);
+                combinations[i]->size_score = combinations[i]->size_score/combinations[i]->num_elements;
+                printf("size_score: %f\n", combinations[i]->size_score);
+                combinations[i]->replication_and_write_time = 2; // TODO: recode predict in C and use it here
+                printf("replication_and_write_time: %f\n", combinations[i]->replication_and_write_time);
+                combinations[i]->storage_overhead = chunk_size*combinations[i]->num_elements;
+                printf("storage_overhead: %f\n", combinations[i]->storage_overhead);
             }
-            exit(1);
+            else {
+                combinations[i]->K = -1;
+            }
         }
     }
     
+    // 3. Only keep combination on pareto front
+    int pareto_indices[total_combinations];
+    int pareto_count;
+    
+    find_pareto_front(combinations, total_combinations, pareto_indices, &pareto_count);
+
+    printf("%d combinations on 3D pareto front. Pareto front indices:\n", pareto_count);
+    for (int i = 0; i < pareto_count; i++) {
+        printf("%d: %f %f %f\n", pareto_indices[i], combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time);
+    }
+    
+    exit(1);
     end = clock();
         
     // Computing the results
