@@ -316,7 +316,6 @@ double poibin_cdf(int N, int K, double sum_reliability, double variance_reliabil
     double cdf = 0.0;
     int n = N - K;
     double mean = sum_reliability / N;
-    printf("mean %f\n", mean);
     double stddev = sqrt(variance_reliability);
     double z = (n - mean) / stddev;
     cdf = 0.5 * (1 + erf(z / sqrt(2.0))); // Using error function approximation
@@ -359,9 +358,7 @@ void find_pareto_front(Combination **combinations, int num_combinations, int *pa
         if (combinations[i]->K == -1) {
             continue;
         }
-        
-        printf("Evaluating combination %d with N=%d, K=%d: %f %f %f\n", i, combinations[i]->num_elements, combinations[i]->K, combinations[i]->storage_overhead, combinations[i]->size_score, combinations[i]->replication_and_write_time);
-        
+                
         bool dominated = false;
         for (int j = 0; j < num_combinations; j++) {
             if (combinations[j]->K == -1) {
@@ -369,7 +366,6 @@ void find_pareto_front(Combination **combinations, int num_combinations, int *pa
             }
             if (i != j && is_dominated(combinations[i], combinations[j])) {
                 dominated = true;
-                printf("Dominated\n");
                 break;
             }
         }
@@ -380,8 +376,33 @@ void find_pareto_front(Combination **combinations, int num_combinations, int *pa
     }
 }
 
-void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, double total_storage_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations) {
-    double total_remaining_size = total_storage_size; // Used for system saturation
+void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pareto_count, double* min_size_score, double* max_size_score, double* min_replication_and_write_time, double* max_replication_and_write_time) {
+    *min_size_score = DBL_MAX;
+    *max_size_score = -DBL_MAX;
+    *min_replication_and_write_time = DBL_MAX;
+    *max_replication_and_write_time = -DBL_MAX;
+
+    for (int i = 0; i < pareto_count; i++) {
+        int idx = pareto_indices[i];
+        double size_score = combinations[idx]->size_score;
+        double replication_and_write_time = combinations[idx]->replication_and_write_time;
+
+        if (size_score < *min_size_score) {
+            *min_size_score = size_score;
+        }
+        if (size_score > *max_size_score) {
+            *max_size_score = size_score;
+        }
+        if (replication_and_write_time < *min_replication_and_write_time) {
+            *min_replication_and_write_time = replication_and_write_time;
+        }
+        if (replication_and_write_time > *max_replication_and_write_time) {
+            *max_replication_and_write_time = replication_and_write_time;
+        }
+    }
+}
+
+void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size) {
     int i = 0;
     int j = 0;
     double chunk_size = 0;
@@ -392,18 +413,21 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
     clock_t start, end;
     start = clock();
     
-    // TODO: remove
-    *N = 4;
+    *N = -1;
 
     // 1. Get system saturation
-    double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, total_remaining_size);    
+    double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, *total_remaining_size);    
+    #ifdef PRINT
     printf("System saturation = %f\n", system_saturation);
     printf("Data size = %f\n", size);
+    #endif
     
     // 2. Iterates over a range of nodes combination
     for (i = 0; i < total_combinations; i++) {
         *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability);
+        #ifdef PRINT
         printf("Max K for combination %d is %d\n", i, *K);
+        #endif
         
         // Reset from last expe the values used in pareto front
         combinations[i]->storage_overhead = 0.0;
@@ -413,19 +437,25 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
         
         if (*K != -1) {
             chunk_size = size/(*K);
+            #ifdef PRINT
             printf("Chunk size: %f\n", chunk_size);
+            #endif
             if (combinations[i]->min_remaining_size - chunk_size >= 0) {
                 for (j = 0; j < combinations[i]->num_elements; j++) {
                     combinations[i]->size_score += 1 - exponential_function(combinations[i]->nodes[j]->storage_size - chunk_size, max_node_size, 1, min_data_size, one_on_number_of_nodes);
+                    #ifdef PRINT
                     printf("%f %f %f %f %f\n", combinations[i]->nodes[j]->storage_size, chunk_size, max_node_size, min_data_size, one_on_number_of_nodes);
                     printf("size_score: %f\n", combinations[i]->size_score);
+                    #endif
                 }
                 combinations[i]->size_score = combinations[i]->size_score/combinations[i]->num_elements;
-                printf("size_score: %f\n", combinations[i]->size_score);
                 combinations[i]->replication_and_write_time = 2; // TODO: recode predict in C and use it here
-                printf("replication_and_write_time: %f\n", combinations[i]->replication_and_write_time);
                 combinations[i]->storage_overhead = chunk_size*combinations[i]->num_elements;
+                #ifdef PRINT
                 printf("storage_overhead: %f\n", combinations[i]->storage_overhead);
+                printf("replication_and_write_time: %f\n", combinations[i]->replication_and_write_time);
+                printf("size_score: %f\n", combinations[i]->size_score);
+                #endif
             }
             else {
                 combinations[i]->K = -1;
@@ -438,28 +468,85 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
     int pareto_count;
     
     find_pareto_front(combinations, total_combinations, pareto_indices, &pareto_count);
-
+    
+    #ifdef PRINT
     printf("%d combinations on 3D pareto front. Pareto front indices:\n", pareto_count);
-    for (int i = 0; i < pareto_count; i++) {
+    for (i = 0; i < pareto_count; i++) {
         printf("%d: %f %f %f\n", pareto_indices[i], combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time);
     }
+    #endif
     
-    exit(1);
+    // Get min and max of each of our 3 parameters
+    // For the space one is already sorted logically so don't need to use the min and max function
+    // It is already sorted because the space decreases with N that increases
+    // However time and score are not sorted
+    double min_storage_overhead = combinations[pareto_indices[pareto_count - 1]]->storage_overhead;
+    double max_storage_overhead = combinations[pareto_indices[0]]->storage_overhead;
+    double min_size_score;
+    double max_size_score;
+    double min_replication_and_write_time;
+    double max_replication_and_write_time;
+    find_min_max_pareto(combinations, pareto_indices, pareto_count, &min_size_score, &max_size_score, &min_replication_and_write_time, &max_replication_and_write_time);
+    #ifdef PRINT
+    printf("Min and max from pareto front are: %f %f %f %f %f %f\n", min_storage_overhead, max_storage_overhead, min_size_score, max_size_score, min_replication_and_write_time, max_replication_and_write_time);
+    #endif
+    
+    // Compute score with % progress
+    double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
+    double total_progress_size_score = max_size_score - min_size_score;
+    double total_progress_replication_and_write_time = max_replication_and_write_time - min_replication_and_write_time;
+    #ifdef PRINT
+    printf("Progresses are %f %f %f\n", total_progress_storage_overhead, total_progress_size_score, total_progress_replication_and_write_time);
+    #endif
+    double time_score = 0;
+    double space_score = 0;
+    double total_score = 0;
+    double max_score = -DBL_MAX;
+    int idx = 0;
+    int best_index = -1;
+    
+    // Getting combination with best score
+    for (i = 0; i < pareto_count; i++) {
+        idx = pareto_indices[i];
+        if (total_progress_replication_and_write_time > 0) {  // In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
+            time_score = 100 - ((combinations[idx]->replication_and_write_time - min_replication_and_write_time)*100)/total_progress_replication_and_write_time;
+        }
+        
+        if (total_progress_storage_overhead > 0) {
+            space_score = 100 - ((combinations[idx]->storage_overhead - min_storage_overhead)*100)/total_progress_storage_overhead;
+        }
+        
+        if (total_progress_size_score > 0) {
+            space_score += 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
+        }
+        total_score = time_score + (space_score/2.0)*system_saturation;
+        
+        if (max_score < total_score) { // Higher score the better
+            max_score = total_score;
+            best_index = idx;
+        }
+    }
+    
+    *N = combinations[best_index]->num_elements;
+    *K = combinations[best_index]->K;
+    #ifdef PRINT
+    printf("Best combination is %d\n", best_index);
+    #endif
     end = clock();
         
     // Computing the results
     if (*N != -1) {
         *number_of_data_stored += 1;
         *total_N += *N;
-        *total_storage_used += (size / *K) * *N;
-        
-        // TODO: compute these two values
-        //~ total_upload_time +=
-        //~ total_parralelized_upload_time += 
-        
-        // TODO: update total_remaining_size
-        
-        // TODO: update combinations[*combination_count]->min_remaining_size
+        chunk_size = size/(*K);
+        *total_storage_used += chunk_size*(*N);
+        *total_remaining_size -= chunk_size*(*N);
+        *total_parralelized_upload_time = chunk_size/combinations[best_index]->min_write_bandwidth;
+        for (i = 0; i < combinations[best_index]->num_elements; i++) {
+            *total_upload_time += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
+            combinations[best_index]->nodes[i]->storage_size -= chunk_size;                
+        }
+        combinations[best_index]->min_remaining_size -= chunk_size;
     }
     *total_scheduling_time += ((double) (end - start)) / CLOCKS_PER_SEC;
 }
@@ -551,8 +638,6 @@ void free_records(RealRecords *records) {
 
 int main(int argc, char *argv[]) {
     int i = 0;
-    //~ int j = 0;
-    //~ int k = 0;
     if (argc < 6) {
         fprintf(stderr, "Usage: %s <input_node> <input_data> <data_duration_on_system> <reliability_threshold> <number_of_repetition>\n", argv[0]);
         return EXIT_FAILURE;
@@ -624,7 +709,10 @@ int main(int argc, char *argv[]) {
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
         total_combinations += combination(number_of_nodes, i);
     }
+    
+    #ifdef PRINT
     printf("There are %d possible combinations\n", total_combinations);
+    #endif
     
     // Generate all possibles combinations
     Combination **combinations = NULL;
@@ -679,12 +767,14 @@ int main(int argc, char *argv[]) {
     }
     #endif
     
+    double total_remaining_size = total_storage_size; // Used for system saturation
+    
     // Looping on all data and using algorithm4
     for (i = 0; i < count; i++) {
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
         }
-        algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, total_storage_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations);
+        algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size);
         #ifdef PRINT
         printf("Algorithm 4 chose N = %d and K = %d\n", N, K);
         #endif
