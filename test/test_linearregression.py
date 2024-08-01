@@ -6,7 +6,7 @@ import pandas as pd
 
 n = 10
 k = 3
-file_size = 1000
+file_size = 4000
 
 pred = Predictor()
 data = pred.real_records.data
@@ -14,40 +14,40 @@ data = pred.real_records.data
 
 data_to_plot = list()
 
-for s in pred.real_records.sizes:
-    Y = pred.real_records.data[pred.real_records.data['size']
-                                       == s]['avg_time']
-    X = pred.real_records.data[pred.real_records.data['size'] == s][[
-                'n', 'k']] 
-    size_data = list()
-    time_data = list()
-    labels = list()
-    for x in X.index:
-        if X['n'][x] - 2 == X['k'][x]:
-            size_data.append(X['n'][x] * int(s) / X['k'][x])
-            time_data.append(Y[x])
-            #str = f"{X['n'][x]}"
-            str = f"{int(X['n'][x])},{int(X['k'][x])}"
-            labels.append(str)
-    #print(X_str)
-    plt.figure(figsize=(10, 6.5))  # width: 10 inches, height: 6 inches
+# for s in pred.real_records.sizes:
+#     Y = pred.real_records.data[pred.real_records.data['size']
+#                                        == s]['avg_time']
+#     X = pred.real_records.data[pred.real_records.data['size'] == s][[
+#                 'n', 'k']] 
+#     size_data = list()
+#     time_data = list()
+#     labels = list()
+#     for x in X.index:
+#         if X['n'][x] - 2 == X['k'][x]:
+#             size_data.append(X['n'][x] * int(s) / X['k'][x])
+#             time_data.append(Y[x])
+#             #str = f"{X['n'][x]}"
+#             str = f"{int(X['n'][x])},{int(X['k'][x])}"
+#             labels.append(str)
+#     #print(X_str)
+#     plt.figure(figsize=(10, 6.5))  # width: 10 inches, height: 6 inches
 
-    plt.scatter(time_data, size_data, color = "blue", label="Values of N,K")
+#     plt.scatter(time_data, size_data, color = "blue", label="Values of N,K")
     
-    for i in range(len(time_data)):
-        plt.annotate(labels[i], (time_data[i], size_data[i]), textcoords="offset points", xytext=(0,5), ha='center', fontsize=9)
+#     for i in range(len(time_data)):
+#         plt.annotate(labels[i], (time_data[i], size_data[i]), textcoords="offset points", xytext=(0,5), ha='center', fontsize=9)
 
     
-    # Add title and labels
-    plt.xlabel('Average chunking time (ms)')
-    plt.ylabel('Storage overhead (MB)')
-    plt.xticks(rotation=45)
+#     # Add title and labels
+#     plt.xlabel('Average chunking time (ms)')
+#     plt.ylabel('Storage overhead (MB)')
+#     plt.xticks(rotation=45)
     
-    plt.legend(loc="upper left")
+#     plt.legend(loc="upper left")
 
-    plt.tight_layout()
-    plt.savefig(f"plot/ida_overheads/scatter_{s}MB.png")
-    plt.clf()
+#     plt.tight_layout()
+#     plt.savefig(f"plot/ida_overheads/scatter_{s}MB.png")
+#     plt.clf()
 
 #for d in data.index:
     #print(d)
@@ -71,21 +71,21 @@ for s in pred.real_records.sizes:
 #X = data[['size', 'n', 'k']]
 #Y = data['avg_time']
 
-#Xs_test = []
+Xs_test = []
 #eal_points = []
-#for i in range(3, n):
-#    Xs_test.append([file_size, i, 2])
+for i in range(3, n):
+    Xs_test.append([file_size, i, 2])
     
 #real_points = data[(data["k"] == 2) & (data["size"] == file_size)]
 
-#Xs_test = np.array(Xs_test)
-#X_test = np.array([file_size, n, k]).reshape(1, -1)
+Xs_test = np.array(Xs_test)
+X_test = np.array([file_size, n, k]).reshape(1, -1)
 
 
 #pred = Predictor()
-#for i in range(3, n):
-#    bandwiths = [10] * i
-#    print(i,2,pred.predict(file_size, i, 2, bandwiths))
+for i in range(3, n):
+    bandwiths = [10] * i
+    print(i,2,pred.predict(file_size, i, 2, bandwiths))
 
 # Create an instance of the LinearRegression class
 #reg = LinearRegression()

@@ -6,34 +6,55 @@ from drex.utils.tool_functions import calculate_transfer_time
 
 
 class Predictor():
+    """
+    Class to predict the time to chunk a file of a given size
+
+    1) Reads times from the real records in the data folder
+    2) Fits a linear regression model to the data
+    3) Predicts the time to chunk a file of a given size
+    4) Returns the prediction
+    """
 
     def __init__(self) -> None:
+        # Load the real records from data traces
         self.real_records = RealRecords(dir_data="data/")
-        # self.target_size = target_size
-        # vals_abs = np.argsort([abs(x-self.target_size) for x in self.real_records.sizes])
-        # self.nearest_sizes = [self.real_records.sizes[i] for i in vals_abs[:1]]
-        # self.data_to_use = self.real_records.data[self.real_records.data['size'].isin(self.nearest_sizes)]
-        # self.data_to_use.loc[:,("avg_time")] = self.data_to_use.loc[:,("avg_time")].apply(lambda x: x * target_size / self.nearest_sizes[0])
+        
+        # Object to temporally store the regression models for each file size
         self.models = {}
+        
+        # Iterate over each file size with real records
         for s in self.real_records.sizes:
+            
+            # The X values are the the values of n and k
             X = self.real_records.data[self.real_records.data['size'] == s][[
                 'n', 'k']]
+            
+            # The Y value is the average time to chunk the file
             Y = self.real_records.data[self.real_records.data['size']
                                        == s]['avg_time']
+            
+            # Fit the model and store it in the models dictionary
             self.models[s] = LinearRegression(fit_intercept=True)
             self.models[s].fit(X.values, Y.values)
-        # Create an instance of the LinearRegression class
-        # self.reg = LinearRegression(fit_intercept=True)
-        # self.reg = Ridge(alpha=0.8, solver='auto')
+        
 
-        # Fit the model to the data
-        # self.reg.fit(X.values, Y.values)
-
+    """
+    Receives the file size, n, k and the bandwidths and returns the prediction
+    file_size: int - The size of the file to chunk
+    n: int - The number of chunks
+    k: int - The number of chunks to reconstruct the file
+    bandwiths: list - The list of the bandwidths of the nodes
+    """
     def predict(self, file_size, n, k, bandwiths):
+        # Looks for the model with the nearest size to the file size
         nearest_size = min(self.real_records.sizes,
                            key=lambda x: abs(x-file_size))
+        
+        # The X values to predict are n and k
         Xs_test = np.array([n, k]).reshape(1, -1)
-        Y_pred = self.models[nearest_size].predict(Xs_test)[0] * file_size / nearest_size
+        
+        # Predict the time to chunk the file
+        Y_pred = self.models[nearest_size].predict(Xs_test)[0] #* file_size / nearest_size
         transfer_time = calculate_transfer_time(file_size/k, min(bandwiths)) # Min because we take the slowest bandwidth into account. Also I pass the chunk size and not the full data size
         Y_pred = Y_pred/1000 # divided because we want to take seconds just like the transfer_time that is in seconds
         # ~ print(Y_pred, "+", transfer_time)
