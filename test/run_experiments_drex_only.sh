@@ -71,7 +71,7 @@ else
 fi
 
 if [[ ${input_data} == "drex/inputs/data/MEVA_merged.csv" ]]; then
-    number_of_repetition=4
+    number_of_repetition=250
 else
     number_of_repetition=1
 fi
@@ -82,6 +82,9 @@ if [ $number_nodes -ge 1 ]; then
 else
     alg4=alg4
 fi
+
+gcc -Wall drex/schedulers/algorithm4.c -o alg4 -lm
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition))
 
 # for alg in alg1 alg2 ${alg4} random hdfs_three_replications; do
 # for alg in alg1 ${alg4} random hdfs_three_replications; do
@@ -124,9 +127,6 @@ for alg in glusterfs; do
         fi
     done
 done
-
-gcc -Wall drex/schedulers/algorithm4.c -o alg4 -lm
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition))
 
 # Plotting results
 if [[ "$4" == *.csv ]]; then

@@ -71,7 +71,7 @@ if sys.argv[next_arg + 1] == "fixed_data":
     set_of_data = [data_size for _ in range(number_of_data)]
 else:
     input_data_file = sys.argv[next_arg + 2]
-    number_of_repetition = sys.argv[next_arg + 3]
+    number_of_repetition = int(sys.argv[next_arg + 3])
     print("Reading input data from file", input_data_file)
     for loop in range(number_of_repetition):
         with open(input_data_file, 'r') as file:

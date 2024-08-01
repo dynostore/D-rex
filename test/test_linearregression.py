@@ -6,7 +6,7 @@ import pandas as pd
 
 n = 10
 k = 3
-file_size = 4000
+file_size = 400
 
 pred = Predictor()
 data = pred.real_records.data
@@ -85,7 +85,7 @@ X_test = np.array([file_size, n, k]).reshape(1, -1)
 #pred = Predictor()
 for i in range(3, n):
     bandwiths = [10] * i
-    print(i,2,pred.predict(file_size, i, 2, bandwiths))
+    print("file_size", file_size, "bandwiths", bandwiths[0], "n", i, "k", 2, "pred chunk + transfer time", pred.predict(file_size, i, 2, bandwiths))
 
 # Create an instance of the LinearRegression class
 #reg = LinearRegression()
