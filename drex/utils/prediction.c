@@ -9,21 +9,6 @@
 #define MAX_LINE_LENGTH 1024
 #define MAX_FILE_NAME_LENGTH 256
 
-//~ LinearModel* fit_linear_model(RealRecords *records, int num_files) {
-    //~ LinearModel *models = (LinearModel *)malloc(num_files * sizeof(LinearModel));
-    //~ double c0, c1, c2, cov00, cov01, cov11, chisq;
-    //~ for (int i = 0; i < num_files; i++) {
-        //~ gsl_fit_linear(records[i].n, 1, records[i].avg_time, 1, records[i].size, &c0, &c1, &cov00, &cov01, &cov11, &chisq);
-        //~ models[i].intercept = c0;
-        //~ models[i].slope_n = c1;
-
-        //~ gsl_fit_linear(records[i].k, 1, records[i].avg_time, 1, records[i].size, &c0, &c2, &cov00, &cov01, &cov11, &chisq);
-        //~ models[i].slope_k = c2;
-        //~ printf("i=%d: %f %f %f\n", i, c0, c1, c2);
-    //~ }   
-    //~ return models;
-//~ }
-
 // Function to fit a linear model and return the coefficients
 int fit_linear_model(RealRecords *records, double *c0, double *c1, double *c2) {
     double x0[171];
@@ -65,11 +50,12 @@ int fit_linear_model(RealRecords *records, double *c0, double *c1, double *c2) {
     return 0; // Success
 }
 
-double predict(LinearModel models, double chunk_size, double min_bandwidth, int n, int k) {
+double predict(LinearModel models, double chunk_size, int min_bandwidth, int n, int k, double nearest_size, double file_size) {
     double transfer_time = calculate_transfer_time(chunk_size, min_bandwidth);
     
-    printf("%d %d %f\n", n, k, models.slope_k);
+    printf("chunk size %f file size %f n %d k %d min bw %d\n", chunk_size, file_size, n, k, min_bandwidth);
     double Y_pred = models.intercept + models.slope_n * n + models.slope_k * k;
+    Y_pred = Y_pred * (file_size / nearest_size);
     Y_pred /= 1000;  // Convert to seconds
     
     printf("Transfer time %f chunk time %f\n", transfer_time, Y_pred);

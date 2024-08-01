@@ -3,10 +3,10 @@
 #include <float.h>
 #include <limits.h>
 #include <math.h>
-#include <time.h>
 #include <stdbool.h>
 #include <string.h>
 #include "../utils/prediction.h"
+#include <sys/time.h>
 
 typedef struct {
     int id;
@@ -396,7 +396,7 @@ void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pa
     }
 }
 
-void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models) {
+void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size) {
     int i = 0;
     int j = 0;
     double chunk_size = 0;
@@ -404,8 +404,9 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
     bool valid_solution = false;
     
     // Heart of the function
-    clock_t start, end;
-    start = clock();
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+    long seconds, useconds;
     
     *N = -1;
     *K = -1;
@@ -445,12 +446,7 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
                     #endif
                 }
                 combinations[i]->size_score = combinations[i]->size_score/combinations[i]->num_elements;
-                
-                //~ combinations[i]->replication_and_write_time = 2; // TODO: recode predict in C and use it here
-                combinations[i]->replication_and_write_time = predict(models[closest_index], chunk_size, combinations[i]->min_write_bandwidth, combinations[i]->num_elements, *K);
-                
-                                exit(1);
-                
+                combinations[i]->replication_and_write_time = predict(models[closest_index], chunk_size, combinations[i]->min_write_bandwidth, combinations[i]->num_elements, *K, nearest_size, size);
                 combinations[i]->storage_overhead = chunk_size*combinations[i]->num_elements;
                 #ifdef PRINT
                 printf("storage_overhead: %f\n", combinations[i]->storage_overhead);
@@ -460,6 +456,7 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
             }
             else {
                 combinations[i]->K = -1;
+                *K = -1;
             }
         }
     }
@@ -534,10 +531,11 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
         #ifdef PRINT
         printf("Best combination is %d\n", best_index);
         #endif
-        end = clock();
+        gettimeofday(&end, NULL);
             
         // Writing down the results
-        if (*N != -1) {
+        if (*N != -1 && *K != -1) {
+            printf("Update\n");
             *number_of_data_stored += 1;
             *total_N += *N;
             chunk_size = size/(*K);
@@ -551,7 +549,12 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
             combinations[best_index]->min_remaining_size -= chunk_size;
         }
     }
-    *total_scheduling_time += ((double) (end - start)) / CLOCKS_PER_SEC;
+    else {
+        gettimeofday(&end, NULL);
+    }
+    seconds  = end.tv_sec  - start.tv_sec;
+    useconds = end.tv_usec - start.tv_usec;
+    *total_scheduling_time += seconds + useconds/1000000.0;
 }
 
 // Function to free the memory allocated for RealRecords
@@ -639,14 +642,12 @@ void read_records(const char *filename, RealRecords *records) {
     fclose(file);
 }
 
-int find_closest(int target) {
+void find_closest(int target, int* nearest_size, int* closest_index) {
     // The array of numbers to compare against
     int numbers[] = {1, 10, 50, 100, 200, 400};
     int size = sizeof(numbers) / sizeof(numbers[0]);
 
     // Initialize the closest number to the first element
-    //~ int closest = numbers[0];
-    int closest_index = 0;
     int min_diff = abs(target - numbers[0]);
 
     // Iterate over the array to find the closest number
@@ -654,12 +655,10 @@ int find_closest(int target) {
         int diff = abs(target - numbers[i]);
         if (diff < min_diff) {
             min_diff = diff;
-            //~ closest = numbers[i];
-            closest_index = i;
+            *nearest_size = numbers[i];
+            *closest_index = i;
         }
     }
-
-    return closest_index;
 }
 
 int main(int argc, char *argv[]) {
@@ -809,56 +808,20 @@ int main(int argc, char *argv[]) {
         models[i].slope_k = c2;
     }
     //~ exit(1);
-    //~ LinearModel *models = fit_linear_model(records_array, num_files);
 
-    // Dante's converted code
-    //~ const char *dir_data = "data/";
-    //~ int num_sizes_prediction;
-    //~ RealRecords *records = read_real_records(dir_data, &num_sizes_prediction);
-    //~ LinearModel *models = fit_linear_model(records);
-
-    //~ // Example prediction
-    //~ double file_size_prediction = 100;  // Example file size
-    //~ double n_prediction = 5;
-    //~ double k_prediction = 3;
-    //~ double bandwidths[] = {10.0, 20.0, 5.0};  // Example bandwidths
-    //~ int num_bandwidths = sizeof(bandwidths) / sizeof(bandwidths[0]);
-
-    //~ double prediction = predict(records, models, num_sizes_prediction, file_size_prediction, n_prediction, k_prediction, bandwidths, num_bandwidths);
-    //~ printf("Predicted time: %f\n", prediction);
-
-    //~ // Free allocated memory
-    //~ for (int i = 0; i < num_sizes_prediction; i++) {
-        //~ free(records[i].n);
-        //~ free(records[i].k);
-        //~ free(records[i].avg_time);
-    //~ }
-    //~ free(records);
-    //~ free(models);
-    
-    // TODO remove test
-    predict(models[5], 3000/2, 10, 3, 2);
-    predict(models[5], 4000/2, 10, 3, 2);
-    predict(models[5], 4000/2, 10, 4, 2);
-    predict(models[5], 4000/2, 10, 5, 2);
-    predict(models[5], 4000/2, 10, 6, 2);
-    predict(models[5], 4000/2, 10, 7, 2);
-    predict(models[5], 4000/2, 10, 8, 2);
-    exit(1);
-    
     double total_remaining_size = total_storage_size; // Used for system saturation
     int closest_index = 0;
+    int nearest_size = 0;
     // Looping on all data and using algorithm4
     for (i = 0; i < count; i++) {
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
         }
         
-        closest_index = find_closest(sizes[i]);
-        printf("Closest to size %f is at index %d\n", sizes[i], closest_index);
-        algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models);
+        find_closest(sizes[i], &nearest_size, &closest_index);
+        printf("Closest to size %f is %d at index %d\n", sizes[i], nearest_size, closest_index);
+        algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size);
         printf("Algorithm 4 chose N = %d and K = %d\n", N, K);
-        exit(1);
         #ifdef PRINT
         printf("Algorithm 4 chose N = %d and K = %d\n", N, K);
         #endif
