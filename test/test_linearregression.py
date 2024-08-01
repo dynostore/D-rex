@@ -15,7 +15,7 @@ data = pred.real_records.data
 data_to_plot = list()
 
 # for s in pred.real_records.sizes:
-#     Y = pred.real_records.data[pred.real_records.data['size']
+#     Y = pred.real_records.data[pred.renal_records.data['size']
 #                                        == s]['avg_time']
 #     X = pred.real_records.data[pred.real_records.data['size'] == s][[
 #                 'n', 'k']] 
@@ -71,21 +71,15 @@ data_to_plot = list()
 #X = data[['size', 'n', 'k']]
 #Y = data['avg_time']
 
-Xs_test = []
-#eal_points = []
-for i in range(3, n):
-    Xs_test.append([file_size, i, 2])
-    
-#real_points = data[(data["k"] == 2) & (data["size"] == file_size)]
-
-Xs_test = np.array(Xs_test)
-X_test = np.array([file_size, n, k]).reshape(1, -1)
-
 
 #pred = Predictor()
+
+
+
 for i in range(3, n):
     bandwiths = [10] * i
-    print("file_size", file_size, "bandwiths", bandwiths[0], "n", i, "k", 2, "pred chunk + transfer time", pred.predict(file_size, i, 2, bandwiths))
+    for j in [40, 400, 4000, 40000]:
+        print("file_size", j, "bandwiths", bandwiths[0], "n", i, "k", 2, "pred chunk + transfer time", pred.predict(j, i, 2, bandwiths))
 
 # Create an instance of the LinearRegression class
 #reg = LinearRegression()
