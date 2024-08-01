@@ -6,6 +6,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <string.h>
+#include "../utils/prediction.h"
 
 typedef struct {
     int id;
@@ -14,13 +15,6 @@ typedef struct {
     int read_bandwidth;
     double probability_failure;
 } Node;
-
-typedef struct {
-    int size;
-    double* n;
-    double* k;
-    double* avg_time;
-} RealRecords;
 
 typedef struct {
     int num_elements; // Number of nodes in the combination
@@ -402,19 +396,20 @@ void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pa
     }
 }
 
-void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size) {
+void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models) {
     int i = 0;
     int j = 0;
     double chunk_size = 0;
     double one_on_number_of_nodes = 1.0/number_of_nodes;
-    //~ int num_combinations_valid = 0;
+    bool valid_solution = false;
     
     // Heart of the function
     clock_t start, end;
     start = clock();
     
     *N = -1;
-
+    *K = -1;
+    
     // 1. Get system saturation
     double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, *total_remaining_size);    
     #ifdef PRINT
@@ -441,6 +436,7 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
             printf("Chunk size: %f\n", chunk_size);
             #endif
             if (combinations[i]->min_remaining_size - chunk_size >= 0) {
+                valid_solution = true;
                 for (j = 0; j < combinations[i]->num_elements; j++) {
                     combinations[i]->size_score += 1 - exponential_function(combinations[i]->nodes[j]->storage_size - chunk_size, max_node_size, 1, min_data_size, one_on_number_of_nodes);
                     #ifdef PRINT
@@ -449,7 +445,12 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
                     #endif
                 }
                 combinations[i]->size_score = combinations[i]->size_score/combinations[i]->num_elements;
-                combinations[i]->replication_and_write_time = 2; // TODO: recode predict in C and use it here
+                
+                //~ combinations[i]->replication_and_write_time = 2; // TODO: recode predict in C and use it here
+                combinations[i]->replication_and_write_time = predict(models[closest_index], chunk_size, combinations[i]->min_write_bandwidth, combinations[i]->num_elements, *K);
+                
+                                exit(1);
+                
                 combinations[i]->storage_overhead = chunk_size*combinations[i]->num_elements;
                 #ifdef PRINT
                 printf("storage_overhead: %f\n", combinations[i]->storage_overhead);
@@ -463,92 +464,101 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
         }
     }
     
-    // 3. Only keep combination on pareto front
-    int pareto_indices[total_combinations];
-    int pareto_count;
-    
-    find_pareto_front(combinations, total_combinations, pareto_indices, &pareto_count);
-    
-    #ifdef PRINT
-    printf("%d combinations on 3D pareto front. Pareto front indices:\n", pareto_count);
-    for (i = 0; i < pareto_count; i++) {
-        printf("%d: %f %f %f\n", pareto_indices[i], combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time);
-    }
-    #endif
-    
-    // Get min and max of each of our 3 parameters
-    // For the space one is already sorted logically so don't need to use the min and max function
-    // It is already sorted because the space decreases with N that increases
-    // However time and score are not sorted
-    double min_storage_overhead = combinations[pareto_indices[pareto_count - 1]]->storage_overhead;
-    double max_storage_overhead = combinations[pareto_indices[0]]->storage_overhead;
-    double min_size_score;
-    double max_size_score;
-    double min_replication_and_write_time;
-    double max_replication_and_write_time;
-    find_min_max_pareto(combinations, pareto_indices, pareto_count, &min_size_score, &max_size_score, &min_replication_and_write_time, &max_replication_and_write_time);
-    #ifdef PRINT
-    printf("Min and max from pareto front are: %f %f %f %f %f %f\n", min_storage_overhead, max_storage_overhead, min_size_score, max_size_score, min_replication_and_write_time, max_replication_and_write_time);
-    #endif
-    
-    // Compute score with % progress
-    double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
-    double total_progress_size_score = max_size_score - min_size_score;
-    double total_progress_replication_and_write_time = max_replication_and_write_time - min_replication_and_write_time;
-    #ifdef PRINT
-    printf("Progresses are %f %f %f\n", total_progress_storage_overhead, total_progress_size_score, total_progress_replication_and_write_time);
-    #endif
-    double time_score = 0;
-    double space_score = 0;
-    double total_score = 0;
-    double max_score = -DBL_MAX;
-    int idx = 0;
-    int best_index = -1;
-    
-    // Getting combination with best score
-    for (i = 0; i < pareto_count; i++) {
-        idx = pareto_indices[i];
-        if (total_progress_replication_and_write_time > 0) {  // In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
-            time_score = 100 - ((combinations[idx]->replication_and_write_time - min_replication_and_write_time)*100)/total_progress_replication_and_write_time;
+    if (valid_solution == true) {
+        // 3. Only keep combination on pareto front
+        int pareto_indices[total_combinations];
+        int pareto_count;
+        
+        find_pareto_front(combinations, total_combinations, pareto_indices, &pareto_count);
+        
+        #ifdef PRINT
+        printf("%d combinations on 3D pareto front. Pareto front indices:\n", pareto_count);
+        for (i = 0; i < pareto_count; i++) {
+            printf("%d: %f %f %f\n", pareto_indices[i], combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time);
+        }
+        #endif
+        
+        // Get min and max of each of our 3 parameters
+        // For the space one is already sorted logically so don't need to use the min and max function
+        // It is already sorted because the space decreases with N that increases
+        // However time and score are not sorted
+        double min_storage_overhead = combinations[pareto_indices[pareto_count - 1]]->storage_overhead;
+        double max_storage_overhead = combinations[pareto_indices[0]]->storage_overhead;
+        double min_size_score;
+        double max_size_score;
+        double min_replication_and_write_time;
+        double max_replication_and_write_time;
+        find_min_max_pareto(combinations, pareto_indices, pareto_count, &min_size_score, &max_size_score, &min_replication_and_write_time, &max_replication_and_write_time);
+        #ifdef PRINT
+        printf("Min and max from pareto front are: %f %f %f %f %f %f\n", min_storage_overhead, max_storage_overhead, min_size_score, max_size_score, min_replication_and_write_time, max_replication_and_write_time);
+        #endif
+        
+        // Compute score with % progress
+        double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
+        double total_progress_size_score = max_size_score - min_size_score;
+        double total_progress_replication_and_write_time = max_replication_and_write_time - min_replication_and_write_time;
+        #ifdef PRINT
+        printf("Progresses are %f %f %f\n", total_progress_storage_overhead, total_progress_size_score, total_progress_replication_and_write_time);
+        #endif
+        double time_score = 0;
+        double space_score = 0;
+        double total_score = 0;
+        double max_score = -DBL_MAX;
+        int idx = 0;
+        int best_index = -1;
+        
+        // Getting combination with best score
+        for (i = 0; i < pareto_count; i++) {
+            idx = pareto_indices[i];
+            if (total_progress_replication_and_write_time > 0) {  // In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
+                time_score = 100 - ((combinations[idx]->replication_and_write_time - min_replication_and_write_time)*100)/total_progress_replication_and_write_time;
+            }
+            
+            if (total_progress_storage_overhead > 0) {
+                space_score = 100 - ((combinations[idx]->storage_overhead - min_storage_overhead)*100)/total_progress_storage_overhead;
+            }
+            
+            if (total_progress_size_score > 0) {
+                space_score += 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
+            }
+            total_score = time_score + (space_score/2.0)*system_saturation;
+            
+            if (max_score < total_score) { // Higher score the better
+                max_score = total_score;
+                best_index = idx;
+            }
         }
         
-        if (total_progress_storage_overhead > 0) {
-            space_score = 100 - ((combinations[idx]->storage_overhead - min_storage_overhead)*100)/total_progress_storage_overhead;
+        *N = combinations[best_index]->num_elements;
+        *K = combinations[best_index]->K;
+        #ifdef PRINT
+        printf("Best combination is %d\n", best_index);
+        #endif
+        end = clock();
+            
+        // Writing down the results
+        if (*N != -1) {
+            *number_of_data_stored += 1;
+            *total_N += *N;
+            chunk_size = size/(*K);
+            *total_storage_used += chunk_size*(*N);
+            *total_remaining_size -= chunk_size*(*N);
+            *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
+            for (i = 0; i < combinations[best_index]->num_elements; i++) {
+                *total_upload_time += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
+                combinations[best_index]->nodes[i]->storage_size -= chunk_size;                
+            }
+            combinations[best_index]->min_remaining_size -= chunk_size;
         }
-        
-        if (total_progress_size_score > 0) {
-            space_score += 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
-        }
-        total_score = time_score + (space_score/2.0)*system_saturation;
-        
-        if (max_score < total_score) { // Higher score the better
-            max_score = total_score;
-            best_index = idx;
-        }
-    }
-    
-    *N = combinations[best_index]->num_elements;
-    *K = combinations[best_index]->K;
-    #ifdef PRINT
-    printf("Best combination is %d\n", best_index);
-    #endif
-    end = clock();
-        
-    // Computing the results
-    if (*N != -1) {
-        *number_of_data_stored += 1;
-        *total_N += *N;
-        chunk_size = size/(*K);
-        *total_storage_used += chunk_size*(*N);
-        *total_remaining_size -= chunk_size*(*N);
-        *total_parralelized_upload_time = chunk_size/combinations[best_index]->min_write_bandwidth;
-        for (i = 0; i < combinations[best_index]->num_elements; i++) {
-            *total_upload_time += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
-            combinations[best_index]->nodes[i]->storage_size -= chunk_size;                
-        }
-        combinations[best_index]->min_remaining_size -= chunk_size;
     }
     *total_scheduling_time += ((double) (end - start)) / CLOCKS_PER_SEC;
+}
+
+// Function to free the memory allocated for RealRecords
+void free_records(RealRecords *records) {
+    free(records->n);
+    free(records->k);
+    free(records->avg_time);
 }
 
 int extract_integer_from_filename(const char *filename) {
@@ -629,11 +639,27 @@ void read_records(const char *filename, RealRecords *records) {
     fclose(file);
 }
 
-// Function to free the memory allocated for RealRecords
-void free_records(RealRecords *records) {
-    free(records->n);
-    free(records->k);
-    free(records->avg_time);
+int find_closest(int target) {
+    // The array of numbers to compare against
+    int numbers[] = {1, 10, 50, 100, 200, 400};
+    int size = sizeof(numbers) / sizeof(numbers[0]);
+
+    // Initialize the closest number to the first element
+    //~ int closest = numbers[0];
+    int closest_index = 0;
+    int min_diff = abs(target - numbers[0]);
+
+    // Iterate over the array to find the closest number
+    for (int i = 1; i < size; i++) {
+        int diff = abs(target - numbers[i]);
+        if (diff < min_diff) {
+            min_diff = diff;
+            //~ closest = numbers[i];
+            closest_index = i;
+        }
+    }
+
+    return closest_index;
 }
 
 int main(int argc, char *argv[]) {
@@ -709,7 +735,7 @@ int main(int argc, char *argv[]) {
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
         total_combinations += combination(number_of_nodes, i);
     }
-    
+
     #ifdef PRINT
     printf("There are %d possible combinations\n", total_combinations);
     #endif
@@ -739,6 +765,8 @@ int main(int argc, char *argv[]) {
     }
     #endif
     
+    // Prediction of chunking time
+    // My code
     // Filling a struct with our prediction records
     // Define the number of files
     int num_files = 6;
@@ -760,25 +788,81 @@ int main(int argc, char *argv[]) {
     for (i = 0; i < num_files; i++) {
         read_records(filenames[i], &records_array[i]);
     }
-    #ifdef PRINT
     // Print the data to verify (example for the first file)
     for (i = 0; i < 171; i++) {
         printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames[0], i, records_array[0].n[i], records_array[0].k[i], records_array[0].avg_time[i]);
     }
-    #endif
+    
+    LinearModel *models = (LinearModel *)malloc(num_files * sizeof(LinearModel));
+    double c0, c1, c2;
+    for (i = 0; i < num_files; i++) {
+        c0 = 0;
+        c1 = 0;
+        c2 = 0;
+        if (fit_linear_model(&records_array[i], &c0, &c1, &c2) == 0) {
+            printf("Fitted coefficients for i=%d: c0 = %f, c1 = %f, c2 = %f\n", i, c0, c1, c2);
+        } else {
+            fprintf(stderr, "Failed to fit linear model.\n");
+        }
+        models[i].intercept = c0;
+        models[i].slope_n = c1;
+        models[i].slope_k = c2;
+    }
+    //~ exit(1);
+    //~ LinearModel *models = fit_linear_model(records_array, num_files);
+
+    // Dante's converted code
+    //~ const char *dir_data = "data/";
+    //~ int num_sizes_prediction;
+    //~ RealRecords *records = read_real_records(dir_data, &num_sizes_prediction);
+    //~ LinearModel *models = fit_linear_model(records);
+
+    //~ // Example prediction
+    //~ double file_size_prediction = 100;  // Example file size
+    //~ double n_prediction = 5;
+    //~ double k_prediction = 3;
+    //~ double bandwidths[] = {10.0, 20.0, 5.0};  // Example bandwidths
+    //~ int num_bandwidths = sizeof(bandwidths) / sizeof(bandwidths[0]);
+
+    //~ double prediction = predict(records, models, num_sizes_prediction, file_size_prediction, n_prediction, k_prediction, bandwidths, num_bandwidths);
+    //~ printf("Predicted time: %f\n", prediction);
+
+    //~ // Free allocated memory
+    //~ for (int i = 0; i < num_sizes_prediction; i++) {
+        //~ free(records[i].n);
+        //~ free(records[i].k);
+        //~ free(records[i].avg_time);
+    //~ }
+    //~ free(records);
+    //~ free(models);
+    
+    // TODO remove test
+    predict(models[5], 3000/2, 10, 3, 2);
+    predict(models[5], 4000/2, 10, 3, 2);
+    predict(models[5], 4000/2, 10, 4, 2);
+    predict(models[5], 4000/2, 10, 5, 2);
+    predict(models[5], 4000/2, 10, 6, 2);
+    predict(models[5], 4000/2, 10, 7, 2);
+    predict(models[5], 4000/2, 10, 8, 2);
+    exit(1);
     
     double total_remaining_size = total_storage_size; // Used for system saturation
-    
+    int closest_index = 0;
     // Looping on all data and using algorithm4
     for (i = 0; i < count; i++) {
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
         }
-        algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size);
+        
+        closest_index = find_closest(sizes[i]);
+        printf("Closest to size %f is at index %d\n", sizes[i], closest_index);
+        algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models);
+        printf("Algorithm 4 chose N = %d and K = %d\n", N, K);
+        exit(1);
         #ifdef PRINT
         printf("Algorithm 4 chose N = %d and K = %d\n", N, K);
         #endif
-        if (i%1000 == 0) {
+        if (i%5500 == 0) {
             printf("%d/%d\n", i, count);
         }
     }
@@ -800,15 +884,23 @@ int main(int argc, char *argv[]) {
     for (i = 0; i < number_of_nodes - 1; i++) {
         fprintf(file, "%f, ", nodes[i].storage_size);
     }
-    fprintf(file, "%f]\"", nodes[i].storage_size);
+    fprintf(file, "%f]\"\n", nodes[i].storage_size);
         
     // Free allocated memory
     free(sizes);
     free(nodes);
-    for (i = 0; i < num_files; i++) {
-        free_records(&records_array[i]);
+    //~ for (i = 0; i < num_files; i++) {
+        //~ free_records(&records_array[i]);
+    //~ }
+    //~ free(records_array);
+       // Free allocated memory
+    for (int i = 0; i < num_files; i++) {
+        free(records_array[i].n);
+        free(records_array[i].k);
+        free(records_array[i].avg_time);
     }
     free(records_array);
+    free(models);
     
     printf("Success\n");
     return EXIT_SUCCESS;
