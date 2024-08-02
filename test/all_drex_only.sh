@@ -5,8 +5,13 @@
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/all_nodes_backblaze.csv 3000 100000
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/most_used_node_x10.csv 1500 100000
 
-bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv
-#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_reliable_nodes.csv drex/inputs/data/MEVA_merged.csv
+bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 1
+#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20
+#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 250
+#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_reliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250
+#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250
+#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/most_used_node_x10.csv drex/inputs/data/MEVA_merged.csv 250
+#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/all_nodes_backblaze.csv drex/inputs/data/MEVA_merged.csv 250
 
 # Examples
 # bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/test.csv

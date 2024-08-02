@@ -94,9 +94,17 @@ min_data_size = sys.maxsize
 node_sizes_initialy = node_sizes.copy()
 counter = 0
 
+data_to_print_id = []
+data_to_print_size = []
+data_to_print_total_transfer_time = []
+data_to_print_transfer_time_parralelized = []
+data_to_print_chunking_time = []
+data_to_print_N = []
+data_to_print_K = []
+
 for data in set_of_data:
     counter += 1
-    if counter % 2500 == 0:
+    if counter % 10000 == 0:
         print(f"Processed {counter} data")
 
     node_sizes_before = node_sizes.copy()
@@ -157,28 +165,29 @@ for data in set_of_data:
         
     if N != -1: # Else it means that the scheduler could not find a solution that works
         differences = [node_sizes_before[i] - node_sizes[i] for i in range(number_of_nodes)]
-        # ~ print("differences:", differences)
         max_upload_time = -1
+        total_upload_time_to_print = 0
         for i in range(number_of_nodes):
-            # ~ print(differences[i] / write_bandwidths[i])
             upload_time = differences[i] / write_bandwidths[i]
             if (upload_time > max_upload_time):
                 max_upload_time = upload_time
-            total_upload_time += differences[i] / write_bandwidths[i]
+            total_upload_time_to_print += differences[i] / write_bandwidths[i]
+            total_upload_time += total_upload_time_to_print
             total_storage_used += differences[i]
-        # ~ print("max_upload_time", max_upload_time)
         total_parralelized_upload_time += max_upload_time
         number_of_data_stored += 1
         total_N += N
         
-        # ~ print(node_sizes)
+        # Append to print individual data stats
+        data_to_print_id.append(counter - 1)
+        data_to_print_size.append(data)
+        data_to_print_total_transfer_time.append(total_upload_time_to_print)
+        data_to_print_transfer_time_parralelized.append(max_upload_time)
+        data_to_print_chunking_time.append(predictor.predict_only_chunk_time(data, N, K))
+        data_to_print_N.append(N)
+        data_to_print_K.append(K)
 
-# Writing results in a file
-# ~ print("total_scheduling_time =", total_scheduling_time, "seconds") 
-# ~ print("total_storage_used =", total_storage_used, "MB") 
-# ~ print("total_upload_time:", total_upload_time)
-# ~ print("total_parralelized_upload_time:", total_parralelized_upload_time)
-# ~ print("number_of_data_stored:", number_of_data_stored)
+
 
 output_filename = 'output_drex_only.csv'
 if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
@@ -189,3 +198,9 @@ else:
 print("Writing output in file", output_filename)
 with open(output_filename, 'a') as file:
     file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}, {number_of_data_stored}, {total_N}, {total_storage_used/number_of_data_stored}, {total_upload_time/number_of_data_stored}, {total_N/number_of_data_stored}, \"{node_sizes_initialy}\", \"{node_sizes}\"\n")
+
+output_filename_stats = "output_" + alg_to_print + "_stats.csv"
+with open(output_filename_stats, 'w') as file:
+    file.write(f"ID, Size, Total Transfer Time, Transfer Time Parralelized, Chunking Time, N, K\n")
+    for i in range(0, len(data_to_print_id)):
+        file.write(f"{data_to_print_id[i]}, {data_to_print_size[i]}, {data_to_print_total_transfer_time[i]}, {data_to_print_transfer_time_parralelized[i]}, {data_to_print_chunking_time[i]}, {data_to_print_N[i]}, {data_to_print_K[i]}\n")

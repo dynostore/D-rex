@@ -63,17 +63,13 @@ echo "$((number_nodes))"
 # Input data
 if [[ "$4" == *.csv ]]; then
     input_data=$4
+    number_of_repetition=$5
     echo "Input nodes: $input_nodes / Input data: $input_data"
 else
     number_of_data=$4
     data_size=$5
+    number_of_repetition
     echo "Input nodes: $input_nodes / Input data: $number_of_data data of size $data_size"
-fi
-
-if [[ ${input_data} == "drex/inputs/data/MEVA_merged.csv" ]]; then
-    number_of_repetition=250
-else
-    number_of_repetition=1
 fi
 
 # Choosing our alg4 version
@@ -83,7 +79,8 @@ else
     alg4=alg4
 fi
 
-gcc -Wall drex/schedulers/algorithm4.c -o alg4 -lm
+#~ gcc -Wall drex/schedulers/algorithm4.c -o alg4 -lm
+make
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition))
 
 # for alg in alg1 alg2 ${alg4} random hdfs_three_replications; do

@@ -78,7 +78,7 @@ data_to_plot = list()
 
 for i in range(3, n):
     bandwiths = [10] * i
-    for j in [40, 400, 4000, 40000]:
+    for j in [40, 300, 400, 3000, 40000]:
         print("file_size", j, "bandwiths", bandwiths[0], "n", i, "k", 2, "pred chunk + transfer time", pred.predict(j, i, 2, bandwiths))
 
 # Create an instance of the LinearRegression class

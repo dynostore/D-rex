@@ -6,3 +6,4 @@ make
 ./alg4 drex/inputs/nodes/10_most_reliable_nodes.csv drex/inputs/data/test.csv 365.0 0.99 2
 #~ ./alg4 drex/inputs/nodes/10_most_reliable_nodes.csv drex/inputs/data/MEVA_merged.csv 365 0.99 1
 cat output_drex_only.csv
+cat output_alg4_stats.csv
