@@ -8,6 +8,22 @@
 #include "../utils/prediction.h"
 #include <sys/time.h>
 
+typedef struct data_to_print {
+    int id;
+    double size;
+    double total_transfer_time;
+    double transfer_time_parralelized;
+    double chunking_time;
+    int N;
+    int K;
+    struct data_to_print *next;
+} DataToPrint;
+
+typedef struct {
+    DataToPrint *head;
+    DataToPrint *tail;
+} DataList;
+
 typedef struct {
     int id;
     double storage_size;
@@ -26,12 +42,65 @@ typedef struct {
     double min_remaining_size; // Smallest node's remaining memory in the combination. Used to quickly skip an unvalid combination
     int min_write_bandwidth; // Smallest node's write bandwidth in the combination
     
+    // Sub values for pareto front
+    double transfer_time_parralelized;
+    //~ double total_transfer_time;
+    double chunking_time;
+    
     // Values in the pareto front
     double size_score;
     double replication_and_write_time;
     double storage_overhead;
     int K;
 } Combination;
+
+DataToPrint* create_node(int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K) {
+    DataToPrint *new_node = (DataToPrint*)malloc(sizeof(DataToPrint));
+    if (!new_node) {
+        perror("Failed to allocate memory for new node");
+        exit(EXIT_FAILURE);
+    }
+    new_node->id = id;
+    new_node->size = size;
+    new_node->total_transfer_time = total_transfer_time;
+    new_node->transfer_time_parralelized = transfer_time_parralelized;
+    new_node->chunking_time = chunking_time;
+    new_node->N = N;
+    new_node->K = K;
+    new_node->next = NULL;
+    return new_node;
+}
+
+void init_list(DataList *list) {
+    list->head = NULL;
+    list->tail = NULL;
+}
+
+void add_node(DataList *list, int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K) {
+    DataToPrint *new_node = create_node(id, size, total_transfer_time, transfer_time_parralelized, chunking_time, N, K);
+    if (list->tail) {
+        list->tail->next = new_node;
+    } else {
+        list->head = new_node;
+    }
+    list->tail = new_node;
+}
+
+void write_linked_list_to_file(DataList *list, const char *filename) {
+    FILE *file = fopen(filename, "w");
+    if (!file) {
+        perror("Failed to open file");
+        exit(EXIT_FAILURE);
+    }
+    
+    fprintf(file, "ID, Size, Total Transfer Time, Transfer Time Parralelized, Chunking Time, N, K\n");
+    DataToPrint *current = list->head;
+    while (current) {
+        fprintf(file, "%d, %f, %f, %f, %f, %d, %d\n", current->id, current->size, current->total_transfer_time, current->transfer_time_parralelized, current->chunking_time, current->N, current->K);
+        current = current->next;
+    }
+    fclose(file);
+}
 
 // Function to count the number of nodes in the file
 int count_nodes(const char *filename) {
@@ -396,7 +465,7 @@ void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pa
     }
 }
 
-void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size) {
+void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size, DataList* list, int data_id) {
     int i = 0;
     int j = 0;
     double chunk_size = 0;
@@ -429,6 +498,8 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
         combinations[i]->storage_overhead = 0.0;
         combinations[i]->size_score = 0.0;
         combinations[i]->replication_and_write_time = 0.0;
+        combinations[i]->transfer_time_parralelized = 0.0;
+        combinations[i]->chunking_time = 0.0;
         combinations[i]->K = *K;
         
         if (*K != -1) {
@@ -446,7 +517,9 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
                     #endif
                 }
                 combinations[i]->size_score = combinations[i]->size_score/combinations[i]->num_elements;
-                combinations[i]->replication_and_write_time = predict(models[closest_index], chunk_size, combinations[i]->min_write_bandwidth, combinations[i]->num_elements, *K, nearest_size, size);
+                combinations[i]->chunking_time = predict(models[closest_index], combinations[i]->num_elements, *K, nearest_size, size);
+                combinations[i]->transfer_time_parralelized = calculate_transfer_time(chunk_size, combinations[i]->min_write_bandwidth);
+                combinations[i]->replication_and_write_time = combinations[i]->chunking_time + combinations[i]->transfer_time_parralelized;
                 combinations[i]->storage_overhead = chunk_size*combinations[i]->num_elements;
                 #ifdef PRINT
                 printf("storage_overhead: %f\n", combinations[i]->storage_overhead);
@@ -532,20 +605,24 @@ void algorithm4(int number_of_nodes, Node *nodes, float reliability_threshold, d
         printf("Best combination is %d\n", best_index);
         #endif
         gettimeofday(&end, NULL);
-            
+        
+        double total_upload_time_to_print = 0;
+        
         // Writing down the results
         if (*N != -1 && *K != -1) {
-            printf("Update\n");
+            chunk_size = size/(*K);
             *number_of_data_stored += 1;
             *total_N += *N;
-            chunk_size = size/(*K);
             *total_storage_used += chunk_size*(*N);
             *total_remaining_size -= chunk_size*(*N);
             *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
             for (i = 0; i < combinations[best_index]->num_elements; i++) {
-                *total_upload_time += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
+                total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
                 combinations[best_index]->nodes[i]->storage_size -= chunk_size;                
             }
+            add_node(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
+            //~ printf("Added data to print %d\n", head_data_to_print->id);
+            *total_upload_time += total_upload_time_to_print;
             combinations[best_index]->min_remaining_size -= chunk_size;
         }
     }
@@ -675,6 +752,9 @@ int main(int argc, char *argv[]) {
     int number_of_repetition = atoi(argv[5]);
     printf("Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d\n", data_duration_on_system, reliability_threshold, number_of_repetition);
     
+    DataList list;
+    init_list(&list);
+    
     // Step 1: Count the number of lines
     int count = count_lines_with_access_type(input_data);
     count = count*number_of_repetition;
@@ -788,9 +868,11 @@ int main(int argc, char *argv[]) {
         read_records(filenames[i], &records_array[i]);
     }
     // Print the data to verify (example for the first file)
+    #ifdef PRINT
     for (i = 0; i < 171; i++) {
         printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames[0], i, records_array[0].n[i], records_array[0].k[i], records_array[0].avg_time[i]);
     }
+    #endif
     
     LinearModel *models = (LinearModel *)malloc(num_files * sizeof(LinearModel));
     double c0, c1, c2;
@@ -799,7 +881,9 @@ int main(int argc, char *argv[]) {
         c1 = 0;
         c2 = 0;
         if (fit_linear_model(&records_array[i], &c0, &c1, &c2) == 0) {
+             #ifdef PRINT
             printf("Fitted coefficients for i=%d: c0 = %f, c1 = %f, c2 = %f\n", i, c0, c1, c2);
+            #endif
         } else {
             fprintf(stderr, "Failed to fit linear model.\n");
         }
@@ -807,11 +891,11 @@ int main(int argc, char *argv[]) {
         models[i].slope_n = c1;
         models[i].slope_k = c2;
     }
-    //~ exit(1);
 
     double total_remaining_size = total_storage_size; // Used for system saturation
     int closest_index = 0;
     int nearest_size = 0;
+    
     // Looping on all data and using algorithm4
     for (i = 0; i < count; i++) {
         if (min_data_size > sizes[i]) {
@@ -819,13 +903,12 @@ int main(int argc, char *argv[]) {
         }
         
         find_closest(sizes[i], &nearest_size, &closest_index);
-        printf("Closest to size %f is %d at index %d\n", sizes[i], nearest_size, closest_index);
-        algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size);
-        printf("Algorithm 4 chose N = %d and K = %d\n", N, K);
+        algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
         #ifdef PRINT
         printf("Algorithm 4 chose N = %d and K = %d\n", N, K);
         #endif
-        if (i%5500 == 0) {
+        //~ printf("Added data to print %d\n", head_data_to_print->id);
+        if (i%7000 == 0) {
             printf("%d/%d\n", i, count);
         }
     }
@@ -833,7 +916,7 @@ int main(int argc, char *argv[]) {
     printf("Total scheduling time was %f\n", total_scheduling_time);
     #endif
         
-    // Writting the outputs
+    // Writting the general outputs
     FILE *file = fopen(output_filename, "a");
     if (file == NULL) {
         perror("Error opening file");
@@ -848,7 +931,11 @@ int main(int argc, char *argv[]) {
         fprintf(file, "%f, ", nodes[i].storage_size);
     }
     fprintf(file, "%f]\"\n", nodes[i].storage_size);
-        
+    fclose(file);
+
+    // Writting the data per data outputs
+    write_linked_list_to_file(&list, "output_alg4_stats.csv");
+    
     // Free allocated memory
     free(sizes);
     free(nodes);

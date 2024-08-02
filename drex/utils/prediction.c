@@ -50,16 +50,15 @@ int fit_linear_model(RealRecords *records, double *c0, double *c1, double *c2) {
     return 0; // Success
 }
 
-double predict(LinearModel models, double chunk_size, int min_bandwidth, int n, int k, double nearest_size, double file_size) {
-    double transfer_time = calculate_transfer_time(chunk_size, min_bandwidth);
+double predict(LinearModel models, int n, int k, double nearest_size, double file_size) {
+    //~ double transfer_time = calculate_transfer_time(chunk_size, min_bandwidth);
     
-    printf("chunk size %f file size %f n %d k %d min bw %d\n", chunk_size, file_size, n, k, min_bandwidth);
+    //~ printf("chunk size %f file size %f n %d k %d min bw %d\n", chunk_size, file_size, n, k, min_bandwidth);
     double Y_pred = models.intercept + models.slope_n * n + models.slope_k * k;
     Y_pred = Y_pred * (file_size / nearest_size);
     Y_pred /= 1000;  // Convert to seconds
     
-    printf("Transfer time %f chunk time %f\n", transfer_time, Y_pred);
-    return Y_pred + transfer_time;
+    return Y_pred;
 }
 
 double calculate_transfer_time(double chunk_size, double bandwidth) {
