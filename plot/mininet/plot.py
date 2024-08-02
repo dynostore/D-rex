@@ -49,6 +49,7 @@ if is_int(sys.argv[6]):
     input_data_to_print = str(number_input_data) + "_" + str(data_size)
 else:
     input_data = sys.argv[6]
+    number_of_loops = int(sys.argv[7])
     input_data_to_print = input_data.split('/')[-1]
     input_data_to_print = input_data_to_print.rsplit('.', 1)[0]
     # ~ number_input_data = count_lines_minus_one(input_data)
@@ -59,10 +60,6 @@ else:
             # Check if the 'Access Type' column has the value '2'
             if row['Access Type'] == '2':
                 number_input_data += 1
-    if input_data == "drex/inputs/data/MEVA_merged.csv":
-        number_of_loops = 250
-    else:
-        number_of_loops = 1
     number_input_data = number_input_data*number_of_loops
 print(number_input_data, "input data")
 

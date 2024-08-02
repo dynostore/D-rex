@@ -60,7 +60,7 @@ total_storage_size = sum(node_sizes)
 # ~ print("There are", number_of_nodes, "nodes:")
 # ~ print("Sizes:", node_sizes)
 # ~ print("Write bandwidths:", write_bandwidths)
-print("Nodes failure probability:", reliability_nodes)
+# ~ print("Nodes failure probability:", reliability_nodes)
 
 # Read or create input data
 set_of_data = []
@@ -195,7 +195,7 @@ if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
 else:
     alg_to_print = alg
 # Write the values to the output file
-print("Writing output in file", output_filename)
+# ~ print("Writing output in file", output_filename)
 with open(output_filename, 'a') as file:
     file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}, {number_of_data_stored}, {total_N}, {total_storage_used/number_of_data_stored}, {total_upload_time/number_of_data_stored}, {total_N/number_of_data_stored}, \"{node_sizes_initialy}\", \"{node_sizes}\"\n")
 

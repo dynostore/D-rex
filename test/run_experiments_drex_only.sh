@@ -44,7 +44,7 @@
 
 python3 -m venv venv
 . venv/bin/activate
-#~ pip install seaborn
+# pip install seaborn
 
 # Truncate current output files and add header
 truncate -s 0 output_drex_only.csv
@@ -128,7 +128,8 @@ done
 # Plotting results
 if [[ "$4" == *.csv ]]; then
     python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
+    python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
 else
-    python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))
+    #~ python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))
+    python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))
 fi
-#~ # python3 plot/mininet/plot.py $((number_of_data)) $((data_size)) "drex_only" "combined" input_nodes
