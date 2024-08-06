@@ -44,7 +44,7 @@ typedef struct {
     
     // Sub values for pareto front
     double transfer_time_parralelized;
-    //~ double total_transfer_time;
+    double total_transfer_time;
     double chunking_time;
     
     // Values in the pareto front
@@ -86,7 +86,7 @@ void add_node(DataList *list, int id, double size, double total_transfer_time, d
     list->tail = new_node;
 }
 
-void write_linked_list_to_file(DataList *list, const char *filename) {
+void write_linked_list_to_file(DataList *list, const char *filename, double* total_chunking_time) {
     FILE *file = fopen(filename, "w");
     if (!file) {
         perror("Failed to open file");
@@ -97,6 +97,7 @@ void write_linked_list_to_file(DataList *list, const char *filename) {
     DataToPrint *current = list->head;
     while (current) {
         fprintf(file, "%d, %f, %f, %f, %f, %d, %d\n", current->id, current->size, current->total_transfer_time, current->transfer_time_parralelized, current->chunking_time, current->N, current->K);
+        *total_chunking_time += current->chunking_time;
         current = current->next;
     }
     fclose(file);
@@ -623,6 +624,86 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             add_node(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             //~ printf("Added data to print %d\n", head_data_to_print->id);
             *total_upload_time += total_upload_time_to_print;
+            //~ printf("Added %f to upload time\n", total_upload_time_to_print);
+            combinations[best_index]->min_remaining_size -= chunk_size;
+        }
+    }
+    else {
+        gettimeofday(&end, NULL);
+    }
+    seconds  = end.tv_sec  - start.tv_sec;
+    useconds = end.tv_usec - start.tv_usec;
+    *total_scheduling_time += seconds + useconds/1000000.0;
+}
+
+void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size, DataList* list, int data_id) {
+    int i = 0;
+    int j = 0;
+    double chunk_size = 0;
+    double one_on_number_of_nodes = 1.0/number_of_nodes;
+    bool valid_solution = false;
+    
+    // Heart of the function
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+    long seconds, useconds;
+    int best_index = -1;
+    double min_time = 0;
+    
+    *N = -1;
+    *K = -1;
+        
+    // 1. Iterates over a range of nodes combination
+    for (i = 0; i < total_combinations; i++) {
+        *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability);
+        #ifdef PRINT
+        printf("Max K for combination %d is %d\n", i, *K);
+        #endif
+        
+        // Reset from last expe the values used in pareto front
+        combinations[i]->total_transfer_time = 0.0;
+        combinations[i]->chunking_time = 0.0;
+        combinations[i]->K = *K;
+        
+        if (*K != -1) {
+            chunk_size = size/(*K);
+            if (combinations[i]->min_remaining_size - chunk_size >= 0) {
+                valid_solution = true;
+                for (j = 0; j < combinations[i]->num_elements; j++) {
+                    combinations[i]->total_transfer_time += calculate_transfer_time(chunk_size, combinations[i]->nodes[j]->write_bandwidth);
+                }
+                combinations[i]->chunking_time = predict(models[closest_index], combinations[i]->num_elements, *K, nearest_size, size);
+                if (min_time > combinations[i]->chunking_time + combinations[i]->total_transfer_time) {
+                    min_time = combinations[i]->chunking_time + combinations[i]->total_transfer_time;
+                    best_index = i;
+            }
+            else {
+                combinations[i]->K = -1;
+                *K = -1;
+            }
+        }
+    }
+    
+    if (valid_solution == true) {
+        *N = combinations[best_index]->num_elements;
+        *K = combinations[best_index]->K;
+        gettimeofday(&end, NULL);
+        
+        double total_upload_time_to_print = 0;
+        
+        // Writing down the results
+        if (*N != -1 && *K != -1) {
+            chunk_size = size/(*K);
+            *number_of_data_stored += 1;
+            *total_N += *N;
+            *total_storage_used += chunk_size*(*N);
+            *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
+            for (i = 0; i < combinations[best_index]->num_elements; i++) {
+                total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
+                combinations[best_index]->nodes[i]->storage_size -= chunk_size;                
+            }
+            add_node(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
+            *total_upload_time += total_upload_time_to_print;
             combinations[best_index]->min_remaining_size -= chunk_size;
         }
     }
@@ -740,8 +821,8 @@ void find_closest(int target, int* nearest_size, int* closest_index) {
 
 int main(int argc, char *argv[]) {
     int i = 0;
-    if (argc < 6) {
-        fprintf(stderr, "Usage: %s <input_node> <input_data> <data_duration_on_system> <reliability_threshold> <number_of_repetition>\n", argv[0]);
+    if (argc < 7) {
+        fprintf(stderr, "Usage: %s <input_node> <input_data> <data_duration_on_system> <reliability_threshold> <number_of_repetition> <algorithm>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -750,6 +831,7 @@ int main(int argc, char *argv[]) {
     double data_duration_on_system = atof(argv[3]);
     double reliability_threshold = atof(argv[4]);
     int number_of_repetition = atoi(argv[5]);
+    int algorithm = atoi(argv[6]); // 4 is alg4 (drex) and 2 is alg 2 (time)
     printf("Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d\n", data_duration_on_system, reliability_threshold, number_of_repetition);
     
     DataList list;
@@ -903,25 +985,37 @@ int main(int argc, char *argv[]) {
         }
         
         find_closest(sizes[i], &nearest_size, &closest_index);
-        algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
+        
+        if (algorithm == 2) {
+            algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
+        else if (algorithm == 4) {
+            algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
+        }
+        else {
+            printf("Algorithm %d not valid\n", algorithm);
+        }
         #ifdef PRINT
-        printf("Algorithm 4 chose N = %d and K = %d\n", N, K);
+        printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
         #endif
-        //~ printf("Added data to print %d\n", head_data_to_print->id);
-        if (i%7000 == 0) {
+        if (i%10000 == 0) {
             printf("%d/%d\n", i, count);
         }
     }
     #ifdef PRINT
     printf("Total scheduling time was %f\n", total_scheduling_time);
     #endif
-        
+
+    // Writting the data per data outputs
+    double total_chunking_time = 0;
+    write_linked_list_to_file(&list, "output_alg4_stats.csv", &total_chunking_time);
+    
     // Writting the general outputs
     FILE *file = fopen(output_filename, "a");
     if (file == NULL) {
         perror("Error opening file");
         return EXIT_FAILURE;
     }
+    printf("total_upload_time alg4 %f\n", total_upload_time);
     fprintf(file, "%s, %f, %f, %f, %f, %d, %d, %f, %f, %f, \"[", alg_to_print, total_scheduling_time, total_storage_used, total_upload_time, total_parralelized_upload_time, number_of_data_stored, total_N, total_storage_used / number_of_data_stored, total_upload_time / number_of_data_stored, (double)total_N / number_of_data_stored);
     for (i = 0; i < number_of_nodes - 1; i++) {
         fprintf(file, "%f, ", initial_node_sizes[i]);
@@ -930,20 +1024,13 @@ int main(int argc, char *argv[]) {
     for (i = 0; i < number_of_nodes - 1; i++) {
         fprintf(file, "%f, ", nodes[i].storage_size);
     }
-    fprintf(file, "%f]\"\n", nodes[i].storage_size);
+    fprintf(file, "%f]\"", nodes[i].storage_size);
+    fprintf(file, ", %f, %f, %f\n", total_chunking_time, total_chunking_time / number_of_data_stored, total_parralelized_upload_time / number_of_data_stored);
     fclose(file);
-
-    // Writting the data per data outputs
-    write_linked_list_to_file(&list, "output_alg4_stats.csv");
     
     // Free allocated memory
     free(sizes);
     free(nodes);
-    //~ for (i = 0; i < num_files; i++) {
-        //~ free_records(&records_array[i]);
-    //~ }
-    //~ free(records_array);
-       // Free allocated memory
     for (int i = 0; i < num_files; i++) {
         free(records_array[i].n);
         free(records_array[i].k);
