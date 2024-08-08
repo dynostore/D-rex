@@ -80,10 +80,11 @@ else:
                 if row['Access Type'] == '2':
                     set_of_data.append(float(row['size']))
 
-# ~ print(set_of_data)
 # Start code and fetch results
+# ~ total_number_of_data = len(set_of_data)
 number_of_data_stored = 0
 total_scheduling_time = 0
+total_chunking_time = 0
 total_upload_time = 0
 total_upload_time = 0
 total_parralelized_upload_time = 0
@@ -93,6 +94,7 @@ differences = []
 min_data_size = sys.maxsize
 node_sizes_initialy = node_sizes.copy()
 counter = 0
+chunking_time = 0
 
 data_to_print_id = []
 data_to_print_size = []
@@ -105,7 +107,8 @@ data_to_print_K = []
 for data in set_of_data:
     counter += 1
     if counter % 10000 == 0:
-        print(f"Processed {counter} data")
+        print(f"{counter}")
+        # ~ print(f"{counter}/{total_number_of_data}")
 
     node_sizes_before = node_sizes.copy()
     
@@ -172,8 +175,9 @@ for data in set_of_data:
             if (upload_time > max_upload_time):
                 max_upload_time = upload_time
             total_upload_time_to_print += differences[i] / write_bandwidths[i]
-            total_upload_time += total_upload_time_to_print
             total_storage_used += differences[i]
+        total_upload_time += total_upload_time_to_print
+        # ~ print("total_upload_time_to_print added is", total_upload_time_to_print)
         total_parralelized_upload_time += max_upload_time
         number_of_data_stored += 1
         total_N += N
@@ -183,9 +187,12 @@ for data in set_of_data:
         data_to_print_size.append(data)
         data_to_print_total_transfer_time.append(total_upload_time_to_print)
         data_to_print_transfer_time_parralelized.append(max_upload_time)
-        data_to_print_chunking_time.append(predictor.predict_only_chunk_time(data, N, K))
+        chunking_time = predictor.predict_only_chunk_time(data, N, K)
+        data_to_print_chunking_time.append(chunking_time)
         data_to_print_N.append(N)
         data_to_print_K.append(K)
+        
+        total_chunking_time += chunking_time
 
 
 
@@ -194,10 +201,23 @@ if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
     alg_to_print = alg + "_" + str(RS1) + "_" + str(RS2)
 else:
     alg_to_print = alg
+
+if number_of_data_stored != 0:
+    mean_chunking_time = total_chunking_time/number_of_data_stored
+    mean_upload_time = total_upload_time/number_of_data_stored
+    mean_number_of_chunks = total_N/number_of_data_stored
+    mean_parralelized_upload_time = total_parralelized_upload_time/number_of_data_stored
+    mean_storage_used = total_storage_used/number_of_data_stored
+else:
+    mean_chunking_time = 0
+    mean_upload_time = 0
+    mean_number_of_chunks = 0
+    mean_parralelized_upload_time = 0
+    mean_storage_used = 0
+
 # Write the values to the output file
-# ~ print("Writing output in file", output_filename)
 with open(output_filename, 'a') as file:
-    file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}, {number_of_data_stored}, {total_N}, {total_storage_used/number_of_data_stored}, {total_upload_time/number_of_data_stored}, {total_N/number_of_data_stored}, \"{node_sizes_initialy}\", \"{node_sizes}\"\n")
+    file.write(f"{alg_to_print}, {total_scheduling_time}, {total_storage_used}, {total_upload_time}, {total_parralelized_upload_time}, {number_of_data_stored}, {total_N}, {mean_storage_used}, {mean_upload_time}, {mean_number_of_chunks}, \"{node_sizes_initialy}\", \"{node_sizes}\", {total_chunking_time}, {mean_chunking_time}, {mean_parralelized_upload_time}\n")
 
 output_filename_stats = "output_" + alg_to_print + "_stats.csv"
 with open(output_filename_stats, 'w') as file:

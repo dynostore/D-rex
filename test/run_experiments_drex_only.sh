@@ -48,7 +48,7 @@ python3 -m venv venv
 
 # Truncate current output files and add header
 truncate -s 0 output_drex_only.csv
-echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored,total_N,mean_storage_used,mean_upload_time,mean_N,initial_node_sizes,final_node_sizes" > output_drex_only.csv
+echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored,total_N,mean_storage_used,mean_upload_time,mean_N,initial_node_sizes,final_node_sizes,total_chunking_time,mean_chunking_time,mean_parralelized_upload_time" > output_drex_only.csv
 
 # Inputs
 data_duration_on_system=$1
@@ -81,7 +81,8 @@ fi
 
 #~ gcc -Wall drex/schedulers/algorithm4.c -o alg4 -lm
 make
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition))
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4
+#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 2
 
 # for alg in alg1 alg2 ${alg4} random hdfs_three_replications; do
 # for alg in alg1 ${alg4} random hdfs_three_replications; do
@@ -128,7 +129,7 @@ done
 # Plotting results
 if [[ "$4" == *.csv ]]; then
     python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
-    python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
+    #~ python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
 else
     #~ python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))
     python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))

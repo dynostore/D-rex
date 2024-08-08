@@ -5,15 +5,34 @@
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/all_nodes_backblaze.csv 3000 100000
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/most_used_node_x10.csv 1500 100000
 
-bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/test.csv 1
+#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/test.csv 1
 
-#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 1
-#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20
+#~ bash test/run_experiments_drex_only.sh 365 0.9 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20
+bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 250
+#~ bash test/run_experiments_drex_only.sh 365 0.999 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20
+#~ bash test/run_experiments_drex_only.sh 365 0.9999 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20
+#~ bash test/run_experiments_drex_only.sh 365 0.99999 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20
+#~ bash test/run_experiments_drex_only.sh 365 0.999999 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20
+#~ bash test/run_experiments_drex_only.sh 365 0.9999999 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20
+#~ bash test/run_experiments_drex_only.sh 365 0.99999999 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20
+
+
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 250
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_reliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250
-#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250
+bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/most_used_node_x10.csv drex/inputs/data/MEVA_merged.csv 250
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/all_nodes_backblaze.csv drex/inputs/data/MEVA_merged.csv 250
+
+
+#~ play with values of failure of nodes or use node failure rate
+#~ scale how bad you can make your system
+#~ show a breaking point of how many data are lost in case of node failure over time per strategy
+
+#~ you are uploading the data, what happen if it fails during that time ? You loose the data because you are moving it
+
+#~ Test with SSds and shiw the difference?
+
+#~ add new node
 
 # Examples
 # bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/test.csv
