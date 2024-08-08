@@ -66,6 +66,9 @@ print(number_input_data, "input data")
 input_nodes_to_print = input_nodes.split('/')[-1]
 input_nodes_to_print = input_nodes_to_print.rsplit('.', 1)[0]
 
+folder_path = "plot/" + mode + "/" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(number_of_loops)
+create_folder(folder_path)
+
 if mode != "mininet" and mode != "drex_only":
     print("mode must be drex_only or mininet")
 
@@ -82,13 +85,18 @@ if mode == "mininet":
     df2['algorithm'] = df2['algorithm'].str.replace('_reduced_complexity', '_rc')
 else:
     # Copy csv file
-    shutil.copy("output_drex_only.csv", "plot/drex_only/data/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + ".csv")
+    shutil.copy("output_drex_only.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(number_of_loops) + ".csv")
+    
+    # ~ shutil.copy("output_alg1_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/alg1.csv")
+    # ~ shutil.copy("output_alg4_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/drex.csv")
+    # ~ shutil.copy("output_glusterfs_6_4_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/glusterfs_6_4.csv")
+    # ~ shutil.copy("output_hdfsrs_3_2_stats.csv", folder_path + "output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/hdfsrs_3_2.csv")
+    # ~ shutil.copy("output_hdfsrs_6_3_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/hdfsrs_6_3.csv")
+    # ~ shutil.copy("output_hdfs_three_replications_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/hdfs_three_replications.csv")
+    # ~ shutil.copy("output_random_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/random.csv")
     
     # Load the data from the CSV file
-    file_path1 = "plot/drex_only/data/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + ".csv"
-
-folder_path = "plot/" + mode + "/" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold)
-create_folder(folder_path)
+    file_path1 = folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(number_of_loops) + ".csv"
 
 df1 = pd.read_csv(file_path1, quotechar='"', doublequote=True, skipinitialspace=True)
 
@@ -136,7 +144,7 @@ if mode == "mininet":
     plt.title('Total Simulation Time (ms)')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig('plot/' + mode + '/total_simulation_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+    plt.savefig(folder_path + '/total_simulation_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
     # Plotting total_chunking_time
     plt.figure(figsize=(10, 6))
@@ -204,11 +212,21 @@ else: # Plots unique to drex_only
     plt.figure(figsize=(10, 6))
     plt.bar(df1['algorithm'], df1['mean_upload_time'], color=get_colors(df1['algorithm']))
     plt.xlabel('Algorithm')
-    plt.ylabel('Upload time per data (s)')
-    plt.title('Upload time per data')
+    plt.ylabel('Upload time non parallel per data (s)')
+    plt.title('Upload time non parallel per data')
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig(folder_path + '/mean_upload_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+    plt.savefig(folder_path + '/mean_upload_time_non_parallelized' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+    
+    # Plotting mean_parralelized_upload_time
+    plt.figure(figsize=(10, 6))
+    plt.bar(df1['algorithm'], df1['mean_parralelized_upload_time'], color=get_colors(df1['algorithm']))
+    plt.xlabel('Algorithm')
+    plt.ylabel('Upload time parralelized per data (s)')
+    plt.title('Upload time parralelized per data')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig(folder_path + '/mean_parralelized_upload_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
 
 # Plot for both mininet and drex_only
@@ -221,6 +239,26 @@ plt.title('Total Storage Used (MB)')
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig(folder_path + '/total_storage_used_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# Plotting total chunking time
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['total_chunking_time'], color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Total Chunking Time')
+plt.title('Total Chunking Time (s)')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/total_chunking_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# Plotting mean chunking time
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['mean_chunking_time'], color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Mean Chunking Time')
+plt.title('Mean Chunking Time (s)')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/mean_chunking_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
 # Plotting total_scheduling_time
 plt.figure(figsize=(10, 6))

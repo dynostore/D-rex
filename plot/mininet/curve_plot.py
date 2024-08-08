@@ -104,6 +104,7 @@ common_ids = set.intersection(*[set(df['ID']) for df in data_frames.values()])
 # Filter data frames to only include rows with common IDs
 # Prepare a dictionary to store the summed chunking times for each algorithm
 chunking_times = {algo: {} for algo in data_frames.keys()}
+upload_times = {algo: {} for algo in data_frames.keys()}
 
 # Sum the chunking times for common IDs
 for algo, df in data_frames.items():
@@ -111,6 +112,7 @@ for algo, df in data_frames.items():
     filtered_df = df[df['ID'].isin(common_ids)]
     
     chunking_times[algo] = filtered_df.iloc[:, 4].values
+    upload_times[algo] = filtered_df.iloc[:, 2].values
 
 # Plotting
 plt.figure(figsize=(12, 8))
@@ -133,4 +135,50 @@ plt.title('Chunking Time for Different Algorithms')
 plt.legend()
 plt.grid(True)
 folder_path = "plot/" + mode + "/" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold)
-plt.savefig(folder_path + '/curve' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+plt.savefig(folder_path + '/curve_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+
+# Calculate relative upload times relative to 'drex' algorithm
+relative_upload_times = {}
+drex_times = upload_times['drex']
+
+for algo, times in upload_times.items():
+    if algo != 'drex':
+        relative_upload_times[algo] = times / drex_times
+        
+# Prepare data for violin plot
+data = []
+for algo, rel_times in relative_upload_times.items():
+    for time in rel_times:
+        data.append({'Algorithm': algo, 'Relative Upload Time': time})
+
+df = pd.DataFrame(data)
+
+# Plotting
+plt.figure(figsize=(12, 8))
+sns.violinplot(x='Algorithm', y='Relative Upload Time', data=df)
+plt.xlabel('Algorithm')
+plt.ylabel('Relative Upload Time (to drex)')
+plt.title('Relative Upload Time Comparison Across Algorithms')
+plt.grid(True)
+plt.savefig(folder_path + '/violin_transfer_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+
+relative_chunking_times = {}
+drex_times = chunking_times['drex']
+for algo, times in chunking_times.items():
+    if algo != 'drex':
+        relative_chunking_times[algo] = times / drex_times
+data = []
+for algo, rel_times in relative_chunking_times.items():
+    for time in rel_times:
+        data.append({'Algorithm': algo, 'Relative Chunking Time': time})
+df = pd.DataFrame(data)
+# Plotting
+plt.figure(figsize=(12, 8))
+sns.violinplot(x='Algorithm', y='Relative Chunking Time', data=df)
+plt.xlabel('Algorithm')
+plt.ylabel('Relative Chunking Time (to drex)')
+plt.title('Relative Chunking Time Comparison Across Algorithms')
+plt.grid(True)
+plt.savefig(folder_path + '/violin_chunking_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")

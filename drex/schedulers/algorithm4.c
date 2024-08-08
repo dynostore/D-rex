@@ -640,7 +640,6 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
     int i = 0;
     int j = 0;
     double chunk_size = 0;
-    double one_on_number_of_nodes = 1.0/number_of_nodes;
     bool valid_solution = false;
     
     // Heart of the function
@@ -648,7 +647,7 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
     gettimeofday(&start, NULL);
     long seconds, useconds;
     int best_index = -1;
-    double min_time = 0;
+    double min_time = INT_MAX;
     
     *N = -1;
     *K = -1;
@@ -676,6 +675,7 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
                 if (min_time > combinations[i]->chunking_time + combinations[i]->total_transfer_time) {
                     min_time = combinations[i]->chunking_time + combinations[i]->total_transfer_time;
                     best_index = i;
+                }
             }
             else {
                 combinations[i]->K = -1;
@@ -881,7 +881,14 @@ int main(int argc, char *argv[]) {
     int N;
     int K;
     const char *output_filename = "output_drex_only.csv";
-    const char *alg_to_print = "alg4";
+    
+    const char *alg_to_print = "";
+    if (algorithm == 4) {
+        alg_to_print = "alg4";
+    }
+    else {
+        alg_to_print = "alg2";
+    }
     double total_scheduling_time = 0;
     double total_storage_used = 0;
     double total_upload_time = 0;
@@ -911,9 +918,9 @@ int main(int argc, char *argv[]) {
     }
     int combination_count = 0;
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
-        printf("combination_count = %d\n", combination_count);
         create_combinations(nodes, number_of_nodes, i, combinations, &combination_count);
     }
+    printf("max_number_node_in_combination = %d\n", max_number_node_in_combination);
     
     #ifdef PRINT
     for (j = 0; j < total_combinations; j++) {
@@ -987,7 +994,8 @@ int main(int argc, char *argv[]) {
         find_closest(sizes[i], &nearest_size, &closest_index);
         
         if (algorithm == 2) {
-            algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
+            algorithm2(number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
+        }
         else if (algorithm == 4) {
             algorithm4(number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
         }
@@ -1007,7 +1015,13 @@ int main(int argc, char *argv[]) {
 
     // Writting the data per data outputs
     double total_chunking_time = 0;
-    write_linked_list_to_file(&list, "output_alg4_stats.csv", &total_chunking_time);
+    
+    if (algorithm == 4) {
+        write_linked_list_to_file(&list, "output_alg4_stats.csv", &total_chunking_time);
+    }
+    else {
+        write_linked_list_to_file(&list, "output_alg2_stats.csv", &total_chunking_time);
+    }
     
     // Writting the general outputs
     FILE *file = fopen(output_filename, "a");
@@ -1015,7 +1029,7 @@ int main(int argc, char *argv[]) {
         perror("Error opening file");
         return EXIT_FAILURE;
     }
-    printf("total_upload_time alg4 %f\n", total_upload_time);
+
     fprintf(file, "%s, %f, %f, %f, %f, %d, %d, %f, %f, %f, \"[", alg_to_print, total_scheduling_time, total_storage_used, total_upload_time, total_parralelized_upload_time, number_of_data_stored, total_N, total_storage_used / number_of_data_stored, total_upload_time / number_of_data_stored, (double)total_N / number_of_data_stored);
     for (i = 0; i < number_of_nodes - 1; i++) {
         fprintf(file, "%f, ", initial_node_sizes[i]);
