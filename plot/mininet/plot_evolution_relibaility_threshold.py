@@ -109,23 +109,3 @@ for metric in metrics_to_plot:
     plt.savefig(folder_path + '/' + metric + '.pdf')
 
 
-first don't care about resilience
-dynamic reliability given by user
-put 2 chunks on the same storage
-balance between size and speed
-check chunking of reed solomon
-
-does the mean make sense in 2.c ? It's more looking at the variance from the mean on each storage node or removing the mean
-Step 4 try to find an optimization function
-Step 5 might be the issue with algo2 
-
-you are slowing down the users, the users giving a minimal speed is a future work
-
-It is unfair for hdfs and other because static resilience.
-For hdfs: mean mean failure rate for each data to reach exactly the reliability threshold and optimize a combination of both like HDFS optimize space or HDFS optimize time or HDFS optimize load balancing
-
-Not clear where the best trade off is and it does not capture the intent of the user
-
-Understand how can I help you? Message on slacks
-
-resilie ce guraentee are equivalent or not
