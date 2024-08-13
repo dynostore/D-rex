@@ -542,12 +542,12 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         
         find_pareto_front(combinations, total_combinations, pareto_indices, &pareto_count);
         
-        //~ #ifdef PRINT
+        #ifdef PRINT
         printf("%d combinations on 3D pareto front. Pareto front indices:\n", pareto_count);
         for (i = 0; i < pareto_count; i++) {
-            printf("%d(N%d,K%d): %f %f %f\n", pareto_indices[i], combinations[pareto_indices[i]]->num_elements, combinations[pareto_indices[i]]->K, combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time);
+            printf("%d(N%d,K%d): %f %f %f (%f and %f chunk size is %f)\n", pareto_indices[i], combinations[pareto_indices[i]]->num_elements, combinations[pareto_indices[i]]->K, combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time, combinations[pareto_indices[i]]->transfer_time_parralelized, combinations[pareto_indices[i]]->chunking_time, chunk_size);
         }
-        //~ #endif
+        #endif
         
         // Get min and max of each of our 3 parameters
         // For the space one is already sorted logically so don't need to use the min and max function
@@ -592,9 +592,12 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             if (total_progress_size_score > 0) {
                 space_score += 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
             }
-            //~ printf("saturation score = %f\n", 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score);
-            total_score = time_score + (space_score/2.0)*system_saturation;
-            //~ printf("Total score of %d = %f + (%f/2.0)*%f\n", idx, time_score, space_score, system_saturation);
+
+            // first idea
+            //~ total_score = time_score + (space_score/2.0)*system_saturation;
+            
+            // alternative idea
+            total_score = (1 - system_saturation)*time_score + space_score/2.0;
             
             if (max_score < total_score) { // Higher score the better
                 max_score = total_score;
@@ -602,8 +605,8 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             }
         }
         
-        printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
-        printf("..\n");
+        //~ printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
+        //~ printf("..\n");
         *N = combinations[best_index]->num_elements;
         *K = combinations[best_index]->K;
         #ifdef PRINT
