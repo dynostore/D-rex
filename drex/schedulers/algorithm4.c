@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "../utils/prediction.h"
+#include "../utils/pareto_knee.h"
 #include <sys/time.h>
 
 typedef struct data_to_print {
@@ -415,7 +416,7 @@ bool is_dominated(Combination* a, Combination* b) {
 }
 
 // Function to find the Pareto front
-void find_pareto_front(Combination **combinations, int num_combinations, int *pareto_indices, int *pareto_count) {
+void find_pareto_front(Combination **combinations, int num_combinations, int *pareto_indices, double pareto_front[][3], int *pareto_count) {
     *pareto_count = 0;
     for (int i = 0; i < num_combinations; i++) {
         
@@ -435,21 +436,27 @@ void find_pareto_front(Combination **combinations, int num_combinations, int *pa
         }
         if (!dominated) {
             pareto_indices[*pareto_count] = i;
+            pareto_front[*pareto_count][0] = combinations[i]->replication_and_write_time;
+            pareto_front[*pareto_count][1] = combinations[i]->storage_overhead;
+            pareto_front[*pareto_count][2] = combinations[i]->size_score;
             (*pareto_count)++;
         }
-    }
+    }    
 }
 
-void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pareto_count, double* min_size_score, double* max_size_score, double* min_replication_and_write_time, double* max_replication_and_write_time) {
+void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pareto_count, double* min_size_score, double* max_size_score, double* min_replication_and_write_time, double* max_replication_and_write_time, double* min_storage_overhead, double* max_storage_overhead) {
     *min_size_score = DBL_MAX;
     *max_size_score = -DBL_MAX;
     *min_replication_and_write_time = DBL_MAX;
     *max_replication_and_write_time = -DBL_MAX;
+    *min_storage_overhead = DBL_MAX;
+    *max_storage_overhead = -DBL_MAX;
 
     for (int i = 0; i < pareto_count; i++) {
         int idx = pareto_indices[i];
         double size_score = combinations[idx]->size_score;
         double replication_and_write_time = combinations[idx]->replication_and_write_time;
+        double storage_overhead = combinations[idx]->storage_overhead;
 
         if (size_score < *min_size_score) {
             *min_size_score = size_score;
@@ -462,6 +469,12 @@ void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pa
         }
         if (replication_and_write_time > *max_replication_and_write_time) {
             *max_replication_and_write_time = replication_and_write_time;
+        }
+        if (storage_overhead < *min_storage_overhead) {
+            *min_storage_overhead = storage_overhead;
+        }
+        if (storage_overhead > *max_storage_overhead) {
+            *max_storage_overhead = storage_overhead;
         }
     }
 }
@@ -538,31 +551,31 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     if (valid_solution == true) {
         // 3. Only keep combination on pareto front
         int pareto_indices[total_combinations];
+        double pareto_front[total_combinations][3];
         int pareto_count;
         
-        find_pareto_front(combinations, total_combinations, pareto_indices, &pareto_count);
+        find_pareto_front(combinations, total_combinations, pareto_indices, pareto_front, &pareto_count);
         
-        #ifdef PRINT
+        //~ #ifdef PRINT
         printf("%d combinations on 3D pareto front. Pareto front indices:\n", pareto_count);
         for (i = 0; i < pareto_count; i++) {
-            printf("%d(N%d,K%d): %f %f %f (%f and %f chunk size is %f)\n", pareto_indices[i], combinations[pareto_indices[i]]->num_elements, combinations[pareto_indices[i]]->K, combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time, combinations[pareto_indices[i]]->transfer_time_parralelized, combinations[pareto_indices[i]]->chunking_time, chunk_size);
+            printf("%d(N%d,K%d): %f %f %f (%f and %f chunk size is %f)\n", pareto_indices[i], combinations[pareto_indices[i]]->num_elements, combinations[pareto_indices[i]]->K, combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time, combinations[pareto_indices[i]]->transfer_time_parralelized, combinations[pareto_indices[i]]->chunking_time, size/combinations[pareto_indices[i]]->K);
+            printf("Verif: i:%d, comb:%d, time: %f storage: %f sat: %f\n", i, pareto_indices[i], pareto_front[i][0], pareto_front[i][1], pareto_front[i][2]);
         }
-        #endif
+        //~ #endif
+        //~ exit(1);
         
         // Get min and max of each of our 3 parameters
-        // For the space one is already sorted logically so don't need to use the min and max function
-        // It is already sorted because the space decreases with N that increases
-        // However time and score are not sorted
-        double min_storage_overhead = combinations[pareto_indices[pareto_count - 1]]->storage_overhead;
-        double max_storage_overhead = combinations[pareto_indices[0]]->storage_overhead;
+        double min_storage_overhead;
+        double max_storage_overhead;
         double min_size_score;
         double max_size_score;
         double min_replication_and_write_time;
         double max_replication_and_write_time;
-        find_min_max_pareto(combinations, pareto_indices, pareto_count, &min_size_score, &max_size_score, &min_replication_and_write_time, &max_replication_and_write_time);
-        #ifdef PRINT
+        find_min_max_pareto(combinations, pareto_indices, pareto_count, &min_size_score, &max_size_score, &min_replication_and_write_time, &max_replication_and_write_time, &min_storage_overhead, &max_storage_overhead);
+        //~ #ifdef PRINT
         printf("Min and max from pareto front are: %f %f %f %f %f %f\n", min_storage_overhead, max_storage_overhead, min_size_score, max_size_score, min_replication_and_write_time, max_replication_and_write_time);
-        #endif
+        //~ #endif
         
         // Compute score with % progress
         double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
@@ -578,35 +591,41 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         int idx = 0;
         int best_index = -1;
         
-        // Getting combination with best score
-        for (i = 0; i < pareto_count; i++) {
-            idx = pareto_indices[i];
-            if (total_progress_replication_and_write_time > 0) {  // In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
-                time_score = 100 - ((combinations[idx]->replication_and_write_time - min_replication_and_write_time)*100)/total_progress_replication_and_write_time;
-            }
+        // Getting combination with best score using pareto front progress
+        //~ for (i = 0; i < pareto_count; i++) {
+            //~ idx = pareto_indices[i];
+            //~ if (total_progress_replication_and_write_time > 0) {  // In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
+                //~ time_score = 100 - ((combinations[idx]->replication_and_write_time - min_replication_and_write_time)*100)/total_progress_replication_and_write_time;
+            //~ }
             
-            if (total_progress_storage_overhead > 0) {
-                space_score = 100 - ((combinations[idx]->storage_overhead - min_storage_overhead)*100)/total_progress_storage_overhead;
-            }
-            //~ printf("storage_overhead = %f\n", space_score);
-            if (total_progress_size_score > 0) {
-                space_score += 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
-            }
+            //~ if (total_progress_storage_overhead > 0) {
+                //~ space_score = 100 - ((combinations[idx]->storage_overhead - min_storage_overhead)*100)/total_progress_storage_overhead;
+            //~ }
+            //~ if (total_progress_size_score > 0) {
+                //~ space_score += 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
+            //~ }
 
-            // first idea
-            //~ total_score = time_score + (space_score/2.0)*system_saturation;
+            //~ // first idea
+            //~ // total_score = time_score + (space_score/2.0)*system_saturation;
             
-            // alternative idea
-            total_score = (1 - system_saturation)*time_score + space_score/2.0;
+            //~ // alternative idea
+            //~ total_score = (1 - system_saturation)*time_score + space_score/2.0;
             
-            if (max_score < total_score) { // Higher score the better
-                max_score = total_score;
-                best_index = idx;
-            }
-        }
+            //~ if (max_score < total_score) { // Higher score the better
+                //~ max_score = total_score;
+                //~ best_index = idx;
+            //~ }
+        //~ }
         
-        //~ printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
-        //~ printf("..\n");
+        // Getting combination with best score using 3D pareto knee bend angle max todo use threshold?
+        // TODO if we keep this ne need to compute system saturation
+        double knee_point[3];
+        find_knee_point_3d(pareto_front, pareto_count, knee_point, 0, pareto_count - 1);
+        //~ printf("Knee Point: (%.2f, %.2f, %.2f)\n", knee_point[0], knee_point[1], knee_point[2]);
+        exit(1);
+        
+        printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
+        printf("..\n");
         *N = combinations[best_index]->num_elements;
         *K = combinations[best_index]->K;
         #ifdef PRINT
