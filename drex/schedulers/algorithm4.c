@@ -282,6 +282,8 @@ double exponential_function(double x, double x1, double y1, double x2, double y2
 // Calculate saturation
 double get_system_saturation(int number_of_nodes, double min_data_size, double total_storage_size, double total_remaining_size) {
     double saturation = 1.0 - exponential_function(total_remaining_size, total_storage_size, 1.0, min_data_size, 1.0 / number_of_nodes);
+    //~ printf("%f %f %f %f\n", min_data_size, total_storage_size, total_remaining_size, exponential_function(total_remaining_size, total_storage_size, 1.0, min_data_size, 1.0 / number_of_nodes));
+    //~ exit(1);
     return saturation;
 }
 
@@ -444,7 +446,7 @@ void find_pareto_front(Combination **combinations, int num_combinations, int *pa
     }    
 }
 
-void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pareto_count, double* min_size_score, double* max_size_score, double* min_replication_and_write_time, double* max_replication_and_write_time, double* min_storage_overhead, double* max_storage_overhead) {
+void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pareto_count, double* min_size_score, double* max_size_score, double* min_replication_and_write_time, double* max_replication_and_write_time, double* min_storage_overhead, double* max_storage_overhead, int* max_time_index, int* max_space_index, int* max_saturation_index) {
     *min_size_score = DBL_MAX;
     *max_size_score = -DBL_MAX;
     *min_replication_and_write_time = DBL_MAX;
@@ -463,18 +465,21 @@ void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pa
         }
         if (size_score > *max_size_score) {
             *max_size_score = size_score;
+            *max_saturation_index = i;
         }
         if (replication_and_write_time < *min_replication_and_write_time) {
             *min_replication_and_write_time = replication_and_write_time;
         }
         if (replication_and_write_time > *max_replication_and_write_time) {
             *max_replication_and_write_time = replication_and_write_time;
+            *max_time_index = i;
         }
         if (storage_overhead < *min_storage_overhead) {
             *min_storage_overhead = storage_overhead;
         }
         if (storage_overhead > *max_storage_overhead) {
             *max_storage_overhead = storage_overhead;
+            *max_space_index = i;
         }
     }
 }
@@ -524,7 +529,8 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             if (combinations[i]->min_remaining_size - chunk_size >= 0) {
                 valid_solution = true;
                 for (j = 0; j < combinations[i]->num_elements; j++) {
-                    combinations[i]->size_score += 1 - exponential_function(combinations[i]->nodes[j]->storage_size - chunk_size, max_node_size, 1, min_data_size, one_on_number_of_nodes);
+                    combinations[i]->size_score += 1.0 - exponential_function(combinations[i]->nodes[j]->storage_size - chunk_size, max_node_size, 1, min_data_size, one_on_number_of_nodes);
+                    //~ printf("sat of node %d %f compared to system: %f\n", j, 1.0 - exponential_function(combinations[i]->nodes[j]->storage_size - chunk_size, max_node_size, 1, min_data_size, one_on_number_of_nodes), system_saturation);
                     #ifdef PRINT
                     printf("%f %f %f %f %f\n", combinations[i]->nodes[j]->storage_size, chunk_size, max_node_size, min_data_size, one_on_number_of_nodes);
                     printf("size_score: %f\n", combinations[i]->size_score);
@@ -559,11 +565,10 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         //~ #ifdef PRINT
         printf("%d combinations on 3D pareto front. Pareto front indices:\n", pareto_count);
         for (i = 0; i < pareto_count; i++) {
-            printf("%d(N%d,K%d): %f %f %f (%f and %f chunk size is %f)\n", pareto_indices[i], combinations[pareto_indices[i]]->num_elements, combinations[pareto_indices[i]]->K, combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time, combinations[pareto_indices[i]]->transfer_time_parralelized, combinations[pareto_indices[i]]->chunking_time, size/combinations[pareto_indices[i]]->K);
-            printf("Verif: i:%d, comb:%d, time: %f storage: %f sat: %f\n", i, pareto_indices[i], pareto_front[i][0], pareto_front[i][1], pareto_front[i][2]);
+            printf("%d(N%d,K%d): sto:%f sat:%f time:%f (%f and %f chunk size is %f)\n", pareto_indices[i], combinations[pareto_indices[i]]->num_elements, combinations[pareto_indices[i]]->K, combinations[pareto_indices[i]]->storage_overhead, combinations[pareto_indices[i]]->size_score, combinations[pareto_indices[i]]->replication_and_write_time, combinations[pareto_indices[i]]->transfer_time_parralelized, combinations[pareto_indices[i]]->chunking_time, size/combinations[pareto_indices[i]]->K);
+            //~ printf("Verif: i:%d, comb:%d, time: %f storage: %f sat: %f\n", i, pareto_indices[i], pareto_front[i][0], pareto_front[i][1], pareto_front[i][2]);
         }
         //~ #endif
-        //~ exit(1);
         
         // Get min and max of each of our 3 parameters
         double min_storage_overhead;
@@ -572,10 +577,13 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         double max_size_score;
         double min_replication_and_write_time;
         double max_replication_and_write_time;
-        find_min_max_pareto(combinations, pareto_indices, pareto_count, &min_size_score, &max_size_score, &min_replication_and_write_time, &max_replication_and_write_time, &min_storage_overhead, &max_storage_overhead);
-        //~ #ifdef PRINT
-        printf("Min and max from pareto front are: %f %f %f %f %f %f\n", min_storage_overhead, max_storage_overhead, min_size_score, max_size_score, min_replication_and_write_time, max_replication_and_write_time);
-        //~ #endif
+        int max_time_index;
+        int max_space_index;
+        int max_saturation_index;
+        find_min_max_pareto(combinations, pareto_indices, pareto_count, &min_size_score, &max_size_score, &min_replication_and_write_time, &max_replication_and_write_time, &min_storage_overhead, &max_storage_overhead, &max_time_index, &max_space_index, &max_saturation_index);
+        #ifdef PRINT
+        printf("Min and max from pareto front are: %f %f %f %f %f %f / max time index:%d max space index:%d\n", min_storage_overhead, max_storage_overhead, min_size_score, max_size_score, min_replication_and_write_time, max_replication_and_write_time, max_time_index, max_space_index);
+        #endif
         
         // Compute score with % progress
         double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
@@ -619,18 +627,18 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         
         // Getting combination with best score using 3D pareto knee bend angle max todo use threshold?
         // TODO if we keep this ne need to compute system saturation
-        double knee_point[3];
-        find_knee_point_3d(pareto_front, pareto_count, knee_point, 0, pareto_count - 1);
-        //~ printf("Knee Point: (%.2f, %.2f, %.2f)\n", knee_point[0], knee_point[1], knee_point[2]);
-        exit(1);
-        
+        //~ double knee_point[3];
+        //~ best_index = pareto_indices[find_knee_point_3d(pareto_front, pareto_count, knee_point, max_time_index, max_saturation_index)];
+        //~ printf("Knee Point: %d (%.2f, %.2f, %.2f)\n", best_index, knee_point[0], knee_point[1], knee_point[2]);
+        //~ best_index=5; // TODO to remove
+        //~ exit(1);
+        //~ #ifdef PRINT
         printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
         printf("..\n");
+        //~ #endif
+        //~ exit(1);
         *N = combinations[best_index]->num_elements;
         *K = combinations[best_index]->K;
-        #ifdef PRINT
-        printf("Best combination is %d\n", best_index);
-        #endif
         gettimeofday(&end, NULL);
         
         double total_upload_time_to_print = 0;
