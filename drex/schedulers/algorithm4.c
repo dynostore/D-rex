@@ -326,18 +326,20 @@ double get_system_saturation(int number_of_nodes, double min_data_size, double t
     return saturation;
 }
 
-// Helper function to compute factorial
-int factorial(int n) {
-    int result = 1;
-    for (int i = 1; i <= n; i++) {
+// Function to calculate factorial
+unsigned long long factorial(int n) {
+    if (n == 0 || n == 1) return 1;
+    unsigned long long result = 1;
+    for (int i = 2; i <= n; i++) {
         result *= i;
     }
     return result;
 }
 
-// Function to calculate number of combinations (n choose r)
-int combination(int n, int r) {
-    if (r > n) return 0;
+// Function to calculate binomial coefficient
+unsigned long long combination(int n, int r) {
+    if (r > n || r < 0) return 0;
+    printf("%d choose %d: %lld\n", n, r, factorial(n) / (factorial(r) * factorial(n - r)));
     return factorial(n) / (factorial(r) * factorial(n - r));
 }
 
@@ -359,6 +361,13 @@ void free_combinations(Combination **combinations, int count) {
     free(combinations);
 }
 
+/*
+ * In order to reduce complexity of algorithm4.
+ * Does not look at all the combinations because too computational intensive. The breaking point being above 10 nodes.
+ * First we want to look at at most at 2000 combinations.
+ * So what we do is for each different number of nodes in a combination, if it has more than 2000/(number of nodes - 1) possibilities we need to trim.
+ * In order to trim We look at the combinations with most remaining memory
+ */
 void create_combinations(Node *nodes, int n, int r, Combination **combinations, int *combination_count) {
     int *indices = malloc(r * sizeof(int));
     if (!indices) {
@@ -412,7 +421,6 @@ void create_combinations(Node *nodes, int n, int r, Combination **combinations, 
             indices[j] = indices[j - 1] + 1;
         }
     }
-
     free(indices);
 }
 
@@ -696,9 +704,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
                 combinations[best_index]->nodes[i]->storage_size -= chunk_size;                
             }
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
-            //~ printf("Added data to print %d\n", head_data_to_print->id);
             *total_upload_time += total_upload_time_to_print;
-            //~ printf("Added %f to upload time\n", total_upload_time_to_print);
             combinations[best_index]->min_remaining_size -= chunk_size;
         }
     }
@@ -953,7 +959,7 @@ int main(int argc, char *argv[]) {
     }
     #endif
     
-    //~ #ifdef PRINT
+    #ifdef PRINT
     for (i = 0; i < number_of_nodes; i++) {
         printf("Node %d: storage_size=%f, write_bandwidth=%d, read_bandwidth=%d, probability_failure=%f\n",
                nodes[i].id, nodes[i].storage_size, nodes[i].write_bandwidth,
@@ -962,7 +968,7 @@ int main(int argc, char *argv[]) {
     }
     printf("Max node size is %f\n", max_node_size);
     printf("Total storage size is %f\n", total_storage_size);
-    //~ #endif
+    #endif
     
     // Variables used in algorithm4
     double min_data_size = DBL_MAX;
@@ -985,18 +991,19 @@ int main(int argc, char *argv[]) {
     int number_of_data_stored = 0;
     int total_N = 0; // Number of chunks
     
+    /** Building combinations **/
     // Calculate total number of combinations
     int total_combinations = 0;
+    //~ number_of_initial_nodes = 10; //TODO remove
     int min_number_node_in_combination = 2;
     int max_number_node_in_combination = number_of_initial_nodes;
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
         total_combinations += combination(number_of_initial_nodes, i);
     }
-
-    #ifdef PRINT
+    //~ #ifdef PRINT
     printf("There are %d possible combinations\n", total_combinations);
-    #endif
-    
+    //~ #endif
+    exit(1);
     // Generate all possibles combinations
     Combination **combinations = NULL;
     // Allocate memory for storing all combinations
@@ -1009,9 +1016,8 @@ int main(int argc, char *argv[]) {
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
         create_combinations(nodes, number_of_initial_nodes, i, combinations, &combination_count);
     }
-    //~ printf("max_number_node_in_combination = %d\n", max_number_node_in_combination);
-    
-    #ifdef PRINT
+    printf("max_number_node_in_combination = %d\n", max_number_node_in_combination);
+    //~ #ifdef PRINT
     for (i = 0; i < total_combinations; i++) {
         printf("Combination %d: ", i + 1);
         for (j = 0; j < combinations[i]->num_elements; j++) {
@@ -1020,8 +1026,10 @@ int main(int argc, char *argv[]) {
         }
         printf("\n");
     }
-    #endif
-    //~ exit(1);
+    //~ #endif
+    exit(1);
+    // TODO penser a aussi uipdate ca pendant la jout de nouvelle nodes ou pendant le retrait
+    
     // Prediction of chunking time
     // My code
     // Filling a struct with our prediction records
