@@ -946,16 +946,19 @@ int main(int argc, char *argv[]) {
     }
     
     // Print the collected data
-    //~ #ifdef PRINT
+    #ifdef PRINT
     printf("There are %d data in W mode:\n", count);
     for (i = 0; i < count; i++) {
         printf("%.2f\n", sizes[i]);
     }
+    #endif
+    
+    //~ #ifdef PRINT
     for (i = 0; i < number_of_nodes; i++) {
         printf("Node %d: storage_size=%f, write_bandwidth=%d, read_bandwidth=%d, probability_failure=%f\n",
                nodes[i].id, nodes[i].storage_size, nodes[i].write_bandwidth,
                nodes[i].read_bandwidth, nodes[i].probability_failure);
-        printf("initial_node_sizes %d: %f\n", i, initial_node_sizes);
+        //~ printf("initial_node_sizes %d: %f\n", i, initial_node_sizes[i]);
     }
     printf("Max node size is %f\n", max_node_size);
     printf("Total storage size is %f\n", total_storage_size);
@@ -990,9 +993,9 @@ int main(int argc, char *argv[]) {
         total_combinations += combination(number_of_initial_nodes, i);
     }
 
-    //~ #ifdef PRINT
+    #ifdef PRINT
     printf("There are %d possible combinations\n", total_combinations);
-    //~ #endif
+    #endif
     
     // Generate all possibles combinations
     Combination **combinations = NULL;
@@ -1006,7 +1009,7 @@ int main(int argc, char *argv[]) {
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
         create_combinations(nodes, number_of_initial_nodes, i, combinations, &combination_count);
     }
-    printf("max_number_node_in_combination = %d\n", max_number_node_in_combination);
+    //~ printf("max_number_node_in_combination = %d\n", max_number_node_in_combination);
     
     #ifdef PRINT
     for (i = 0; i < total_combinations; i++) {
@@ -1074,18 +1077,38 @@ int main(int argc, char *argv[]) {
     // Current number of nodes being used. Will be updated when next node time is reached
     int current_number_of_nodes = number_of_initial_nodes;
     
-    // Looping on all data and using algorithm4
+    /** Simulation main loop **/
     for (i = 0; i < count; i++) {
-        printf("current_number_of_nodes = %d\n", current_number_of_nodes);
+        //~ printf("current_number_of_nodes = %d\n", current_number_of_nodes);
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
         }
         
         // If we reached a threshold for a new node, we add it to the list of combinations
-        if (i == nodes[current_number_of_nodes].add_after_x_jobs) {
+        if (number_of_supplementary_nodes > 0 && i == nodes[current_number_of_nodes].add_after_x_jobs) {
             printf("Adding node %d\n", nodes[current_number_of_nodes].id);
             current_number_of_nodes += 1;
-            exit(1);
+            // Calculate total number of combinations
+            total_combinations = 0;
+            max_number_node_in_combination = current_number_of_nodes;
+            for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
+                total_combinations += combination(current_number_of_nodes, j);
+            }
+            #ifdef PRINT
+            printf("There are %d possible combinations\n", total_combinations);
+            #endif
+            // Generate all possibles combinations
+            free(combinations);
+            // Allocate memory for storing all combinations
+            combinations = malloc(total_combinations * sizeof(Combination *));
+            if (combinations == NULL) {
+                perror("Error allocating memory for combinations");
+                exit(EXIT_FAILURE);
+            }
+            combination_count = 0;
+            for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
+                create_combinations(nodes, current_number_of_nodes, j, combinations, &combination_count);
+            }
         }
         
         find_closest(sizes[i], &nearest_size, &closest_index);
@@ -1099,10 +1122,11 @@ int main(int argc, char *argv[]) {
         else {
             printf("Algorithm %d not valid\n", algorithm);
         }
-        //~ #ifdef PRINT
+        #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        //~ #endif
-        if (i%10000 == 0) {
+        #endif
+        //~ if (i%10000 == 0) {
+        if (i%100 == 0) {
             printf("%d/%d\n", i, count);
         }
     }
