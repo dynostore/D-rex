@@ -82,7 +82,7 @@ fi
 #~ gcc -Wall drex/schedulers/algorithm4.c -o alg4 -lm
 make
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 2
+#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 2
 
 # for alg in alg1 alg2 ${alg4} random hdfs_three_replications; do
 # for alg in alg1 ${alg4} random hdfs_three_replications; do

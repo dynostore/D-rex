@@ -91,7 +91,7 @@ int find_knee_point_3d(double pareto_front[][3], int num_points, double knee_poi
     int best_index;
     double max_bend_angle = -DBL_MAX;
     double current_bend_angle;
-        
+    
     double xL[3] = { normalized_front[min_index][0], normalized_front[min_index][1], normalized_front[min_index][2] };
     double xR[3] = { normalized_front[max_index][0], normalized_front[max_index][1], normalized_front[max_index][2] };
     //~ printf("L %f %f %f R %f %f %f\n", pareto_front[min_index][0], pareto_front[min_index][1], pareto_front[min_index][2], pareto_front[max_index][0], pareto_front[max_index][1], pareto_front[max_index][2]);
@@ -100,7 +100,7 @@ int find_knee_point_3d(double pareto_front[][3], int num_points, double knee_poi
         
         current_bend_angle = calculate_bend_angle_3d(x, xL, xR);
         
-        printf("Point: (%.2f, %.2f, %.2f) Bend Angle: %.2f\n", x[0], x[1], x[2], current_bend_angle);
+        //~ printf("Point: (%.2f, %.2f, %.2f) Bend Angle: %.2f\n", x[0], x[1], x[2], current_bend_angle);
         
         if (current_bend_angle > max_bend_angle) {
             max_bend_angle = current_bend_angle;
