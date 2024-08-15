@@ -5,7 +5,7 @@ CFLAGS = -Idrex/utils -I/usr/local/include -Wall
 LDFLAGS = -L/usr/local/lib -lgsl -lgslcblas -lm
 
 # List of object files
-OBJS = drex/utils/prediction.o drex/utils/pareto_knee.o drex/utils/k_means_clustering.o drex/schedulers/algorithm4.o
+OBJS = drex/utils/prediction.o drex/utils/pareto_knee.o drex/utils/k_means_clustering.o drex/utils/combinations.o drex/schedulers/algorithm4.o
 
 # Target executable
 TARGET = alg4
@@ -28,9 +28,13 @@ drex/utils/pareto_knee.o: drex/utils/pareto_knee.c drex/utils/pareto_knee.h
 # Compile k_means_clustering.c
 drex/utils/k_means_clustering.o: drex/utils/k_means_clustering.c drex/utils/k_means_clustering.h
 	$(CC) $(CFLAGS) -c drex/utils/k_means_clustering.c -o drex/utils/k_means_clustering.o
-	
+
+# Compile combinations.c
+drex/utils/combinations.o: drex/utils/combinations.c drex/utils/combinations.h
+	$(CC) $(CFLAGS) -c drex/utils/combinations.c -o drex/utils/combinations.o
+
 # Compile algorithm4.c
-drex/schedulers/algorithm4.o: drex/schedulers/algorithm4.c drex/utils/prediction.h drex/utils/pareto_knee.h drex/utils/k_means_clustering.h
+drex/schedulers/algorithm4.o: drex/schedulers/algorithm4.c drex/utils/prediction.h drex/utils/pareto_knee.h drex/utils/k_means_clustering.h drex/utils/combinations.h
 	$(CC) $(CFLAGS) -c drex/schedulers/algorithm4.c -o drex/schedulers/algorithm4.o
 
 # Clean up object files and the executable

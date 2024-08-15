@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
+#include <stdlib.h>
 
 // Function to calculate the bend angle for a 3D Pareto front
 double calculate_bend_angle_3d(double x[3], double xL[3], double xR[3]) {
@@ -83,7 +84,7 @@ int find_knee_point_3d(double pareto_front[][3], int num_points, double knee_poi
     // Edge case handling
     if (num_points < 3) {
         printf("Error: Need at least 3 points to compute the knee point.\n");
-        return;
+        exit(1);
     }
 
     double normalized_front[num_points][3];

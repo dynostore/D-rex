@@ -6,56 +6,11 @@
 #include <stdbool.h>
 #include <string.h>
 #include "../utils/prediction.h"
+#include "algorithm4.h"
 #include "../utils/pareto_knee.h"
 #include "../utils/k_means_clustering.h"
+#include "../utils/combinations.h"
 #include <sys/time.h>
-
-typedef struct data_to_print {
-    int id;
-    double size;
-    double total_transfer_time;
-    double transfer_time_parralelized;
-    double chunking_time;
-    int N;
-    int K;
-    struct data_to_print *next;
-} DataToPrint;
-
-typedef struct {
-    DataToPrint *head;
-    DataToPrint *tail;
-} DataList;
-
-typedef struct {
-    int id;
-    double storage_size;
-    int write_bandwidth;
-    int read_bandwidth;
-    double probability_failure;
-    int add_after_x_jobs;  // Number of jobs after which the node becomes available
-} Node;
-
-typedef struct {
-    int num_elements; // Number of nodes in the combination
-    Node** nodes; // Array of pointers to Node structs
-    double* probability_failure; // Array of reliability
-    double variance_reliability; // To avoid having to compute it all the time
-    double sum_reliability; // To avoid having to compute it all the time
-    int* write_bandwidth; // Array of bandwidths
-    double min_remaining_size; // Smallest node's remaining memory in the combination. Used to quickly skip an unvalid combination
-    int min_write_bandwidth; // Smallest node's write bandwidth in the combination
-    
-    // Sub values for pareto front
-    double transfer_time_parralelized;
-    double total_transfer_time;
-    double chunking_time;
-    
-    // Values in the pareto front
-    double size_score;
-    double replication_and_write_time;
-    double storage_overhead;
-    int K;
-} Combination;
 
 DataToPrint* create_node(int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K) {
     DataToPrint *new_node = (DataToPrint*)malloc(sizeof(DataToPrint));
@@ -338,10 +293,32 @@ unsigned long long factorial(int n) {
 }
 
 // Function to calculate binomial coefficient
-unsigned long long combination(int n, int r) {
-    if (r > n || r < 0) return 0;
-    printf("%d choose %d: %lld\n", n, r, factorial(n) / (factorial(r) * factorial(n - r)));
-    return factorial(n) / (factorial(r) * factorial(n - r));
+//~ unsigned long long combination(int n, int r) {
+    //~ if (r > n || r < 0) return 0;
+    //~ printf("%d choose %d: %lld\n", n, r, factorial(n) / (factorial(r) * factorial(n - r)));
+    //~ return factorial(n) / (factorial(r) * factorial(n - r));
+//~ }
+// Function to compute combination C(n, r) and compare it to a threshold
+unsigned long long combination(int n, int r, unsigned long long complexity_threshold) {
+    if (r > n || r < 0) return 0; // Invalid case
+    if (r == 0 || r == n) return 1; // Base cases
+    
+    // Take advantage of symmetry: C(n, r) == C(n, n-r)
+    if (r > n - r) r = n - r;
+    
+    unsigned long long result = 1;
+    for (int i = 0; i < r; ++i) {
+        result *= (n - i);
+        
+        // To prevent overflow, we check if the result is still below the threshold
+        if (result > complexity_threshold * (i + 1)) {
+            return complexity_threshold; // Return threshold if overflow will occur
+        }
+        
+        result /= (i + 1);
+    }
+    
+    return result;
 }
 
 // Function to print a combination
@@ -362,12 +339,6 @@ void free_combinations(Combination **combinations, int count) {
     free(combinations);
 }
 
-/*
- * In order to reduce complexity of algorithm4.
- * Does not look at all the combinations because too computational intensive. The breaking point being above 10 nodes.
- * First we want to look at at most at 2000 combinations.
- * So we look at the max number of clusters we can build and build this number of kmeans cluster and generate the combinations with these clusters (repetition within a cluster is possible)
- */
 void create_combinations(Node *nodes, int n, int r, Combination **combinations, int *combination_count) {
     int *indices = malloc(r * sizeof(int));
     if (!indices) {
@@ -549,7 +520,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     // 1. Get system saturation
     //~ double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, *total_remaining_size);    
     #ifdef PRINT
-    printf("System saturation = %f\n", system_saturation);
+    //~ printf("System saturation = %f\n", system_saturation);
     printf("Data size = %f\n", size);
     #endif
     
@@ -992,39 +963,60 @@ int main(int argc, char *argv[]) {
     int total_N = 0; // Number of chunks
     
     /** Building combinations **/
+    Combination **combinations = NULL;
     // Calculate total number of combinations
     int total_combinations = 0;
-    number_of_initial_nodes = 12; //TODO remove, this is just for testing!!!
+    int combination_count = 0;
+    //~ number_of_initial_nodes = 14; //TODO remove, this is just for testing!!!
     int min_number_node_in_combination = 2;
+        unsigned long long complexity_threshold = 2000;
     int max_number_node_in_combination = number_of_initial_nodes;
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
-        total_combinations += combination(number_of_initial_nodes, i);
+        total_combinations += combination(number_of_initial_nodes, i, complexity_threshold);
     }
     //~ #ifdef PRINT
     printf("There are %d possible combinations\n", total_combinations);
     //~ #endif
     
     // TODO: need to do this again when adding or removing nodes
-    int complexity_threshold = 2000;
-    // If the number of combinations is superior to our complexity threshold, we count the number of clusters we can make that do not exceed this value for each number of nodes. that way the number of combinations we will built will be inferior to complexity_threshold
-    int max_number_clusters = find_max_N_for_sum(number_of_initial_nodes, complexity_threshold);
-    printf("max_number_clusters = %d\n", max_number_clusters);
-    
-    // Now build this number of clusters
-    
-    
-    exit(1);
-    // Generate all possibles combinations
-    Combination **combinations = NULL;
-    // Allocate memory for storing all combinations
-    combinations = malloc(total_combinations * sizeof(Combination *));
-    if (combinations == NULL) {
-        perror("Error allocating memory for combinations");
-        exit(EXIT_FAILURE);
+    // If there are more combinations than our threshold, we do clusters instead
+    if (total_combinations > complexity_threshold) {
+        // If the number of combinations is superior to our complexity threshold, we count the number of clusters we can make that do not exceed this value for each number of nodes. that way the number of combinations we will built will be inferior to complexity_threshold
+        //~ int max_number_clusters = find_max_N_for_sum(number_of_initial_nodes, complexity_threshold);
+        int max_number_clusters = 4;
+        printf("max_number_clusters = %d\n", max_number_clusters);
+        
+        // Now build this number of clusters
+        int max_iterations_k_means = 10; // Number of iterations to build the cluster. The bigger the value the more precise
+        Cluster* clusters = (Cluster*)malloc(max_number_clusters * sizeof(Cluster));
+        k_means(nodes, number_of_initial_nodes, max_number_clusters, max_iterations_k_means, clusters);
+        //~ exit(1);
+        // Now generate combinations using nodes from these clusters
+        combinations = malloc(complexity_threshold * sizeof(Combination *));
+        for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
+            create_combinations_from_clusters(clusters, max_number_clusters, i, nodes, combinations, &combination_count);
+        }
+        //~ generate_all_combinations(nodes, clusters, max_number_clusters);
+        //~ exit(1);
+        printf("combination_count = %d\n", combination_count);
+        total_combinations = combination_count;
+        //~ exit(1);
+        // TODO free clusters with 
+        free_clusters(clusters, max_number_clusters);
+        //~ exit(1);
     }
-    int combination_count = 0;
-    for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
-        create_combinations(nodes, number_of_initial_nodes, i, combinations, &combination_count);
+    // TODO; else ?
+    else {
+        //~ exit(1);
+        // Allocate memory for storing all combinations
+        combinations = malloc(total_combinations * sizeof(Combination *));
+        if (combinations == NULL) {
+            perror("Error allocating memory for combinations");
+            exit(EXIT_FAILURE);
+        }
+        for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
+            create_combinations(nodes, number_of_initial_nodes, i, combinations, &combination_count);
+        }
     }
     printf("max_number_node_in_combination = %d\n", max_number_node_in_combination);
     //~ #ifdef PRINT
@@ -1032,12 +1024,13 @@ int main(int argc, char *argv[]) {
         printf("Combination %d: ", i + 1);
         for (j = 0; j < combinations[i]->num_elements; j++) {
             printf("%d ", combinations[i]->nodes[j]->id);
-            printf("%d - ", combinations[i]->write_bandwidth[j]);
+            printf("(%d) - ", combinations[i]->write_bandwidth[j]);
         }
         printf("\n");
     }
     //~ #endif
-    exit(1);
+    //~ exit(1);
+
     // TODO penser a aussi uipdate ca pendant la jout de nouvelle nodes ou pendant le retrait
     
     // Prediction of chunking time
@@ -1063,13 +1056,14 @@ int main(int argc, char *argv[]) {
     for (i = 0; i < num_files; i++) {
         read_records(filenames[i], &records_array[i]);
     }
+    //~ exit(1);
     // Print the data to verify (example for the first file)
     #ifdef PRINT
     for (i = 0; i < 171; i++) {
         printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames[0], i, records_array[0].n[i], records_array[0].k[i], records_array[0].avg_time[i]);
     }
     #endif
-    
+    //~ exit(1);
     LinearModel *models = (LinearModel *)malloc(num_files * sizeof(LinearModel));
     double c0, c1, c2;
     for (i = 0; i < num_files; i++) {
@@ -1086,14 +1080,17 @@ int main(int argc, char *argv[]) {
         models[i].intercept = c0;
         models[i].slope_n = c1;
         models[i].slope_k = c2;
+        //~ exit(1);
     }
-
+    //~ exit(1);
     double total_remaining_size = total_storage_size; // Used for system saturation
     int closest_index = 0;
     int nearest_size = 0;
     
     // Current number of nodes being used. Will be updated when next node time is reached
     int current_number_of_nodes = number_of_initial_nodes;
+    
+    // TODO: need to redo the clusters and combination after each X data since memory have changed? I think so yes
     
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
@@ -1102,6 +1099,7 @@ int main(int argc, char *argv[]) {
             min_data_size = sizes[i];
         }
         
+        /** Adding a node **/
         // If we reached a threshold for a new node, we add it to the list of combinations
         if (number_of_supplementary_nodes > 0 && i == nodes[current_number_of_nodes].add_after_x_jobs) {
             printf("Adding node %d\n", nodes[current_number_of_nodes].id);
@@ -1110,7 +1108,8 @@ int main(int argc, char *argv[]) {
             total_combinations = 0;
             max_number_node_in_combination = current_number_of_nodes;
             for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
-                total_combinations += combination(current_number_of_nodes, j);
+                total_combinations += combination(current_number_of_nodes, j, complexity_threshold);
+                // TODO meme bazar pour comb
             }
             #ifdef PRINT
             printf("There are %d possible combinations\n", total_combinations);
@@ -1191,7 +1190,7 @@ int main(int argc, char *argv[]) {
     }
     free(records_array);
     free(models);
-    
+    free(combinations);
     printf("Success\n");
     return EXIT_SUCCESS;
 }
