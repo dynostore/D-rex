@@ -7,6 +7,7 @@
 #include <string.h>
 #include "../utils/prediction.h"
 #include "../utils/pareto_knee.h"
+#include "../utils/k_means_clustering.h"
 #include <sys/time.h>
 
 typedef struct data_to_print {
@@ -365,8 +366,7 @@ void free_combinations(Combination **combinations, int count) {
  * In order to reduce complexity of algorithm4.
  * Does not look at all the combinations because too computational intensive. The breaking point being above 10 nodes.
  * First we want to look at at most at 2000 combinations.
- * So what we do is for each different number of nodes in a combination, if it has more than 2000/(number of nodes - 1) possibilities we need to trim.
- * In order to trim We look at the combinations with most remaining memory
+ * So we look at the max number of clusters we can build and build this number of kmeans cluster and generate the combinations with these clusters (repetition within a cluster is possible)
  */
 void create_combinations(Node *nodes, int n, int r, Combination **combinations, int *combination_count) {
     int *indices = malloc(r * sizeof(int));
@@ -994,7 +994,7 @@ int main(int argc, char *argv[]) {
     /** Building combinations **/
     // Calculate total number of combinations
     int total_combinations = 0;
-    //~ number_of_initial_nodes = 10; //TODO remove
+    number_of_initial_nodes = 12; //TODO remove, this is just for testing!!!
     int min_number_node_in_combination = 2;
     int max_number_node_in_combination = number_of_initial_nodes;
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
@@ -1003,6 +1003,16 @@ int main(int argc, char *argv[]) {
     //~ #ifdef PRINT
     printf("There are %d possible combinations\n", total_combinations);
     //~ #endif
+    
+    // TODO: need to do this again when adding or removing nodes
+    int complexity_threshold = 2000;
+    // If the number of combinations is superior to our complexity threshold, we count the number of clusters we can make that do not exceed this value for each number of nodes. that way the number of combinations we will built will be inferior to complexity_threshold
+    int max_number_clusters = find_max_N_for_sum(number_of_initial_nodes, complexity_threshold);
+    printf("max_number_clusters = %d\n", max_number_clusters);
+    
+    // Now build this number of clusters
+    
+    
     exit(1);
     // Generate all possibles combinations
     Combination **combinations = NULL;

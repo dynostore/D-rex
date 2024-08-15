@@ -19,6 +19,7 @@ drex/inputs/data/FB_merged.csv
 drex/inputs/data/MEVA_merged.csv
 drex/inputs/get_stats_input_data
 alg4
+drex/utils/k_means_clustering.o
 output_alg1_stats.csv
 output_alg2_stats.csv
 output_alg4_stats.csv
