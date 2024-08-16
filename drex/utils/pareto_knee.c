@@ -81,15 +81,26 @@ void normalize_values(double pareto_front[][3], int num_points, double normalize
 
 // Function to find the knee point in a 3D Pareto front
 int find_knee_point_3d(double pareto_front[][3], int num_points, double knee_point[3], int min_index, int max_index) {
-    // Edge case handling
-    if (num_points < 3) {
-        printf("Error: Need at least 3 points to compute the knee point. num_points=%d\n", num_points);
-        exit(1);
-    }
 
     double normalized_front[num_points][3];
     normalize_values(pareto_front, num_points, normalized_front);
     int best_index;
+    
+    // Edge case handling: return value with smallest sum of normalized values
+    if (num_points < 3) {
+        //~ printf("Error: Need at least 3 points to compute the knee point. num_points=%d\n", num_points);
+        double min_normalized_sum = DBL_MAX;
+        double normalized_sum = DBL_MAX;
+        for (int i = 0; i < num_points; i++) {
+            normalized_sum = normalized_front[i][0] + normalized_front[i][1] + normalized_front[i][2];
+            if (min_normalized_sum > normalized_sum) {
+                min_normalized_sum = normalized_sum;
+                best_index = i;
+            }
+        }
+        return best_index;
+    }
+    
     double max_bend_angle = -DBL_MAX;
     double current_bend_angle;
     
