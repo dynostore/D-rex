@@ -83,7 +83,7 @@ void normalize_values(double pareto_front[][3], int num_points, double normalize
 int find_knee_point_3d(double pareto_front[][3], int num_points, double knee_point[3], int min_index, int max_index) {
     // Edge case handling
     if (num_points < 3) {
-        printf("Error: Need at least 3 points to compute the knee point.\n");
+        printf("Error: Need at least 3 points to compute the knee point. num_points=%d\n", num_points);
         exit(1);
     }
 

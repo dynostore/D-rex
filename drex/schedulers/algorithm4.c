@@ -330,71 +330,6 @@ void print_combination(Combination *comb) {
     }
 }
 
-// Function to free allocated memory for combinations
-void free_combinations(Combination **combinations, int count) {
-    for (int i = 0; i < count; i++) {
-        free(combinations[i]->nodes);
-        free(combinations[i]);
-    }
-    free(combinations);
-}
-
-void create_combinations(Node *nodes, int n, int r, Combination **combinations, int *combination_count) {
-    int *indices = malloc(r * sizeof(int));
-    if (!indices) {
-        perror("malloc");
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < r; i++) {
-        indices[i] = i;
-    }
-
-    while (1) {
-        combinations[*combination_count] = malloc(sizeof(Combination));
-        combinations[*combination_count]->num_elements = r;
-        combinations[*combination_count]->nodes = malloc(r * sizeof(Node*));
-        combinations[*combination_count]->probability_failure = malloc(r * sizeof(double));
-        combinations[*combination_count]->sum_reliability = 0;
-        combinations[*combination_count]->variance_reliability = 0;
-        combinations[*combination_count]->write_bandwidth = malloc(r * sizeof(int));
-        combinations[*combination_count]->min_remaining_size = DBL_MAX;
-        combinations[*combination_count]->min_write_bandwidth = INT_MAX;
-
-        for (int i = 0; i < r; i++) {
-            combinations[*combination_count]->nodes[i] = &nodes[indices[i]];
-            combinations[*combination_count]->probability_failure[i] = nodes[indices[i]].probability_failure;
-            combinations[*combination_count]->sum_reliability += nodes[indices[i]].probability_failure;
-            combinations[*combination_count]->variance_reliability += nodes[indices[i]].probability_failure * (1 - nodes[indices[i]].probability_failure);
-            combinations[*combination_count]->write_bandwidth[i] = nodes[indices[i]].write_bandwidth;
-            if (nodes[indices[i]].storage_size < combinations[*combination_count]->min_remaining_size) {
-                combinations[*combination_count]->min_remaining_size = nodes[indices[i]].storage_size;
-            }
-            if (nodes[indices[i]].write_bandwidth < combinations[*combination_count]->min_write_bandwidth) {
-                combinations[*combination_count]->min_write_bandwidth = nodes[indices[i]].write_bandwidth;
-            }
-        }
-        (*combination_count)++;
-        
-        int i = r - 1;
-        
-        while (i >= 0 && indices[i] == n - r + i) {
-            i--;
-        }
-
-        if (i < 0) {
-            break;
-        }
-
-        indices[i]++;
-
-        for (int j = i + 1; j < r; j++) {
-            indices[j] = indices[j - 1] + 1;
-        }
-    }
-    free(indices);
-}
-
 // Function to calculate Poisson-Binomial CDF approximation
 // This is a simplified version. For accurate calculation, consider using libraries or more complex methods.
 double poibin_cdf(int N, int K, double sum_reliability, double variance_reliability) {
@@ -870,6 +805,25 @@ void find_closest(int target, int* nearest_size, int* closest_index) {
     }
 }
 
+// Comparison function for sorting nodes by remaining storage size
+int compare_nodes_by_storage(const void *a, const void *b) {
+    Node *nodeA = (Node *)a;
+    Node *nodeB = (Node *)b;
+
+    // Compare storage sizes (ascending order)
+    if (nodeA->storage_size < nodeB->storage_size) return -1;
+    if (nodeA->storage_size > nodeB->storage_size) return 1;
+    return 0;
+}
+
+// Function to print nodes
+void print_nodes(Node *nodes, int num_nodes) {
+    for (int i = 0; i < num_nodes; i++) {
+        printf("Node %d: Storage Size = %.2f, Write Bandwidth = %d, Read Bandwidth = %d, Failure Rate = %.2f\n",
+               nodes[i].id, nodes[i].storage_size, nodes[i].write_bandwidth, nodes[i].read_bandwidth, nodes[i].probability_failure);
+    }
+}
+
 int main(int argc, char *argv[]) {
     int i = 0;
     if (argc < 8) {
@@ -969,7 +923,7 @@ int main(int argc, char *argv[]) {
     int combination_count = 0;
     //~ number_of_initial_nodes = 14; //TODO remove, this is just for testing!!!
     int min_number_node_in_combination = 2;
-        unsigned long long complexity_threshold = 2000;
+    unsigned long long complexity_threshold = 2000;
     int max_number_node_in_combination = number_of_initial_nodes;
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
         total_combinations += combination(number_of_initial_nodes, i, complexity_threshold);
@@ -980,29 +934,46 @@ int main(int argc, char *argv[]) {
     
     // TODO: need to do this again when adding or removing nodes
     // If there are more combinations than our threshold, we do clusters instead
-    if (total_combinations > complexity_threshold) {
+    if (total_combinations >= complexity_threshold) {
         // If the number of combinations is superior to our complexity threshold, we count the number of clusters we can make that do not exceed this value for each number of nodes. that way the number of combinations we will built will be inferior to complexity_threshold
         //~ int max_number_clusters = find_max_N_for_sum(number_of_initial_nodes, complexity_threshold);
-        int max_number_clusters = 4;
-        printf("max_number_clusters = %d\n", max_number_clusters);
+        //~ int max_number_clusters = 4;
+        //~ printf("max_number_clusters = %d\n", max_number_clusters);
         
         // Now build this number of clusters
-        int max_iterations_k_means = 10; // Number of iterations to build the cluster. The bigger the value the more precise
-        Cluster* clusters = (Cluster*)malloc(max_number_clusters * sizeof(Cluster));
-        k_means(nodes, number_of_initial_nodes, max_number_clusters, max_iterations_k_means, clusters);
+        //~ int max_iterations_k_means = 10; // Number of iterations to build the cluster. The bigger the value the more precise
+        //~ Cluster* clusters = (Cluster*)malloc(max_number_clusters * sizeof(Cluster));
+        //~ k_means(nodes, number_of_initial_nodes, max_number_clusters, max_iterations_k_means, clusters);
         //~ exit(1);
         // Now generate combinations using nodes from these clusters
+        
+        // Assign max number of combination per number of node in a combination
+        int max_number_combination_per_r = complexity_threshold/(number_of_initial_nodes - 1);
+        printf("max_number_combination_per_r = %d\n", max_number_combination_per_r);
+        
+        // Sort nodes by remaining storage size
+        qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage);
+        print_nodes(nodes, number_of_initial_nodes);
+        
+        // Alloc the combinations
         combinations = malloc(complexity_threshold * sizeof(Combination *));
+        
+        // create combinations but stop when limit is reached
         for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
-            create_combinations_from_clusters(clusters, max_number_clusters, i, nodes, combinations, &combination_count);
+                create_combinations_with_limit(nodes, number_of_initial_nodes, i, combinations, &combination_count, max_number_combination_per_r);
         }
+        
+        //~ combinations = malloc(complexity_threshold * sizeof(Combination *));
+        //~ for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
+            //~ create_combinations_from_clusters(clusters, max_number_clusters, i, nodes, combinations, &combination_count);
+        //~ }
         //~ generate_all_combinations(nodes, clusters, max_number_clusters);
         //~ exit(1);
         printf("combination_count = %d\n", combination_count);
         total_combinations = combination_count;
         //~ exit(1);
         // TODO free clusters with 
-        free_clusters(clusters, max_number_clusters);
+        //~ free_clusters(clusters, max_number_clusters);
         //~ exit(1);
     }
     // TODO; else ?
