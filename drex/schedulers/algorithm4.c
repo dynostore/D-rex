@@ -1045,7 +1045,7 @@ int main(int argc, char *argv[]) {
         
         /** Resorting the nodes after every 100 GB of data stored **/
         if (input_data_sum_of_size_already_stored > 100000 && reduced_complexity_situation == true && algorithm == 4) {
-            //~ printf("Reset\n");
+            printf("Reset\n");
             reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
             //~ print_nodes(nodes, current_number_of_nodes);
         }
