@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <../schedulers/algorithm4.h>
 #include <k_means_clustering.h>
+#include <combinations.h>
 
 // Function to free allocated memory for combinations
 void free_combinations(Combination **combinations, int count) {
@@ -129,6 +130,77 @@ void create_combinations_with_limit(Node *nodes, int n, int r, Combination **com
         }
     }
     free(indices);
+}
+
+// Function to calculate binomial coefficient
+//~ unsigned long long combination(int n, int r) {
+    //~ if (r > n || r < 0) return 0;
+    //~ printf("%d choose %d: %lld\n", n, r, factorial(n) / (factorial(r) * factorial(n - r)));
+    //~ return factorial(n) / (factorial(r) * factorial(n - r));
+//~ }
+// Function to compute combination C(n, r) and compare it to a threshold
+unsigned long long combination(int n, int r, unsigned long long complexity_threshold) {
+    if (r > n || r < 0) return 0; // Invalid case
+    if (r == 0 || r == n) return 1; // Base cases
+    
+    // Take advantage of symmetry: C(n, r) == C(n, n-r)
+    if (r > n - r) r = n - r;
+    
+    unsigned long long result = 1;
+    for (int i = 0; i < r; ++i) {
+        result *= (n - i);
+        
+        // To prevent overflow, we check if the result is still below the threshold
+        if (result > complexity_threshold * (i + 1)) {
+            return complexity_threshold; // Return threshold if overflow will occur
+        }
+        
+        result /= (i + 1);
+    }
+    
+    return result;
+}
+
+
+void reset_combinations_and_recreate_them(int* total_combinations, int min_number_node_in_combination, int current_number_of_nodes, int complexity_threshold, Node* nodes, Combination** combinations, int i)
+{
+    int j = 0;
+            *total_combinations = 0;
+            free(combinations);
+            int max_number_node_in_combination = current_number_of_nodes;
+            for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
+                *total_combinations += combination(current_number_of_nodes, j, complexity_threshold);
+            }
+            int combination_count = 0;
+            //~ #ifdef PRINT
+            //~ printf("There are %d possible combinations\n", *total_combinations);
+            //~ #endif
+            if (*total_combinations >= complexity_threshold) {
+                //~ printf("sorted version\n");
+                //~ printf("global_current_data_value before = %d\n", global_current_data_value);
+                global_current_data_value = i;
+                //~ printf("global_current_data_value after = %d\n", global_current_data_value);
+                int max_number_combination_per_r = complexity_threshold/(current_number_of_nodes - 1);
+                qsort(nodes, current_number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+                //~ print_nodes(nodes, current_number_of_nodes);
+                combinations = malloc(complexity_threshold * sizeof(Combination *));
+                for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
+                    create_combinations_with_limit(nodes, current_number_of_nodes, j, combinations, &combination_count, max_number_combination_per_r);
+                }
+                *total_combinations = combination_count;
+            }
+            else {
+                combinations = malloc(*total_combinations * sizeof(Combination *));
+                if (combinations == NULL) {
+                    perror("Error allocating memory for combinations");
+                    exit(EXIT_FAILURE);
+                }
+                
+                for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
+                    create_combinations(nodes, current_number_of_nodes, j, combinations, &combination_count);
+                }
+            }
+            printf("total_combinations = %d after adding a node\n", *total_combinations);
 }
 
 //~ // Function to create one random combination from a given cluster

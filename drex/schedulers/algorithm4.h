@@ -1,6 +1,8 @@
 #ifndef ALG4_H
 #define ALG4_H
 
+extern int global_current_data_value;
+
 typedef struct {
     int id;
     double storage_size;
@@ -47,6 +49,8 @@ typedef struct {
     double storage_overhead;
     int K;
 } Combination;
+
+int compare_nodes_by_storage_desc_with_condition(const void *a, const void *b);
 
 #endif
 
