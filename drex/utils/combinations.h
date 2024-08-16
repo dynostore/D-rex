@@ -6,7 +6,7 @@
 void create_combinations_with_limit(Node *nodes, int n, int r, Combination **combinations, int *combination_count, int limit);
 void create_combinations(Node *nodes, int n, int r, Combination **combinations, int *combination_count);
 void free_combinations(Combination **combinations, int count);
-void reset_combinations_and_recreate_them(int* total_combinations, int min_number_node_in_combination, int current_number_of_nodes, int complexity_threshold, Node* nodes, Combination** combinations, int i);
+void reset_combinations_and_recreate_them(int* total_combinations, int min_number_node_in_combination, int current_number_of_nodes, int complexity_threshold, Node* nodes, Combination** combinations, int i, bool* reduced_complexity_situation);
 unsigned long long combination(int n, int r, unsigned long long complexity_threshold);
 
 #endif

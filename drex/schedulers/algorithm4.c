@@ -906,6 +906,7 @@ int main(int argc, char *argv[]) {
     // Calculate total number of combinations
     int total_combinations = 0;
     int combination_count = 0;
+    bool reduced_complexity_situation;
     int min_number_node_in_combination = 2;
     unsigned long long complexity_threshold = 2000;
     int max_number_node_in_combination = number_of_initial_nodes;
@@ -920,6 +921,7 @@ int main(int argc, char *argv[]) {
     // TODO: need to do this again when adding or removing nodes
     // If there are more combinations than our threshold, we do clusters instead
     if (total_combinations >= complexity_threshold) {
+        reduced_complexity_situation = true;
         printf("sorted version\n");    
         // Assign max number of combination per number of node in a combination
         max_number_combination_per_r = complexity_threshold/(number_of_initial_nodes - 1);
@@ -940,6 +942,7 @@ int main(int argc, char *argv[]) {
         total_combinations = combination_count;
     }
     else {
+        reduced_complexity_situation = false;
         // Allocate memory for storing all combinations
         combinations = malloc(total_combinations * sizeof(Combination *));
         if (combinations == NULL) {
@@ -1021,7 +1024,8 @@ int main(int argc, char *argv[]) {
     
     // Current number of nodes being used. Will be updated when next node time is reached
     int current_number_of_nodes = number_of_initial_nodes;
-        
+    double input_data_sum_of_size_already_stored = 0;
+    
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
         //~ printf("current_number_of_nodes = %d total_combinations = %d\n", current_number_of_nodes, total_combinations);
@@ -1035,42 +1039,15 @@ int main(int argc, char *argv[]) {
             printf("Adding node %d\n", nodes[current_number_of_nodes].id);
             current_number_of_nodes += 1;
             
-            // Calculate total number of combinations and generate them again
-            reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i);
-            //~ total_combinations = 0;
-            //~ free(combinations);
-            //~ max_number_node_in_combination = current_number_of_nodes;
-            //~ for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
-                //~ total_combinations += combination(current_number_of_nodes, j, complexity_threshold);
-            //~ }
-            //~ combination_count = 0;
-            //~ #ifdef PRINT
-            //~ printf("There are %d possible combinations\n", total_combinations);
-            //~ #endif
-            //~ if (total_combinations >= complexity_threshold) {
-                //~ printf("sorted version\n");
-                //~ global_current_data_value = i;
-                //~ max_number_combination_per_r = complexity_threshold/(current_number_of_nodes - 1);
-                //~ qsort(nodes, current_number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
-                //~ print_nodes(nodes, current_number_of_nodes);
-                //~ combinations = malloc(complexity_threshold * sizeof(Combination *));
-                //~ for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
-                    //~ create_combinations_with_limit(nodes, current_number_of_nodes, j, combinations, &combination_count, max_number_combination_per_r);
-                //~ }
-                //~ total_combinations = combination_count;
-            //~ }
-            //~ else {
-                //~ combinations = malloc(total_combinations * sizeof(Combination *));
-                //~ if (combinations == NULL) {
-                    //~ perror("Error allocating memory for combinations");
-                    //~ exit(EXIT_FAILURE);
-                //~ }
-                
-                //~ for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
-                    //~ create_combinations(nodes, current_number_of_nodes, j, combinations, &combination_count);
-                //~ }
-            //~ }
-                //~ #ifdef PRINT
+            reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
+            //~ print_nodes(nodes, current_number_of_nodes);
+        }
+        
+        /** Resorting the nodes after every 100 GB of data stored **/
+        if (input_data_sum_of_size_already_stored > 100000 && reduced_complexity_situation == true && algorithm == 4) {
+            //~ printf("Reset\n");
+            reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
+            //~ print_nodes(nodes, current_number_of_nodes);
         }
         
         find_closest(sizes[i], &nearest_size, &closest_index);
@@ -1091,6 +1068,7 @@ int main(int argc, char *argv[]) {
         if (i%1000 == 0) {
             printf("%d/%d\n", i, count);
         }
+        input_data_sum_of_size_already_stored += sizes[i];
     }
     #ifdef PRINT
     printf("Total scheduling time was %f\n", total_scheduling_time);

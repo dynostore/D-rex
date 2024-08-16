@@ -162,25 +162,24 @@ unsigned long long combination(int n, int r, unsigned long long complexity_thres
 }
 
 
-void reset_combinations_and_recreate_them(int* total_combinations, int min_number_node_in_combination, int current_number_of_nodes, int complexity_threshold, Node* nodes, Combination** combinations, int i)
+void reset_combinations_and_recreate_them(int* total_combinations, int min_number_node_in_combination, int current_number_of_nodes, int complexity_threshold, Node* nodes, Combination** combinations, int i, bool* reduced_complexity_situation)
 {
     int j = 0;
-            *total_combinations = 0;
-            free(combinations);
-            int max_number_node_in_combination = current_number_of_nodes;
-            for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
-                *total_combinations += combination(current_number_of_nodes, j, complexity_threshold);
-            }
-            int combination_count = 0;
-            //~ #ifdef PRINT
-            //~ printf("There are %d possible combinations\n", *total_combinations);
-            //~ #endif
-            if (*total_combinations >= complexity_threshold) {
+    *total_combinations = 0;
+    free(combinations);
+    int max_number_node_in_combination = current_number_of_nodes;
+    for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
+        *total_combinations += combination(current_number_of_nodes, j, complexity_threshold);
+    }
+    int combination_count = 0;
+
+    if (*total_combinations >= complexity_threshold) {
+        *reduced_complexity_situation = true;
                 //~ printf("sorted version\n");
                 //~ printf("global_current_data_value before = %d\n", global_current_data_value);
-                global_current_data_value = i;
+        global_current_data_value = i;
                 //~ printf("global_current_data_value after = %d\n", global_current_data_value);
-                int max_number_combination_per_r = complexity_threshold/(current_number_of_nodes - 1);
+        int max_number_combination_per_r = complexity_threshold/(current_number_of_nodes - 1);
                 qsort(nodes, current_number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
                 //~ print_nodes(nodes, current_number_of_nodes);
                 combinations = malloc(complexity_threshold * sizeof(Combination *));
@@ -190,6 +189,7 @@ void reset_combinations_and_recreate_them(int* total_combinations, int min_numbe
                 *total_combinations = combination_count;
             }
             else {
+                *reduced_complexity_situation = false;
                 combinations = malloc(*total_combinations * sizeof(Combination *));
                 if (combinations == NULL) {
                     perror("Error allocating memory for combinations");
