@@ -9,6 +9,7 @@ typedef struct {
     int write_bandwidth;
     int read_bandwidth;
     double probability_failure;
+    double daily_failure_rate;
     int add_after_x_jobs;  // Number of jobs after which the node becomes available
 } Node;
 

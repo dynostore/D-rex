@@ -164,7 +164,9 @@ void read_node(const char *filename, int number_of_nodes, Node *nodes, double da
         index++;
     }
     // Update the annual failure rate to become the probability of failure of the node
+    // Add a daily failure rate
     for (int i = 0; i < number_of_nodes; i++) {
+        nodes[i].daily_failure_rate = nodes[i].probability_failure / 365.0;
         nodes[i].probability_failure = probability_of_failure(nodes[i].probability_failure, data_duration_on_system);
     }
 
@@ -778,13 +780,20 @@ void find_closest(int target, int* nearest_size, int* closest_index) {
     }
 }
 
-// Comparison function for sorting nodes by remaining storage size in descending order
-// Nodes with add_after_x_jobs > current_data_value are sorted to the end
+/** Comparison function for sorting nodes by remaining storage size in descending order
+ * Nodes with add_after_x_jobs > current_data_value or add_after_x_jobs == -1 are sorted to the end **/
 int compare_nodes_by_storage_desc_with_condition(const void *a, const void *b) {
     Node *nodeA = (Node *)a;
     Node *nodeB = (Node *)b;
-    //~ int current_data_value = *(const int *)arg; // Extract the threshold value from the argument
 
+    // Handle nodes with add_after_x_jobs == -1 first
+    if (nodeA->add_after_x_jobs == -1 && nodeB->add_after_x_jobs != -1) {
+        return 1; // Move nodeA to the end
+    }
+    if (nodeA->add_after_x_jobs != -1 && nodeB->add_after_x_jobs == -1) {
+        return -1; // Move nodeB to the end
+    }
+    
     // Check if the nodes should be moved to the end
     if (nodeA->add_after_x_jobs > global_current_data_value && nodeB->add_after_x_jobs <= global_current_data_value) {
         return 1; // Move nodeA to the end
@@ -833,7 +842,7 @@ int main(int argc, char *argv[]) {
     int number_of_initial_nodes = count_nodes(input_node);
     int number_of_supplementary_nodes = count_nodes(input_supplementary_node);
     int number_of_nodes = number_of_initial_nodes + number_of_supplementary_nodes;
-
+ house keys and is getting back at 6:30
     printf("number_of_initial_nodes: %d\n", number_of_initial_nodes);
     printf("number_of_supplementary_nodes: %d\n", number_of_supplementary_nodes);
     printf("number_of_nodes: %d\n", number_of_nodes);
@@ -890,8 +899,11 @@ int main(int argc, char *argv[]) {
     if (algorithm == 4) {
         alg_to_print = "alg4";
     }
-    else {
+    else if (algorithm == 2) {
         alg_to_print = "alg2";
+    }
+    else if (algorithm == 5) {
+        alg_to_print = "alg_bogdan";
     }
     double total_scheduling_time = 0;
     double total_storage_used = 0;
@@ -920,6 +932,9 @@ int main(int argc, char *argv[]) {
     global_current_data_value = 0;
     // TODO: need to do this again when adding or removing nodes
     // If there are more combinations than our threshold, we do clusters instead
+    
+    // Sort nodes by remaining storage size
+    qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
     if (total_combinations >= complexity_threshold) {
         reduced_complexity_situation = true;
         printf("sorted version\n");    
@@ -928,7 +943,7 @@ int main(int argc, char *argv[]) {
         
         // Sort nodes by remaining storage size
         //~ qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage);
-        qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+        //~ qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
         //~ print_nodes(nodes, number_of_initial_nodes); exit(1);
         
         // Alloc the combinations
@@ -1040,11 +1055,15 @@ int main(int argc, char *argv[]) {
             current_number_of_nodes += 1;
             
             reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
-            //~ print_nodes(nodes, current_number_of_nodes);
         }
         
+        /** Removing a node **/
+        //~ call function
+        //~ current_number_of_nodes -=1;
+        //~ reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
+        
         /** Resorting the nodes after every 100 GB of data stored **/
-        if (input_data_sum_of_size_already_stored > 100000 && reduced_complexity_situation == true && algorithm == 4) {
+        if (input_data_sum_of_size_already_stored > 100000 && reduced_complexity_situation == true && (algorithm == 4 || algorithm == 5)) {
             printf("Reset\n");
             reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
             //~ print_nodes(nodes, current_number_of_nodes);
@@ -1057,6 +1076,9 @@ int main(int argc, char *argv[]) {
         }
         else if (algorithm == 4) {
             algorithm4(current_number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
+        }
+        else if (algorithm == 5) {
+            //~ algorithm4(current_number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
         }
         else {
             printf("Algorithm %d not valid\n", algorithm);
@@ -1080,8 +1102,11 @@ int main(int argc, char *argv[]) {
     if (algorithm == 4) {
         write_linked_list_to_file(&list, "output_alg4_stats.csv", &total_chunking_time);
     }
-    else {
+    else if (algorithm == 2) {
         write_linked_list_to_file(&list, "output_alg2_stats.csv", &total_chunking_time);
+    }
+    else if (algorithm == 5) {
+        write_linked_list_to_file(&list, "output_alg_bogdan_stats.csv", &total_chunking_time);
     }
     
     // Writting the general outputs
