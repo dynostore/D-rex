@@ -819,8 +819,8 @@ void print_nodes(Node *nodes, int num_nodes) {
 
 int main(int argc, char *argv[]) {
     int i = 0;
-    if (argc < 8) {
-        fprintf(stderr, "Usage: %s <input_node> <input_data> <data_duration_on_system> <reliability_threshold> <number_of_repetition> <algorithm> <input_supplementary_node>\n", argv[0]);
+    if (argc < 10) {
+        fprintf(stderr, "Usage: %s <input_node> <input_data> <data_duration_on_system> <reliability_threshold> <number_of_repetition> <algorithm> <input_supplementary_node> <remove_node_pattern> <fixed_random_seed>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -831,7 +831,13 @@ int main(int argc, char *argv[]) {
     int number_of_repetition = atoi(argv[5]);
     int algorithm = atoi(argv[6]); // 4 is alg4 (drex) and 2 is alg 2 (time)
     const char *input_supplementary_node = argv[7];
-    printf("Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d\n", data_duration_on_system, reliability_threshold, number_of_repetition);
+
+    // For the removal of nodes
+    int remove_node_pattern = atoi(argv[8]); // 0 for no removal, 1 for removal randomly, 2 for following failure rate
+    unsigned int seed = atoi(argv[9]);  // We fix the seed so all algorithm have the same one
+    srand(seed); // Set the seed up
+
+    printf("Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d.\n", data_duration_on_system, reliability_threshold, number_of_repetition);
     
     DataList list;
     init_list(&list);
@@ -842,7 +848,6 @@ int main(int argc, char *argv[]) {
     int number_of_initial_nodes = count_nodes(input_node);
     int number_of_supplementary_nodes = count_nodes(input_supplementary_node);
     int number_of_nodes = number_of_initial_nodes + number_of_supplementary_nodes;
- house keys and is getting back at 6:30
     printf("number_of_initial_nodes: %d\n", number_of_initial_nodes);
     printf("number_of_supplementary_nodes: %d\n", number_of_supplementary_nodes);
     printf("number_of_nodes: %d\n", number_of_nodes);
@@ -1043,7 +1048,6 @@ int main(int argc, char *argv[]) {
     
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
-        //~ printf("current_number_of_nodes = %d total_combinations = %d\n", current_number_of_nodes, total_combinations);
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
         }
@@ -1058,17 +1062,28 @@ int main(int argc, char *argv[]) {
         }
         
         /** Removing a node **/
-        //~ call function
-        //~ current_number_of_nodes -=1;
-        //~ reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
-        
-        /** Resorting the nodes after every 100 GB of data stored **/
-        if (input_data_sum_of_size_already_stored > 100000 && reduced_complexity_situation == true && (algorithm == 4 || algorithm == 5)) {
-            printf("Reset\n");
+        if (remove_node_pattern != 0) {
+            if (remove_node_pattern == 1) {
+                remove_random_node(current_number_of_nodes, nodes);
+            }
+            if (remove_node_pattern == 2) {
+                remove_node_following_failure_rate(current_number_of_nodes, nodes);
+            }
+            else {
+                printf("ERROR: remove_node_pattern = %d not supported\n", remove_node_pattern);
+                exit(1);
+            }
+            current_number_of_nodes -=1;
             reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
-            //~ print_nodes(nodes, current_number_of_nodes);
         }
         
+        /** Resorting the nodes and combinations after every 100 GB of data stored **/
+        // TODO: sort more often ?
+        if (input_data_sum_of_size_already_stored > 100000 && reduced_complexity_situation == true && algorithm == 4) {
+            printf("Reset\n");
+            reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
+        }
+                
         find_closest(sizes[i], &nearest_size, &closest_index);
         
         if (algorithm == 2) {
@@ -1078,7 +1093,7 @@ int main(int argc, char *argv[]) {
             algorithm4(current_number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
         }
         else if (algorithm == 5) {
-            //~ algorithm4(current_number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
+            balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i);
         }
         else {
             printf("Algorithm %d not valid\n", algorithm);
