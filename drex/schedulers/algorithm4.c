@@ -10,6 +10,8 @@
 #include "../utils/pareto_knee.h"
 #include "../utils/k_means_clustering.h"
 #include "../utils/combinations.h"
+#include "../utils/remove_node.h"
+#include "bogdan_balance_penalty.h"
 #include <sys/time.h>
 
 int global_current_data_value;
@@ -305,9 +307,10 @@ void print_combination(Combination *comb) {
     }
 }
 
+/** Version with approximation **/
 // Function to calculate Poisson-Binomial CDF approximation
 // This is a simplified version. For accurate calculation, consider using libraries or more complex methods.
-double poibin_cdf(int N, int K, double sum_reliability, double variance_reliability) {
+double poibin_cdf_approximation(int N, int K, double sum_reliability, double variance_reliability) {
     double cdf = 0.0;
     int n = N - K;
     double mean = sum_reliability / N;
@@ -317,20 +320,72 @@ double poibin_cdf(int N, int K, double sum_reliability, double variance_reliabil
 
     return cdf;
 }
-
 // Function to check if the reliability threshold is met
-bool reliability_thresold_met(int N, int K, double reliability_threshold, double sum_reliability, double variance_reliability) {
-    double cdf = poibin_cdf(N, K, sum_reliability, variance_reliability);
+bool reliability_thresold_met_approximation(int N, int K, double reliability_threshold, double sum_reliability, double variance_reliability) {
+    double cdf = poibin_cdf_approximation(N, K, sum_reliability, variance_reliability);
     return cdf >= reliability_threshold;
+}
+
+/** Version accurate **/
+// Initialize PoiBin structure
+PoiBin *init_poi_bin_accurate(double *probabilities, int n) {
+    PoiBin *pb = (PoiBin *)malloc(sizeof(PoiBin));
+    pb->probabilities = (double *)malloc(n * sizeof(double));
+    pb->n = n;
+
+    for (int i = 0; i < n; i++) {
+        pb->probabilities[i] = probabilities[i];
+    }
+
+    return pb;
+}
+// Compute the PMF for the Poisson-Binomial distribution
+double pmf_poi_bin_accurate(PoiBin *pb, int k) {
+    double *dp = (double *)calloc(k + 1, sizeof(double));
+    dp[0] = 1.0;
+
+    for (int i = 0; i < pb->n; i++) {
+        for (int j = k; j > 0; j--) {
+            dp[j] = dp[j] * (1 - pb->probabilities[i]) + dp[j - 1] * pb->probabilities[i];
+        }
+        dp[0] *= (1 - pb->probabilities[i]);
+    }
+
+    double result = dp[k];
+    free(dp);
+    return result;
+}
+// Compute the CDF for the Poisson-Binomial distribution
+double cdf_poi_bin_accurate(PoiBin *pb, int k) {
+    double cdf = 0.0;
+    for (int i = 0; i <= k; i++) {
+        cdf += pmf_poi_bin_accurate(pb, i);
+    }
+    return cdf;
+}
+// Free memory allocated for PoiBin
+void free_poi_bin_accurate(PoiBin *pb) {
+    free(pb->probabilities);
+    free(pb);
+}
+// Check if reliability threshold is met
+int reliability_threshold_met_accurate(int N, int K, double reliability_threshold, double *reliability_of_nodes) {
+    PoiBin *pb = init_poi_bin_accurate(reliability_of_nodes, N);
+    double cdf_value = cdf_poi_bin_accurate(pb, N - K);
+    free_poi_bin_accurate(pb);
+    return cdf_value >= reliability_threshold;
 }
 
 int get_max_K_from_reliability_threshold_and_nodes_chosen(int number_of_nodes, float reliability_threshold, double sum_reliability, double variance_reliability) {
     int K;
     for (int i = number_of_nodes - 1; i >= 2; i--) {
         K = i;
-        if (reliability_thresold_met(number_of_nodes, K, reliability_threshold, sum_reliability, variance_reliability)) {
+        if (reliability_thresold_met_approximation(number_of_nodes, K, reliability_threshold, sum_reliability, variance_reliability)) {
             return K;
         }
+        //~ if (reliability_thresold_met_accurate(number_of_nodes, K, reliability_threshold, reliability_of_nodes)) {
+            //~ return K;
+        //~ }
     }
     return -1;
 }
@@ -437,6 +492,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     // 2. Iterates over a range of nodes combination
     for (i = 0; i < total_combinations; i++) {
         *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability);
+        
         #ifdef PRINT
         printf("Max K for combination %d is %d\n", i, *K);
         #endif
@@ -454,6 +510,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             #ifdef PRINT
             printf("Chunk size: %f\n", chunk_size);
             #endif
+            //~ printf("%f\n", combinations[i]->min_remaining_size);
             if (combinations[i]->min_remaining_size - chunk_size >= 0) {
                 valid_solution = true;
                 for (j = 0; j < combinations[i]->num_elements; j++) {
@@ -482,7 +539,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             }
         }
     }
-
+    printf("2.\n");
     if (valid_solution == true) {
         // 3. Only keep combination on pareto front
         int pareto_indices[total_combinations];
@@ -509,9 +566,9 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         int max_space_index;
         int max_saturation_index;
         find_min_max_pareto(combinations, pareto_indices, pareto_count, &min_size_score, &max_size_score, &min_replication_and_write_time, &max_replication_and_write_time, &min_storage_overhead, &max_storage_overhead, &max_time_index, &max_space_index, &max_saturation_index);
-        #ifdef PRINT
+        //~ #ifdef PRINT
         printf("Min and max from pareto front are: %f %f %f %f %f %f / max time index:%d max space index:%d\n", min_storage_overhead, max_storage_overhead, min_size_score, max_size_score, min_replication_and_write_time, max_replication_and_write_time, max_time_index, max_space_index);
-        #endif
+        //~ #endif
         
         // Compute score with % progress
         //~ double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
@@ -557,9 +614,9 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         // Getting combination with best score using 3D pareto knee bend angle max todo use threshold?
         // TODO if we keep this ne need to compute system saturation
         double knee_point[3];
-        //~ printf("max_time_index %d, max_saturation_index %d\n", max_time_index, max_saturation_index);
+        printf("max_time_index %d, max_saturation_index %d\n", max_time_index, max_saturation_index);
         best_index = pareto_indices[find_knee_point_3d(pareto_front, pareto_count, knee_point, max_time_index, max_saturation_index)];
-        //~ printf("Knee Point: %d (%.2f, %.2f, %.2f)\n", best_index, knee_point[0], knee_point[1], knee_point[2]);
+        printf("Knee Point: %d (%.2f, %.2f, %.2f)\n", best_index, knee_point[0], knee_point[1], knee_point[2]);
 
         #ifdef PRINT
         printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
@@ -837,7 +894,7 @@ int main(int argc, char *argv[]) {
     unsigned int seed = atoi(argv[9]);  // We fix the seed so all algorithm have the same one
     srand(seed); // Set the seed up
 
-    printf("Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d.\n", data_duration_on_system, reliability_threshold, number_of_repetition);
+    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern);
     
     DataList list;
     init_list(&list);
@@ -939,7 +996,8 @@ int main(int argc, char *argv[]) {
     // If there are more combinations than our threshold, we do clusters instead
     
     // Sort nodes by remaining storage size
-    qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+    //~ qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+    //~ print_nodes(nodes, number_of_initial_nodes);
     if (total_combinations >= complexity_threshold) {
         reduced_complexity_situation = true;
         printf("sorted version\n");    
@@ -948,8 +1006,8 @@ int main(int argc, char *argv[]) {
         
         // Sort nodes by remaining storage size
         //~ qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage);
-        //~ qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
-        //~ print_nodes(nodes, number_of_initial_nodes); exit(1);
+        qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+        //~ print_nodes(nodes, number_of_initial_nodes);
         
         // Alloc the combinations
         combinations = malloc(complexity_threshold * sizeof(Combination *));
@@ -962,6 +1020,7 @@ int main(int argc, char *argv[]) {
         total_combinations = combination_count;
     }
     else {
+        printf("Normal %d combinations\n", total_combinations);
         reduced_complexity_situation = false;
         // Allocate memory for storing all combinations
         combinations = malloc(total_combinations * sizeof(Combination *));
@@ -970,11 +1029,13 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
         for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
+            printf("i = %d\n", i);
             create_combinations(nodes, number_of_initial_nodes, i, combinations, &combination_count);
         }
     }
+    //~ exit(1);
 
-    #ifdef PRINT
+    //~ #ifdef PRINT
     for (i = 0; i < total_combinations; i++) {
         printf("Combination %d: ", i + 1);
         for (j = 0; j < combinations[i]->num_elements; j++) {
@@ -983,7 +1044,7 @@ int main(int argc, char *argv[]) {
         }
         printf("\n");
     }
-    #endif
+    //~ #endif
     //~ exit(1);
     
 
@@ -1048,6 +1109,12 @@ int main(int argc, char *argv[]) {
     
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
+        
+        //~ if (i%10000 == 0) {
+        if (i%1 == 0) {
+            printf("%d/%d\n", i, count);
+        }
+        
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
         }
@@ -1063,6 +1130,7 @@ int main(int argc, char *argv[]) {
         
         /** Removing a node **/
         if (remove_node_pattern != 0) {
+            printf("Node removal\n");
             if (remove_node_pattern == 1) {
                 remove_random_node(current_number_of_nodes, nodes);
             }
@@ -1083,7 +1151,7 @@ int main(int argc, char *argv[]) {
             printf("Reset\n");
             reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
         }
-                
+        printf("1.\n");
         find_closest(sizes[i], &nearest_size, &closest_index);
         
         if (algorithm == 2) {
@@ -1093,18 +1161,15 @@ int main(int argc, char *argv[]) {
             algorithm4(current_number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
         }
         else if (algorithm == 5) {
-            balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i);
+            balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, &total_remaining_size, closest_index, models, nearest_size, &list, i);
         }
         else {
             printf("Algorithm %d not valid\n", algorithm);
         }
-        #ifdef PRINT
+        //~ #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        #endif
-        //~ if (i%10000 == 0) {
-        if (i%1000 == 0) {
-            printf("%d/%d\n", i, count);
-        }
+        //~ #endif
+ 
         input_data_sum_of_size_already_stored += sizes[i];
     }
     #ifdef PRINT

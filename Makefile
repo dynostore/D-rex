@@ -38,7 +38,7 @@ drex/utils/remove_node.o: drex/utils/remove_node.c drex/utils/remove_node.h
 	$(CC) $(CFLAGS) -c drex/utils/remove_node.c -o drex/utils/remove_node.o
 	
 # Compile bogdan_balance_penalty.c
-drex/utils/combinations.o: drex/schedulers/bogdan_balance_penalty.c drex/schedulers/bogdan_balance_penalty.h
+drex/utils/bogdan_balance_penalty.o: drex/schedulers/bogdan_balance_penalty.c drex/schedulers/bogdan_balance_penalty.h
 	$(CC) $(CFLAGS) -c drex/schedulers/bogdan_balance_penalty.c -o drex/schedulers/bogdan_balance_penalty.o
 
 # Compile algorithm4.c

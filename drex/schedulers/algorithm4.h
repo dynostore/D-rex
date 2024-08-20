@@ -1,6 +1,11 @@
 #ifndef ALG4_H
 #define ALG4_H
 
+typedef struct {
+    double *probabilities;
+    int n;
+} PoiBin;
+
 extern int global_current_data_value;
 
 typedef struct {
@@ -52,6 +57,8 @@ typedef struct {
 } Combination;
 
 int compare_nodes_by_storage_desc_with_condition(const void *a, const void *b);
+void add_node_to_print(DataList *list, int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K);
+void print_nodes(Node *nodes, int num_nodes);
 
 #endif
 

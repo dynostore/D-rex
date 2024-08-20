@@ -6,11 +6,19 @@
 #include <../schedulers/algorithm4.h>
 #include <../utils/k_means_clustering.h>
 #include <../schedulers/bogdan_balance_penalty.h>
+#include "../utils/prediction.h"
+#include <sys/time.h>
+
+//~ bool is_P_and_D_combination_possible (int D, int P, Node* nodes, float reliability_threshold) {
+    //~ sum_reliability
+    //~ variance_reliability
+    //~ return reliability_thresold_met(D + P, D, reliability_threshold, sum_reliability, variance_reliability);
+//~ }
 
 double get_avg_free_storage (int number_of_nodes, Node* nodes) {
     double total_free_storage = 0;
     for (int i = 0; i < number_of_nodes; i++) {
-        total_free_storage += nodes[i]->storage_size;
+        total_free_storage += nodes[i].storage_size;
     }
     return total_free_storage/number_of_nodes;
 }
@@ -48,7 +56,7 @@ for (i = 0; i < K; i++) {
  * Idea that you have a penalty for nodes that need to store a chunk and a penalty for nodes that don't and you need to add all of them up to obtain the overall penalty
  **/
 //~ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size, DataList* list, int data_id) {
-void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliability_threshold, double S, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id) {
+void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliability_threshold, double S, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, double* total_remaining_size, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -77,29 +85,31 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         if (min_D == -1) { // We only increase P if we haven't found a solution yet
             for (D = 1; D < number_of_nodes - P; D++) {
                 printf("P = %d, D= %d\n", P, D);
-                if (!is_P_and_D_combination_possible(D, P, nodes, reliability_threshold)) {
-                    printf("Not possible for reliability, continue\n");
-                    continue;
-                }
+                
+                // TODO: code this!
+                //~ if (!is_P_and_D_combination_possible(D, P, nodes, reliability_threshold)) {
+                    //~ printf("Not possible for reliability, continue\n");
+                    //~ continue;
+                //~ }
                 C = D + P;
                 balance_penalty = 0;
                 chunk_size = S / D;
                 printf("chunk_size = %f\n", chunk_size);
                 solution_is_not_possible = false;
                 for (j = 0; j < C; j++) {
-                    if (nodes[j]->storage_size < chunk_size)
+                    if (nodes[j].storage_size < chunk_size)
                     {
                         solution_is_not_possible = true;
                         break;
                     }
-                    printf("+= %f in 1st for loop\n", fabs(nodes[j]->storage_size - chunk_size - avg_free_capacity));
-                    balance_penalty += fabs(nodes[j]->storage_size - chunk_size - avg_free_capacity);
+                    printf("+= %f in 1st for loop\n", fabs(nodes[j].storage_size - chunk_size - avg_free_capacity));
+                    balance_penalty += fabs(nodes[j].storage_size - chunk_size - avg_free_capacity);
                 } 
                 
                 if (solution_is_not_possible == false) {
                     for (j = C; j < number_of_nodes; j++) {
-                        printf("+= %f in 2nd for loop\n", fabs(nodes[j]->storage_size - avg_free_capacity));
-                        balance_penalty += fabs(nodes[j]->storage_size - avg_free_capacity);
+                        printf("+= %f in 2nd for loop\n", fabs(nodes[j].storage_size - avg_free_capacity));
+                        balance_penalty += fabs(nodes[j].storage_size - avg_free_capacity);
                     }
                     
                     if (balance_penalty < min_balance_penalty) {
@@ -124,14 +134,7 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         
         gettimeofday(&end, NULL);
         
-        // Fetch first D + P nodes
         double min_write_bandwidth = DBL_MAX;
-        //~ for (i = 0; j < *N; j++) {
-            //~ if (min_write_bandwidth < node[j]->write_bandwidth) {
-                //~ min_write_bandwidth = node[j]->write_bandwidth;
-            //~ }
-            
-        //~ }
         
         // Writing down the results
         double total_upload_time_to_print = 0;
@@ -140,11 +143,11 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         *total_N += *N;
         *total_storage_used += chunk_size*(*N);
         *total_remaining_size -= chunk_size*(*N);
-        for (i = 0; i < *N; i++) {
-            total_upload_time_to_print += chunk_size/nodes[i]->write_bandwidth;
-            nodes[i]->storage_size -= chunk_size;
-            if (min_write_bandwidth < nodes[j]->write_bandwidth) {
-                min_write_bandwidth = nodes[j]->write_bandwidth;
+        for (j = 0; j < *N; j++) {
+            total_upload_time_to_print += chunk_size/nodes[j].write_bandwidth;
+            nodes[j].storage_size -= chunk_size;
+            if (min_write_bandwidth < nodes[j].write_bandwidth) {
+                min_write_bandwidth = nodes[j].write_bandwidth;
             }            
         }
         *total_parralelized_upload_time += chunk_size/min_write_bandwidth;

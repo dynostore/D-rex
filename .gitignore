@@ -22,6 +22,8 @@ alg4
 drex/utils/k_means_clustering.o
 drex/utils/combinations.o
 drex/schedulers/algorithm4.o
+drex/schedulers/bogdan_balance_penalty.o
+drex/utils/remove_node.o
 output_alg1_stats.csv
 output_alg2_stats.csv
 output_alg4_stats.csv

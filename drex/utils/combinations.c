@@ -19,12 +19,13 @@ void free_combinations(Combination **combinations, int count) {
 }
 
 void create_combinations(Node *nodes, int n, int r, Combination **combinations, int *combination_count) {
+    printf("la\n");
     int *indices = malloc(r * sizeof(int));
     if (!indices) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
-
+    printf("r %d\n", r);
     for (int i = 0; i < r; i++) {
         indices[i] = i;
     }
@@ -46,6 +47,7 @@ void create_combinations(Node *nodes, int n, int r, Combination **combinations, 
             combinations[*combination_count]->sum_reliability += nodes[indices[i]].probability_failure;
             combinations[*combination_count]->variance_reliability += nodes[indices[i]].probability_failure * (1 - nodes[indices[i]].probability_failure);
             combinations[*combination_count]->write_bandwidth[i] = nodes[indices[i]].write_bandwidth;
+            //~ printf("Adding %d\n", nodes[indices[i]].write_bandwidth);
             if (nodes[indices[i]].storage_size < combinations[*combination_count]->min_remaining_size) {
                 combinations[*combination_count]->min_remaining_size = nodes[indices[i]].storage_size;
             }
@@ -200,5 +202,5 @@ void reset_combinations_and_recreate_them(int* total_combinations, int min_numbe
                     create_combinations(nodes, current_number_of_nodes, j, combinations, &combination_count);
                 }
             }
-            printf("total_combinations = %d after adding a node\n", *total_combinations);
+            //~ printf("total_combinations = %d after adding a node\n", *total_combinations);
 }
