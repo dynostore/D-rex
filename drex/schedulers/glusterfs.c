@@ -11,6 +11,8 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
     gettimeofday(&start, NULL);
     long seconds, useconds;
     
+    int i = 0;
+    
     gettimeofday(&end, NULL);
     seconds  = end.tv_sec  - start.tv_sec;
     useconds = end.tv_usec - start.tv_usec;

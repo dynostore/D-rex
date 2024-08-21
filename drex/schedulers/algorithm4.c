@@ -963,6 +963,35 @@ int compare_nodes_by_storage_desc_with_condition(const void *a, const void *b) {
     return 0;
 }
 
+/** Comparison function for sorting nodes by bandwidth in descending order
+ * Nodes with add_after_x_jobs > current_data_value or add_after_x_jobs == -1 are sorted to the end **/
+int compare_nodes_by_bandwidth_desc_with_condition(const void *a, const void *b) {
+    Node *nodeA = (Node *)a;
+    Node *nodeB = (Node *)b;
+
+    // Handle nodes with add_after_x_jobs == -1 first
+    if (nodeA->add_after_x_jobs == -1 && nodeB->add_after_x_jobs != -1) {
+        return 1; // Move nodeA to the end
+    }
+    if (nodeA->add_after_x_jobs != -1 && nodeB->add_after_x_jobs == -1) {
+        return -1; // Move nodeB to the end
+    }
+    
+    // Check if the nodes should be moved to the end
+    if (nodeA->add_after_x_jobs > global_current_data_value && nodeB->add_after_x_jobs <= global_current_data_value) {
+        return 1; // Move nodeA to the end
+    }
+    if (nodeA->add_after_x_jobs <= global_current_data_value && nodeB->add_after_x_jobs > global_current_data_value) {
+        return -1; // Move nodeB to the end
+    }
+
+    // If both nodes are in the same category (both above or below the threshold)
+    if (nodeA->write_bandwidth < nodeB->write_bandwidth) return 1;
+    if (nodeA->write_bandwidth > nodeB->write_bandwidth) return -1;
+
+    return 0;
+}
+
 // Function to print nodes
 void print_nodes(Node *nodes, int num_nodes) {
     for (int i = 0; i < num_nodes; i++) {
@@ -1072,19 +1101,19 @@ int main(int argc, char *argv[]) {
         strcpy(alg_to_print, "alg_bogdan");
     }
     else if (algorithm == 1) {
-        strcpy(alg_to_print, "alg1");
+        strcpy(alg_to_print, "alg1_c");
     }
     else if (algorithm == 0) {
-        strcpy(alg_to_print, "random");
+        strcpy(alg_to_print, "random_c");
     }
     else if (algorithm == 3) {
-        strcpy(alg_to_print, "hdfs_3_replication");
+        strcpy(alg_to_print, "hdfs_3_replication_c");
     }
     else if (algorithm == 6) {
-        sprintf(alg_to_print, "hdfs_rs_%d_%d", RS1, RS2);
+        sprintf(alg_to_print, "hdfs_rs_%d_%d_c", RS1, RS2);
     }
     else if (algorithm == 7) {
-        sprintf(alg_to_print, "glusterfs_%d_%d", RS1, RS2);
+        sprintf(alg_to_print, "glusterfs_%d_%d_c", RS1, RS2);
     }
     double total_scheduling_time = 0;
     double total_storage_used = 0;

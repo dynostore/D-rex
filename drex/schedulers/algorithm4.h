@@ -75,6 +75,7 @@ void add_node_to_print(DataList *list, int id, double size, double total_transfe
 void print_nodes(Node *nodes, int num_nodes);
 int reliability_threshold_met_accurate(int N, int K, double reliability_threshold, double *reliability_of_nodes);
 void add_shared_chunks_to_nodes(Node** nodes_used, int num_of_nodes_used, int chunk_id);
+int compare_nodes_by_bandwidth_desc_with_condition(const void *a, const void *b);
 
 #endif
 

@@ -114,10 +114,13 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
     double* reliability_of_nodes_chosen;
     int* set_of_nodes_chosen;
     
+    qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+    
     while (!solution_found) {
         *N = get_random_excluding_exclusions(number_of_nodes, already_looked_at, already_looked_at_count);
         if (*N == -1) {
-            //~ printf("Return N -1\n");
+            free(set_of_nodes_chosen);
+            free(reliability_of_nodes_chosen);
             free(already_looked_at);
             gettimeofday(&end, NULL);
             seconds  = end.tv_sec  - start.tv_sec;
