@@ -190,9 +190,8 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
 
         *total_upload_time += total_upload_time_to_print;
     }
-    else {
-        gettimeofday(&end, NULL);
-    }
+
+    gettimeofday(&end, NULL);
     seconds  = end.tv_sec  - start.tv_sec;
     useconds = end.tv_usec - start.tv_usec;
     *total_scheduling_time += seconds + useconds/1000000.0;

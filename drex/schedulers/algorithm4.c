@@ -12,6 +12,10 @@
 #include "../utils/combinations.h"
 #include "../utils/remove_node.h"
 #include "bogdan_balance_penalty.h"
+#include "algorithm1.h"
+#include "random.h"
+#include "hdfs.h"
+#include "glusterfs.h"
 #include <sys/time.h>
 
 int global_current_data_value;
@@ -979,7 +983,7 @@ int main(int argc, char *argv[]) {
     double data_duration_on_system = atof(argv[3]);
     double reliability_threshold = atof(argv[4]);
     int number_of_repetition = atoi(argv[5]);
-    int algorithm = atoi(argv[6]); // 4 is alg4 (drex) and 2 is alg 2 (time)
+    int algorithm = atoi(argv[6]); // 0: random / 1: min_storage / 2: min_time / 3: hdfs_3_replication / 4: drex / 5: Bogdan / 6: hdfs_rs / 7: glusterfs
     const char *input_supplementary_node = argv[7];
 
     // For the removal of nodes
@@ -987,6 +991,14 @@ int main(int argc, char *argv[]) {
     unsigned int seed = atoi(argv[9]);  // We fix the seed so all algorithm have the same one
     srand(seed); // Set the seed up
 
+    // For certain algorithms there are additional args
+    int RS1;
+    int RS2;
+    if (algorithm == 6 || algorithm == 7) {
+        RS1 = atoi(argv[10]);
+        RS2 = atoi(argv[11]);
+    }
+    
     printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern);
     
     DataList list;
@@ -1049,15 +1061,30 @@ int main(int argc, char *argv[]) {
     int K;
     const char *output_filename = "output_drex_only.csv";
     
-    const char *alg_to_print = "";
+    char alg_to_print[50];
     if (algorithm == 4) {
-        alg_to_print = "alg4";
+        strcpy(alg_to_print, "alg4");
     }
     else if (algorithm == 2) {
-        alg_to_print = "alg2";
+        strcpy(alg_to_print, "alg2");
     }
     else if (algorithm == 5) {
-        alg_to_print = "alg_bogdan";
+        strcpy(alg_to_print, "alg_bogdan");
+    }
+    else if (algorithm == 1) {
+        strcpy(alg_to_print, "alg1");
+    }
+    else if (algorithm == 0) {
+        strcpy(alg_to_print, "random");
+    }
+    else if (algorithm == 3) {
+        strcpy(alg_to_print, "hdfs_3_replication");
+    }
+    else if (algorithm == 6) {
+        sprintf(alg_to_print, "hdfs_rs_%d_%d", RS1, RS2);
+    }
+    else if (algorithm == 7) {
+        sprintf(alg_to_print, "glusterfs_%d_%d", RS1, RS2);
     }
     double total_scheduling_time = 0;
     double total_storage_used = 0;
@@ -1238,7 +1265,23 @@ int main(int argc, char *argv[]) {
         
         find_closest(sizes[i], &nearest_size, &closest_index);
         
-        if (algorithm == 2) {
+        if (algorithm == 0) {
+            random_schedule(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i);
+        }
+        else if (algorithm == 1) {
+            min_storage(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i);
+        }
+        else if (algorithm == 3) {
+            hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i);
+        }
+        else if (algorithm == 6) {
+            hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i, RS1, RS2);
+        }
+        else if (algorithm == 7) {
+            glusterfs(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i, RS1, RS2);
+        }
+        
+        else if (algorithm == 2) {
             algorithm2(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
         }
         else if (algorithm == 4) {
@@ -1265,16 +1308,13 @@ int main(int argc, char *argv[]) {
     // Writting the data per data outputs
     double total_chunking_time = 0;
     
-    if (algorithm == 4) {
-        write_linked_list_to_file(&list, "output_alg4_stats.csv", &total_chunking_time);
-    }
-    else if (algorithm == 2) {
-        write_linked_list_to_file(&list, "output_alg2_stats.csv", &total_chunking_time);
-    }
-    else if (algorithm == 5) {
-        write_linked_list_to_file(&list, "output_alg_bogdan_stats.csv", &total_chunking_time);
-    }
-    
+    char file_to_print[70];
+    strcpy(file_to_print, "output");
+    strcpy(file_to_print, "_");
+    strcpy(file_to_print, alg_to_print);
+    strcpy(file_to_print, "_stats.csv");
+    write_linked_list_to_file(&list, file_to_print, &total_chunking_time);
+   
     /** Writting the general outputs **/
     FILE *file = fopen(output_filename, "a");
     if (file == NULL) {
