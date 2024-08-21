@@ -1,6 +1,19 @@
 #ifndef ALG4_H
 #define ALG4_H
 
+// Struct representing a chunk of data
+typedef struct chunk {
+    int chunk_id;           // ID of the chunk
+    int num_of_nodes_used;  // Number of nodes used to store this chunk
+    int* nodes_used;        // Array of node IDs holding this chunk
+    struct chunk* next;     // Pointer to the next chunk in the list
+} Chunk;
+
+// Struct representing the linked list of chunks
+typedef struct {
+    Chunk* head;  // Pointer to the first chunk in the list
+} ChunkList;
+
 typedef struct {
     double *probabilities;
     int n;
@@ -15,7 +28,8 @@ typedef struct {
     int read_bandwidth;
     double probability_failure;
     double daily_failure_rate;
-    int add_after_x_jobs;  // Number of jobs after which the node becomes available
+    int add_after_x_jobs;   // Number of jobs after which the node becomes available
+    ChunkList chunks;       // Linked list of chunks stored in this node
 } Node;
 
 typedef struct data_to_print {
@@ -59,6 +73,7 @@ typedef struct {
 int compare_nodes_by_storage_desc_with_condition(const void *a, const void *b);
 void add_node_to_print(DataList *list, int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K);
 void print_nodes(Node *nodes, int num_nodes);
+int reliability_threshold_met_accurate(int N, int K, double reliability_threshold, double *reliability_of_nodes);
 
 #endif
 

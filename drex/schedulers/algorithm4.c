@@ -16,6 +16,42 @@
 
 int global_current_data_value;
 
+// Initialize the chunk list in the node
+void init_chunk_list(Node* node) {
+    node->chunks.head = NULL;
+}
+
+// Function to add a chunk to the chunk list
+void add_chunk(Node* node, int chunk_id, int num_of_nodes_used, int* nodes_used) {
+    // Create a new chunk
+    Chunk* new_chunk = (Chunk*)malloc(sizeof(Chunk));
+    if (new_chunk == NULL) {
+        // Handle allocation failure
+        perror("Failed to allocate memory for new chunk");
+        exit(EXIT_FAILURE);
+    }
+
+    // Initialize the new chunk
+    new_chunk->chunk_id = chunk_id;
+    new_chunk->num_of_nodes_used = num_of_nodes_used;
+    new_chunk->nodes_used = (int*)malloc(num_of_nodes_used * sizeof(int));
+    if (new_chunk->nodes_used == NULL) {
+        // Handle allocation failure
+        perror("Failed to allocate memory for nodes_used");
+        free(new_chunk);
+        exit(EXIT_FAILURE);
+    }
+
+    // Copy the node IDs
+    for (int i = 0; i < num_of_nodes_used; i++) {
+        new_chunk->nodes_used[i] = nodes_used[i];
+    }
+
+    // Insert the new chunk at the beginning of the list
+    new_chunk->next = node->chunks.head;
+    node->chunks.head = new_chunk;
+}
+
 DataToPrint* create_node(int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K) {
     DataToPrint *new_node = (DataToPrint*)malloc(sizeof(DataToPrint));
     if (!new_node) {
@@ -29,6 +65,7 @@ DataToPrint* create_node(int id, double size, double total_transfer_time, double
     new_node->chunking_time = chunking_time;
     new_node->N = N;
     new_node->K = K;
+    new_node->chunks.head = NULL;
     new_node->next = NULL;
     return new_node;
 }
@@ -36,6 +73,25 @@ DataToPrint* create_node(int id, double size, double total_transfer_time, double
 void init_list(DataList *list) {
     list->head = NULL;
     list->tail = NULL;
+}
+
+// Function to print the chunks of all nodes
+void print_all_chunks(Node* nodes, int num_nodes) {
+    for (int i = 0; i < num_nodes; i++) {
+        printf("Node ID: %d\n", nodes[i].id);
+        Chunk* current_chunk = nodes[i].chunks.head;
+        while (current_chunk != NULL) {
+            printf("  Chunk ID: %d\n", current_chunk->chunk_id);
+            printf("  Number of Nodes Used: %d\n", current_chunk->num_of_nodes_used);
+            printf("  Nodes Holding This Chunk: ");
+            for (int j = 0; j < current_chunk->num_of_nodes_used; j++) {
+                printf("%d ", current_chunk->nodes_used[j]);
+            }
+            printf("\n");
+            current_chunk = current_chunk->next;
+        }
+        printf("\n");  // Separate nodes by a newline
+    }
 }
 
 void add_node_to_print(DataList *list, int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K) {
@@ -376,16 +432,16 @@ int reliability_threshold_met_accurate(int N, int K, double reliability_threshol
     return cdf_value >= reliability_threshold;
 }
 
-int get_max_K_from_reliability_threshold_and_nodes_chosen(int number_of_nodes, float reliability_threshold, double sum_reliability, double variance_reliability) {
+int get_max_K_from_reliability_threshold_and_nodes_chosen(int number_of_nodes, float reliability_threshold, double sum_reliability, double variance_reliability, double* reliability_of_nodes) {
     int K;
     for (int i = number_of_nodes - 1; i >= 2; i--) {
         K = i;
-        if (reliability_thresold_met_approximation(number_of_nodes, K, reliability_threshold, sum_reliability, variance_reliability)) {
-            return K;
-        }
-        //~ if (reliability_thresold_met_accurate(number_of_nodes, K, reliability_threshold, reliability_of_nodes)) {
+        //~ if (reliability_thresold_met_approximation(number_of_nodes, K, reliability_threshold, sum_reliability, variance_reliability)) {
             //~ return K;
         //~ }
+        if (reliability_threshold_met_accurate(number_of_nodes, K, reliability_threshold, reliability_of_nodes)) {
+            return K;
+        }
     }
     return -1;
 }
@@ -481,7 +537,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     
     *N = -1;
     *K = -1;
-    
+    //~ printf("2.\n");
     // 1. Get system saturation
     //~ double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, *total_remaining_size);    
     #ifdef PRINT
@@ -491,8 +547,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     
     // 2. Iterates over a range of nodes combination
     for (i = 0; i < total_combinations; i++) {
-        *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability);
-        
+        *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability, combinations[i]->probability_failure);
         #ifdef PRINT
         printf("Max K for combination %d is %d\n", i, *K);
         #endif
@@ -508,7 +563,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         if (*K != -1) {
             chunk_size = size/(*K);
             #ifdef PRINT
-            printf("Chunk size: %f\n", chunk_size);
+            printf("Chunk size from %f and %d: %f\n", size, *K, chunk_size);
             #endif
             //~ printf("%f\n", combinations[i]->min_remaining_size);
             if (combinations[i]->min_remaining_size - chunk_size >= 0) {
@@ -539,7 +594,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             }
         }
     }
-    printf("2.\n");
+
     if (valid_solution == true) {
         // 3. Only keep combination on pareto front
         int pareto_indices[total_combinations];
@@ -566,9 +621,9 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         int max_space_index;
         int max_saturation_index;
         find_min_max_pareto(combinations, pareto_indices, pareto_count, &min_size_score, &max_size_score, &min_replication_and_write_time, &max_replication_and_write_time, &min_storage_overhead, &max_storage_overhead, &max_time_index, &max_space_index, &max_saturation_index);
-        //~ #ifdef PRINT
+        #ifdef PRINT
         printf("Min and max from pareto front are: %f %f %f %f %f %f / max time index:%d max space index:%d\n", min_storage_overhead, max_storage_overhead, min_size_score, max_size_score, min_replication_and_write_time, max_replication_and_write_time, max_time_index, max_space_index);
-        //~ #endif
+        #endif
         
         // Compute score with % progress
         //~ double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
@@ -614,11 +669,15 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         // Getting combination with best score using 3D pareto knee bend angle max todo use threshold?
         // TODO if we keep this ne need to compute system saturation
         double knee_point[3];
-        printf("max_time_index %d, max_saturation_index %d\n", max_time_index, max_saturation_index);
-        best_index = pareto_indices[find_knee_point_3d(pareto_front, pareto_count, knee_point, max_time_index, max_saturation_index)];
-        printf("Knee Point: %d (%.2f, %.2f, %.2f)\n", best_index, knee_point[0], knee_point[1], knee_point[2]);
-
+        
         #ifdef PRINT
+        printf("max_time_index %d, max_saturation_index %d\n", max_time_index, max_saturation_index);
+        #endif
+        
+        best_index = pareto_indices[find_knee_point_3d(pareto_front, pareto_count, knee_point, max_time_index, max_saturation_index)];
+        
+        #ifdef PRINT
+        printf("Knee Point: %d (%.2f, %.2f, %.2f)\n", best_index, knee_point[0], knee_point[1], knee_point[2]);
         printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
         printf("..\n");
         #endif
@@ -639,7 +698,10 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
             for (i = 0; i < combinations[best_index]->num_elements; i++) {
                 total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
-                combinations[best_index]->nodes[i]->storage_size -= chunk_size;                
+                combinations[best_index]->nodes[i]->storage_size -= chunk_size;
+                
+                // Adding the chunks in the chosen nodes
+                add_chunk(combinations[best_index]->nodes[i], data_id, combinations[best_index]->num_elements, nodes_used2);
             }
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             *total_upload_time += total_upload_time_to_print;
@@ -672,7 +734,7 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
         
     // 1. Iterates over a range of nodes combination
     for (i = 0; i < total_combinations; i++) {
-        *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability);
+        *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability, combinations[i]->probability_failure);
         #ifdef PRINT
         printf("Max K for combination %d is %d\n", i, *K);
         #endif
@@ -894,7 +956,7 @@ int main(int argc, char *argv[]) {
     unsigned int seed = atoi(argv[9]);  // We fix the seed so all algorithm have the same one
     srand(seed); // Set the seed up
 
-    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern);
+    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern);
     
     DataList list;
     init_list(&list);
@@ -954,7 +1016,6 @@ int main(int argc, char *argv[]) {
     double min_data_size = DBL_MAX;
     int N;
     int K;
-    int j = 0;
     const char *output_filename = "output_drex_only.csv";
     
     const char *alg_to_print = "";
@@ -992,15 +1053,12 @@ int main(int argc, char *argv[]) {
     #endif
     int max_number_combination_per_r = 0;
     global_current_data_value = 0;
-    // TODO: need to do this again when adding or removing nodes
-    // If there are more combinations than our threshold, we do clusters instead
     
     // Sort nodes by remaining storage size
-    //~ qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+    qsort(nodes, number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
     //~ print_nodes(nodes, number_of_initial_nodes);
     if (total_combinations >= complexity_threshold) {
         reduced_complexity_situation = true;
-        printf("sorted version\n");    
         // Assign max number of combination per number of node in a combination
         max_number_combination_per_r = complexity_threshold/(number_of_initial_nodes - 1);
         
@@ -1020,7 +1078,6 @@ int main(int argc, char *argv[]) {
         total_combinations = combination_count;
     }
     else {
-        printf("Normal %d combinations\n", total_combinations);
         reduced_complexity_situation = false;
         // Allocate memory for storing all combinations
         combinations = malloc(total_combinations * sizeof(Combination *));
@@ -1029,13 +1086,11 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
         for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
-            printf("i = %d\n", i);
             create_combinations(nodes, number_of_initial_nodes, i, combinations, &combination_count);
         }
     }
-    //~ exit(1);
 
-    //~ #ifdef PRINT
+    #ifdef PRINT
     for (i = 0; i < total_combinations; i++) {
         printf("Combination %d: ", i + 1);
         for (j = 0; j < combinations[i]->num_elements; j++) {
@@ -1044,12 +1099,7 @@ int main(int argc, char *argv[]) {
         }
         printf("\n");
     }
-    //~ #endif
-    //~ exit(1);
-    
-
-    // TODO penser a aussi uipdate ca pendant la jout de nouvelle nodes ou pendant le retrait
-    
+    #endif        
     
     /** Prediction of chunking time **/
     // Filling a struct with our prediction records
@@ -1109,23 +1159,23 @@ int main(int argc, char *argv[]) {
     
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
-        
-        //~ if (i%10000 == 0) {
-        if (i%1 == 0) {
-            printf("%d/%d\n", i, count);
+        if (i%1000 == 0) {
+            printf("Data %d/%d of size %f\n", i, count, sizes[i]);
         }
         
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
         }
-        
+                
         /** Adding a node **/
         // If we reached a threshold for a new node, we add it to the list of combinations
         if (number_of_supplementary_nodes > 0 && i == nodes[current_number_of_nodes].add_after_x_jobs) {
             printf("Adding node %d\n", nodes[current_number_of_nodes].id);
             current_number_of_nodes += 1;
             
-            reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
+            // Version dans une fonction
+            free_combinations(combinations, total_combinations);
+            combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
         }
         
         /** Removing a node **/
@@ -1142,16 +1192,19 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
             current_number_of_nodes -=1;
-            reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
+            free_combinations(combinations, total_combinations);
+            combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
+            //~ reschedule_lost_chunks();
         }
         
         /** Resorting the nodes and combinations after every 100 GB of data stored **/
         // TODO: sort more often ?
         if (input_data_sum_of_size_already_stored > 100000 && reduced_complexity_situation == true && algorithm == 4) {
             printf("Reset\n");
-            reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, combinations, i, &reduced_complexity_situation);
+            free_combinations(combinations, total_combinations);
+            combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
         }
-        printf("1.\n");
+        
         find_closest(sizes[i], &nearest_size, &closest_index);
         
         if (algorithm == 2) {
@@ -1166,10 +1219,12 @@ int main(int argc, char *argv[]) {
         else {
             printf("Algorithm %d not valid\n", algorithm);
         }
-        //~ #ifdef PRINT
+        #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        //~ #endif
- 
+        #endif
+        
+        print_all_chunks(nodes, current_number_of_nodes);
+         
         input_data_sum_of_size_already_stored += sizes[i];
     }
     #ifdef PRINT
@@ -1189,22 +1244,32 @@ int main(int argc, char *argv[]) {
         write_linked_list_to_file(&list, "output_alg_bogdan_stats.csv", &total_chunking_time);
     }
     
-    // Writting the general outputs
+    /** Writting the general outputs **/
     FILE *file = fopen(output_filename, "a");
     if (file == NULL) {
         perror("Error opening file");
         return EXIT_FAILURE;
     }
-
+    int id_to_print_because_nodes_are_sorted = 0;
     fprintf(file, "%s, %f, %f, %f, %f, %d, %d, %f, %f, %f, \"[", alg_to_print, total_scheduling_time, total_storage_used, total_upload_time, total_parralelized_upload_time, number_of_data_stored, total_N, total_storage_used / number_of_data_stored, total_upload_time / number_of_data_stored, (double)total_N / number_of_data_stored);
     for (i = 0; i < number_of_nodes - 1; i++) {
         fprintf(file, "%f, ", initial_node_sizes[i]);
     }
     fprintf(file, "%f]\", \"[", initial_node_sizes[i]);
     for (i = 0; i < number_of_nodes - 1; i++) {
-        fprintf(file, "%f, ", nodes[i].storage_size);
+        id_to_print_because_nodes_are_sorted = 0;
+        while (nodes[id_to_print_because_nodes_are_sorted].id != i) {
+            id_to_print_because_nodes_are_sorted++;
+        }
+        fprintf(file, "%f, ", nodes[id_to_print_because_nodes_are_sorted].storage_size);
+        printf("Print from id %d\n", nodes[id_to_print_because_nodes_are_sorted].id);
     }
-    fprintf(file, "%f]\"", nodes[i].storage_size);
+    id_to_print_because_nodes_are_sorted = 0;
+    while (nodes[id_to_print_because_nodes_are_sorted].id != i) {
+        id_to_print_because_nodes_are_sorted++;
+    }
+    printf("Print from id %d\n", nodes[id_to_print_because_nodes_are_sorted].id);
+    fprintf(file, "%f]\"", nodes[id_to_print_because_nodes_are_sorted].storage_size);
     fprintf(file, ", %f, %f, %f\n", total_chunking_time, total_chunking_time / number_of_data_stored, total_parralelized_upload_time / number_of_data_stored);
     fclose(file);
     

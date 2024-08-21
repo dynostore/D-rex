@@ -9,11 +9,32 @@
 #include "../utils/prediction.h"
 #include <sys/time.h>
 
-//~ bool is_P_and_D_combination_possible (int D, int P, Node* nodes, float reliability_threshold) {
-    //~ sum_reliability
-    //~ variance_reliability
-    //~ return reliability_thresold_met(D + P, D, reliability_threshold, sum_reliability, variance_reliability);
-//~ }
+double* extract_first_X_reliabilities(Node* nodes, int total_nodes, int X) {
+    // Ensure X does not exceed the total number of nodes
+    if (X > total_nodes) {
+        X = total_nodes;
+    }
+
+    // Allocate memory for the result array
+    double* reliabilities = malloc(X * sizeof(double));
+    if (reliabilities == NULL) {
+        // Handle memory allocation failure
+        perror("Failed to allocate memory for reliabilities");
+        exit(EXIT_FAILURE);
+    }
+
+    // Extract the first X reliability values
+    for (int i = 0; i < X; i++) {
+        reliabilities[i] = nodes[i].probability_failure;
+    }
+
+    return reliabilities;
+}
+
+bool is_P_and_D_combination_possible (int D, int P, Node* nodes, float reliability_threshold, int number_of_nodes) {
+    double* reliability_of_nodes = extract_first_X_reliabilities(nodes, number_of_nodes, D + P);
+    return reliability_threshold_met_accurate(D + P, D, reliability_threshold, reliability_of_nodes);
+}
 
 double get_avg_free_storage (int number_of_nodes, Node* nodes) {
     double total_free_storage = 0;
@@ -86,12 +107,13 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
             for (D = 1; D < number_of_nodes - P; D++) {
                 printf("P = %d, D= %d\n", P, D);
                 
-                // TODO: code this!
-                //~ if (!is_P_and_D_combination_possible(D, P, nodes, reliability_threshold)) {
-                    //~ printf("Not possible for reliability, continue\n");
-                    //~ continue;
-                //~ }
+                if (!is_P_and_D_combination_possible(D, P, nodes, reliability_threshold, number_of_nodes)) {
+                    printf("Not possible for reliability, continue\n");
+                    continue;
+                }
+                
                 C = D + P;
+                printf("C = %d\n", C);
                 balance_penalty = 0;
                 chunk_size = S / D;
                 printf("chunk_size = %f\n", chunk_size);

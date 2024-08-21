@@ -9,23 +9,40 @@
 #include <k_means_clustering.h>
 #include <combinations.h>
 
-// Function to free allocated memory for combinations
-void free_combinations(Combination **combinations, int count) {
-    for (int i = 0; i < count; i++) {
-        free(combinations[i]->nodes);
-        free(combinations[i]);
+void free_combinations(Combination** combinations, int num_combinations) {
+    for (int i = 0; i < num_combinations; i++) {
+        if (combinations[i] != NULL) {
+            // Free the array of Node pointers (if dynamically allocated)
+            if (combinations[i]->nodes != NULL) {
+                free(combinations[i]->nodes);
+            }
+
+            // Free the array of probability_failure
+            if (combinations[i]->probability_failure != NULL) {
+                free(combinations[i]->probability_failure);
+            }
+
+            // Free the array of write_bandwidth
+            if (combinations[i]->write_bandwidth != NULL) {
+                free(combinations[i]->write_bandwidth);
+            }
+
+            // Free the Combination struct itself
+            free(combinations[i]);
+        }
     }
+
+    // Finally, free the array of Combination* pointers
     free(combinations);
 }
 
 void create_combinations(Node *nodes, int n, int r, Combination **combinations, int *combination_count) {
-    printf("la\n");
     int *indices = malloc(r * sizeof(int));
     if (!indices) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
-    printf("r %d\n", r);
+    //~ printf("r %d\n", r);
     for (int i = 0; i < r; i++) {
         indices[i] = i;
     }
@@ -92,6 +109,7 @@ void create_combinations_with_limit(Node *nodes, int n, int r, Combination **com
         
         combinations[*combination_count] = malloc(sizeof(Combination));
         combinations[*combination_count]->num_elements = r;
+        //~ printf("%d %d\n", *combination_count, combinations[*combination_count]->num_elements);
         combinations[*combination_count]->nodes = malloc(r * sizeof(Node*));
         combinations[*combination_count]->probability_failure = malloc(r * sizeof(double));
         combinations[*combination_count]->sum_reliability = 0;
@@ -163,12 +181,17 @@ unsigned long long combination(int n, int r, unsigned long long complexity_thres
     return result;
 }
 
-
-void reset_combinations_and_recreate_them(int* total_combinations, int min_number_node_in_combination, int current_number_of_nodes, int complexity_threshold, Node* nodes, Combination** combinations, int i, bool* reduced_complexity_situation)
+Combination** reset_combinations_and_recreate_them(int* total_combinations, int min_number_node_in_combination, int current_number_of_nodes, int complexity_threshold, Node* nodes, int i, bool* reduced_complexity_situation)
 {
     int j = 0;
+    Combination** combinations = NULL;
+
+    // Free old combinations
+    //~ printf("free %d combinations\n", *total_combinations);
+    //~ free_combinations(combinations, *total_combinations);
+    
     *total_combinations = 0;
-    free(combinations);
+
     int max_number_node_in_combination = current_number_of_nodes;
     for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
         *total_combinations += combination(current_number_of_nodes, j, complexity_threshold);
@@ -177,30 +200,33 @@ void reset_combinations_and_recreate_them(int* total_combinations, int min_numbe
 
     if (*total_combinations >= complexity_threshold) {
         *reduced_complexity_situation = true;
-                //~ printf("sorted version\n");
-                //~ printf("global_current_data_value before = %d\n", global_current_data_value);
+        //~ printf("sorted version complexity_threshold = %d\n", complexity_threshold);
         global_current_data_value = i;
-                //~ printf("global_current_data_value after = %d\n", global_current_data_value);
+        //~ printf("global_current_data_value after = %d\n", global_current_data_value);
         int max_number_combination_per_r = complexity_threshold/(current_number_of_nodes - 1);
         qsort(nodes, current_number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
-                //~ print_nodes(nodes, current_number_of_nodes);
-                combinations = malloc(complexity_threshold * sizeof(Combination *));
-                for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
-                    create_combinations_with_limit(nodes, current_number_of_nodes, j, combinations, &combination_count, max_number_combination_per_r);
-                }
-                *total_combinations = combination_count;
-            }
-            else {
-                *reduced_complexity_situation = false;
-                combinations = malloc(*total_combinations * sizeof(Combination *));
-                if (combinations == NULL) {
-                    perror("Error allocating memory for combinations");
-                    exit(EXIT_FAILURE);
-                }
-                
-                for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
-                    create_combinations(nodes, current_number_of_nodes, j, combinations, &combination_count);
-                }
-            }
-            //~ printf("total_combinations = %d after adding a node\n", *total_combinations);
+        //~ print_nodes(nodes, current_number_of_nodes);
+        
+        combinations = NULL;
+        combinations = malloc(complexity_threshold * sizeof(Combination *));
+        
+        for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
+            //~ printf("Create\n");
+            create_combinations_with_limit(nodes, current_number_of_nodes, j, combinations, &combination_count, max_number_combination_per_r);
+        }
+        *total_combinations = combination_count;
+        //~ printf("*total_combinations after %d\n", *total_combinations);
+    }
+    else {
+        *reduced_complexity_situation = false;
+        combinations = malloc(*total_combinations * sizeof(Combination *));
+        if (combinations == NULL) {
+            perror("Error allocating memory for combinations");
+            exit(EXIT_FAILURE);
+        }
+        for (j = min_number_node_in_combination; j <= max_number_node_in_combination; j++) {
+            create_combinations(nodes, current_number_of_nodes, j, combinations, &combination_count);
+        }
+    }
+    return combinations;
 }

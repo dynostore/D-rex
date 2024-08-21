@@ -5,6 +5,10 @@
 #include <remove_node.h>
 #include <time.h>
 
+void reschedule_lost_chunks() {
+    
+}
+
 int check_if_node_failed(Node *node) {
     // Generate a random number between 0 and 1
     double random_value = (double)rand() / RAND_MAX;
@@ -26,8 +30,6 @@ void remove_random_node (int number_of_nodes, Node* node) {
 }
 
 void remove_node_following_failure_rate (int number_of_nodes, Node* node) {
-    int random_number;
-    
     for (int i = 0; i < number_of_nodes; i++) {
         if (check_if_node_failed(&node[i])) {  
             printf("Node %d failed\n", i);
