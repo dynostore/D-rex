@@ -18,15 +18,18 @@ int global_current_data_value;
 
 // Initialize the chunk list in the node
 void init_chunk_list(Node* node) {
-    node->chunks.head = NULL;
+    node->chunks = (ChunkList*)malloc(sizeof(ChunkList));
+    if (node->chunks == NULL) {
+        perror("Failed to allocate memory for chunk list");
+        exit(EXIT_FAILURE);
+    }
+    node->chunks->head = NULL;
 }
 
-// Function to add a chunk to the chunk list
-void add_chunk(Node* node, int chunk_id, int num_of_nodes_used, int* nodes_used) {
-    // Create a new chunk
+// Function to add a chunk to a single node's chunk list
+void add_chunk_to_node(Node* node, int chunk_id, int num_of_nodes_used, int* nodes_used) {
     Chunk* new_chunk = (Chunk*)malloc(sizeof(Chunk));
     if (new_chunk == NULL) {
-        // Handle allocation failure
         perror("Failed to allocate memory for new chunk");
         exit(EXIT_FAILURE);
     }
@@ -36,20 +39,40 @@ void add_chunk(Node* node, int chunk_id, int num_of_nodes_used, int* nodes_used)
     new_chunk->num_of_nodes_used = num_of_nodes_used;
     new_chunk->nodes_used = (int*)malloc(num_of_nodes_used * sizeof(int));
     if (new_chunk->nodes_used == NULL) {
-        // Handle allocation failure
         perror("Failed to allocate memory for nodes_used");
         free(new_chunk);
         exit(EXIT_FAILURE);
     }
 
-    // Copy the node IDs
+    // Copy the node IDs into the new chunk
     for (int i = 0; i < num_of_nodes_used; i++) {
         new_chunk->nodes_used[i] = nodes_used[i];
     }
 
-    // Insert the new chunk at the beginning of the list
-    new_chunk->next = node->chunks.head;
-    node->chunks.head = new_chunk;
+    // Insert the new chunk at the beginning of the chunk list
+    new_chunk->next = node->chunks->head;
+    node->chunks->head = new_chunk;
+}
+
+// Function to add shared chunks to multiple nodes
+void add_shared_chunks_to_nodes(Node** nodes_used, int num_of_nodes_used, int chunk_id) {
+    int* node_ids = (int*)malloc(num_of_nodes_used * sizeof(int));
+    if (node_ids == NULL) {
+        perror("Failed to allocate memory for node_ids");
+        exit(EXIT_FAILURE);
+    }
+
+    // Fill node IDs array
+    for (int i = 0; i < num_of_nodes_used; i++) {
+        node_ids[i] = nodes_used[i]->id;
+    }
+
+    // Add a separate chunk to each node
+    for (int i = 0; i < num_of_nodes_used; i++) {
+        add_chunk_to_node(nodes_used[i], chunk_id, num_of_nodes_used, node_ids);
+    }
+
+    free(node_ids);
 }
 
 DataToPrint* create_node(int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K) {
@@ -65,7 +88,6 @@ DataToPrint* create_node(int id, double size, double total_transfer_time, double
     new_node->chunking_time = chunking_time;
     new_node->N = N;
     new_node->K = K;
-    new_node->chunks.head = NULL;
     new_node->next = NULL;
     return new_node;
 }
@@ -78,19 +100,21 @@ void init_list(DataList *list) {
 // Function to print the chunks of all nodes
 void print_all_chunks(Node* nodes, int num_nodes) {
     for (int i = 0; i < num_nodes; i++) {
-        printf("Node ID: %d\n", nodes[i].id);
-        Chunk* current_chunk = nodes[i].chunks.head;
-        while (current_chunk != NULL) {
-            printf("  Chunk ID: %d\n", current_chunk->chunk_id);
-            printf("  Number of Nodes Used: %d\n", current_chunk->num_of_nodes_used);
-            printf("  Nodes Holding This Chunk: ");
-            for (int j = 0; j < current_chunk->num_of_nodes_used; j++) {
-                printf("%d ", current_chunk->nodes_used[j]);
+        if (nodes[i].chunks->head != NULL) {
+            printf("Node ID: %d\n", nodes[i].id);
+            Chunk* current_chunk = nodes[i].chunks->head;
+            while (current_chunk != NULL) {
+                printf("Chunk ID: %d / ", current_chunk->chunk_id);
+                printf("Number of Nodes Used: %d / ", current_chunk->num_of_nodes_used);
+                printf("Nodes Holding This Chunk: ");
+                for (int j = 0; j < current_chunk->num_of_nodes_used; j++) {
+                    printf("%d ", current_chunk->nodes_used[j]);
+                }
+                printf("\n");
+                current_chunk = current_chunk->next;
             }
-            printf("\n");
-            current_chunk = current_chunk->next;
+            printf("\n");  // Separate nodes by a newline
         }
-        printf("\n");  // Separate nodes by a newline
     }
 }
 
@@ -226,6 +250,7 @@ void read_node(const char *filename, int number_of_nodes, Node *nodes, double da
     for (int i = 0; i < number_of_nodes; i++) {
         nodes[i].daily_failure_rate = nodes[i].probability_failure / 365.0;
         nodes[i].probability_failure = probability_of_failure(nodes[i].probability_failure, data_duration_on_system);
+        init_chunk_list(&nodes[i]);
     }
 
     fclose(file);
@@ -263,6 +288,7 @@ void read_supplementary_node(const char *filename, int number_of_nodes, Node *no
     // Update the annual failure rate to become the probability of failure of the node
     for (int i = 0; i < number_of_nodes; i++) {
         nodes[previous_number_of_nodes + i].probability_failure = probability_of_failure(nodes[previous_number_of_nodes + i].probability_failure, data_duration_on_system);
+        init_chunk_list(&nodes[previous_number_of_nodes + i]);
     }
 
     fclose(file);
@@ -699,10 +725,11 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             for (i = 0; i < combinations[best_index]->num_elements; i++) {
                 total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
                 combinations[best_index]->nodes[i]->storage_size -= chunk_size;
-                
-                // Adding the chunks in the chosen nodes
-                add_chunk(combinations[best_index]->nodes[i], data_id, combinations[best_index]->num_elements, nodes_used2);
             }
+            
+            // Adding the chunks in the chosen nodes
+            add_shared_chunks_to_nodes(combinations[best_index]->nodes, combinations[best_index]->num_elements, data_id);
+            
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             *total_upload_time += total_upload_time_to_print;
             combinations[best_index]->min_remaining_size -= chunk_size;
@@ -782,6 +809,10 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
                 total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
                 combinations[best_index]->nodes[i]->storage_size -= chunk_size;                
             }
+            
+            // Adding the chunks in the chosen nodes
+            add_shared_chunks_to_nodes(combinations[best_index]->nodes, combinations[best_index]->num_elements, data_id);
+
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             *total_upload_time += total_upload_time_to_print;
             combinations[best_index]->min_remaining_size -= chunk_size;
@@ -1089,17 +1120,17 @@ int main(int argc, char *argv[]) {
             create_combinations(nodes, number_of_initial_nodes, i, combinations, &combination_count);
         }
     }
-
+    
     #ifdef PRINT
     for (i = 0; i < total_combinations; i++) {
         printf("Combination %d: ", i + 1);
-        for (j = 0; j < combinations[i]->num_elements; j++) {
+        for (int j = 0; j < combinations[i]->num_elements; j++) {
             printf("%d ", combinations[i]->nodes[j]->id);
             printf("(%d) - ", combinations[i]->write_bandwidth[j]);
         }
         printf("\n");
     }
-    #endif        
+    #endif      
     
     /** Prediction of chunking time **/
     // Filling a struct with our prediction records
@@ -1194,7 +1225,7 @@ int main(int argc, char *argv[]) {
             current_number_of_nodes -=1;
             free_combinations(combinations, total_combinations);
             combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
-            //~ reschedule_lost_chunks();
+            reschedule_lost_chunks();
         }
         
         /** Resorting the nodes and combinations after every 100 GB of data stored **/
@@ -1223,7 +1254,7 @@ int main(int argc, char *argv[]) {
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
         #endif
         
-        print_all_chunks(nodes, current_number_of_nodes);
+        //~ print_all_chunks(nodes, current_number_of_nodes);
          
         input_data_sum_of_size_already_stored += sizes[i];
     }
@@ -1262,13 +1293,11 @@ int main(int argc, char *argv[]) {
             id_to_print_because_nodes_are_sorted++;
         }
         fprintf(file, "%f, ", nodes[id_to_print_because_nodes_are_sorted].storage_size);
-        printf("Print from id %d\n", nodes[id_to_print_because_nodes_are_sorted].id);
     }
     id_to_print_because_nodes_are_sorted = 0;
     while (nodes[id_to_print_because_nodes_are_sorted].id != i) {
         id_to_print_because_nodes_are_sorted++;
     }
-    printf("Print from id %d\n", nodes[id_to_print_because_nodes_are_sorted].id);
     fprintf(file, "%f]\"", nodes[id_to_print_because_nodes_are_sorted].storage_size);
     fprintf(file, ", %f, %f, %f\n", total_chunking_time, total_chunking_time / number_of_data_stored, total_parralelized_upload_time / number_of_data_stored);
     fclose(file);

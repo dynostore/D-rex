@@ -81,7 +81,6 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
-    
     double balance_penalty;
     double min_balance_penalty = DBL_MAX;
     int D;
@@ -96,16 +95,16 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
     
     // Sorting the nodes by available memory left
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
-    print_nodes(nodes, number_of_nodes);
+    //~ print_nodes(nodes, number_of_nodes);
     
     // Get average free memory
     double avg_free_capacity = get_avg_free_storage(number_of_nodes, nodes); // TODO: do this when adding data to a node so we don't have to compute it for every single call of the function ?
-    printf("avg_free_capacity = %f\n", avg_free_capacity);
+    //~ printf("avg_free_capacity = %f\n", avg_free_capacity);
 
     for (P = 1; P < number_of_nodes - 1; P++) {
         if (min_D == -1) { // We only increase P if we haven't found a solution yet
-            for (D = 1; D < number_of_nodes - P; D++) {
-                printf("P = %d, D= %d\n", P, D);
+            for (D = 2; D < number_of_nodes - P; D++) {
+                //~ printf("P = %d, D= %d\n", P, D);
                 
                 if (!is_P_and_D_combination_possible(D, P, nodes, reliability_threshold, number_of_nodes)) {
                     printf("Not possible for reliability, continue\n");
@@ -113,10 +112,10 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
                 }
                 
                 C = D + P;
-                printf("C = %d\n", C);
+                //~ printf("C = %d\n", C);
                 balance_penalty = 0;
                 chunk_size = S / D;
-                printf("chunk_size = %f\n", chunk_size);
+                //~ printf("chunk_size = %f\n", chunk_size);
                 solution_is_not_possible = false;
                 for (j = 0; j < C; j++) {
                     if (nodes[j].storage_size < chunk_size)
@@ -124,18 +123,18 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
                         solution_is_not_possible = true;
                         break;
                     }
-                    printf("+= %f in 1st for loop\n", fabs(nodes[j].storage_size - chunk_size - avg_free_capacity));
+                    //~ printf("+= %f in 1st for loop\n", fabs(nodes[j].storage_size - chunk_size - avg_free_capacity));
                     balance_penalty += fabs(nodes[j].storage_size - chunk_size - avg_free_capacity);
                 } 
                 
                 if (solution_is_not_possible == false) {
                     for (j = C; j < number_of_nodes; j++) {
-                        printf("+= %f in 2nd for loop\n", fabs(nodes[j].storage_size - avg_free_capacity));
+                        //~ printf("+= %f in 2nd for loop\n", fabs(nodes[j].storage_size - avg_free_capacity));
                         balance_penalty += fabs(nodes[j].storage_size - avg_free_capacity);
                     }
                     
                     if (balance_penalty < min_balance_penalty) {
-                        printf("New min_D %f with %d\n", min_balance_penalty, D);
+                        //~ printf("New min_D %f with %d\n", min_balance_penalty, D);
                         min_D = D;
                         min_balance_penalty = balance_penalty;
                     }
@@ -165,13 +164,23 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         *total_N += *N;
         *total_storage_used += chunk_size*(*N);
         *total_remaining_size -= chunk_size*(*N);
+        
+        Node** used_combinations = malloc(*N * sizeof(Node*));
+        
         for (j = 0; j < *N; j++) {
             total_upload_time_to_print += chunk_size/nodes[j].write_bandwidth;
             nodes[j].storage_size -= chunk_size;
             if (min_write_bandwidth < nodes[j].write_bandwidth) {
                 min_write_bandwidth = nodes[j].write_bandwidth;
-            }            
+            }
+            
+            // To track the chunks I a fill a temp struct with nodes
+            used_combinations[j] = &nodes[j];
         }
+        
+        // Adding the chunks in the chosen nodes
+        add_shared_chunks_to_nodes(used_combinations, *N, data_id);
+
         *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
         
         // TODO: remove this 3 lines under to reduce complexity if we don't need the trace per data
@@ -187,4 +196,6 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
     seconds  = end.tv_sec  - start.tv_sec;
     useconds = end.tv_usec - start.tv_usec;
     *total_scheduling_time += seconds + useconds/1000000.0;
+
+    //~ exit(1);
 }

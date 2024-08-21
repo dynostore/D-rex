@@ -42,7 +42,9 @@ void create_combinations(Node *nodes, int n, int r, Combination **combinations, 
         perror("malloc");
         exit(EXIT_FAILURE);
     }
+    
     //~ printf("r %d\n", r);
+    
     for (int i = 0; i < r; i++) {
         indices[i] = i;
     }
