@@ -170,7 +170,7 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         for (j = 0; j < *N; j++) {
             total_upload_time_to_print += chunk_size/nodes[j].write_bandwidth;
             nodes[j].storage_size -= chunk_size;
-            if (min_write_bandwidth < nodes[j].write_bandwidth) {
+            if (min_write_bandwidth > nodes[j].write_bandwidth) {
                 min_write_bandwidth = nodes[j].write_bandwidth;
             }
             
