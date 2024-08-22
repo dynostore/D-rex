@@ -459,6 +459,7 @@ int reliability_threshold_met_accurate(int N, int K, double reliability_threshol
     PoiBin *pb = init_poi_bin_accurate(reliability_of_nodes, N);
     double cdf_value = cdf_poi_bin_accurate(pb, N - K);
     free_poi_bin_accurate(pb);
+    //~ printf("1\n");
     return cdf_value >= reliability_threshold;
 }
 
@@ -1322,9 +1323,9 @@ int main(int argc, char *argv[]) {
         else {
             printf("Algorithm %d not valid\n", algorithm);
         }
-        #ifdef PRINT
+        //~ #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        #endif
+        //~ #endif
         
         //~ print_all_chunks(nodes, current_number_of_nodes);
          

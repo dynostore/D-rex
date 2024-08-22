@@ -194,8 +194,6 @@ for data in set_of_data:
         
         total_chunking_time += chunking_time
 
-
-
 output_filename = 'output_drex_only.csv'
 if alg == "hdfsrs" or alg == "vandermonders" or alg == "glusterfs":
     alg_to_print = alg + "_" + str(RS1) + "_" + str(RS2)

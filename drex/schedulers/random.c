@@ -113,6 +113,8 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
     int solution_found = 0;
     double* reliability_of_nodes_chosen;
     int* set_of_nodes_chosen;
+    *N = -1;
+    *K = -1;
     
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
     

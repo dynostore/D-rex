@@ -76,6 +76,7 @@ void print_nodes(Node *nodes, int num_nodes);
 int reliability_threshold_met_accurate(int N, int K, double reliability_threshold, double *reliability_of_nodes);
 void add_shared_chunks_to_nodes(Node** nodes_used, int num_of_nodes_used, int chunk_id);
 int compare_nodes_by_bandwidth_desc_with_condition(const void *a, const void *b);
+int get_max_K_from_reliability_threshold_and_nodes_chosen(int number_of_nodes, float reliability_threshold, double sum_reliability, double variance_reliability, double* reliability_of_nodes);
 
 #endif
 

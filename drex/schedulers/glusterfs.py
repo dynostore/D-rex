@@ -52,7 +52,7 @@ def glusterfs(N, K, number_of_nodes, reliability_of_nodes, bandwidths, reliabili
     # the best one that is not yet in the set of nodes chosen. The same code is copy and pasted and used in
     # hdfs_three_replications
     loop = 0
-    while reliability_thresold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen) == False:
+    while reliability_thresold_met(N, K, reliability_threshold, reliability_of_nodes_chosen) == False:
         if (loop > number_of_nodes - N):
             # ~ print(f"gluster could not find a solution because reliability not met. (loop: {loop}, number nodes {number_of_nodes}), N: {N}")
             return -1, -1, -1, node_sizes
