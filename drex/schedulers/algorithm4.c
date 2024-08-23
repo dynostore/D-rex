@@ -1258,17 +1258,21 @@ int main(int argc, char *argv[]) {
         /** Adding a node **/
         // If we reached a threshold for a new node, we add it to the list of combinations
         if (number_of_supplementary_nodes > 0 && i == nodes[current_number_of_nodes].add_after_x_jobs) {
+            global_current_data_value = i;
             printf("Adding node %d\n", nodes[current_number_of_nodes].id);
             current_number_of_nodes += 1;
             
             // Version dans une fonction
-            free_combinations(combinations, total_combinations);
-            combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
+            if (algorithm == 4 || algorithm == 2) {
+                free_combinations(combinations, total_combinations);
+                combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
+            }
         }
         
         /** Removing a node **/
         if (remove_node_pattern != 0) {
             printf("Node removal\n");
+            global_current_data_value = i;
             if (remove_node_pattern == 1) {
                 remove_random_node(current_number_of_nodes, nodes);
             }
@@ -1280,9 +1284,12 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
             current_number_of_nodes -=1;
-            free_combinations(combinations, total_combinations);
-            combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
-            reschedule_lost_chunks();
+            
+            if (algorithm == 4 || algorithm == 2) {
+                free_combinations(combinations, total_combinations);
+                combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
+            }
+            reschedule_lost_chunks(); // TODO
         }
         
         /** Resorting the nodes and combinations after every 100 GB of data stored **/

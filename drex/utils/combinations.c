@@ -203,7 +203,7 @@ Combination** reset_combinations_and_recreate_them(int* total_combinations, int 
     if (*total_combinations >= complexity_threshold) {
         *reduced_complexity_situation = true;
         //~ printf("sorted version complexity_threshold = %d\n", complexity_threshold);
-        global_current_data_value = i;
+        //~ global_current_data_value = i;
         //~ printf("global_current_data_value after = %d\n", global_current_data_value);
         int max_number_combination_per_r = complexity_threshold/(current_number_of_nodes - 1);
         qsort(nodes, current_number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);

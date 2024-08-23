@@ -43,7 +43,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
-    printf("Start of hdfs_3_replications with data of size %f\n", size);
+    //~ printf("Start of hdfs_3_replications with data of size %f with %d nodes\n", size, number_of_nodes);
     int i = 0;
     int j = 0;
     int k = 0;
@@ -52,47 +52,50 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
     int index_min_reliability = 0;
     *N = -1;
     *K = -1;
+    
     // Sort by BW
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_bandwidth_desc_with_condition);
-    print_nodes(nodes, number_of_nodes);
+    //~ print_nodes(nodes, number_of_nodes);
     
     // Take first 3 nodes with more than 128 MB
-    int* set_of_nodes_chosen = malloc(3 * sizeof(int));    
-    // TODO: attention de bien prendre les id ?
-    // Ou pas besoin si c'est sort normalement
+    int* set_of_nodes_chosen = malloc(number_of_nodes * sizeof(int)); // We alloc more but keep track of how many node we actually use
+    double* reliability_of_nodes_chosen = malloc(number_of_nodes * sizeof(double));
+    
     for (i = 0; i < number_of_nodes; i++) {
-        if (nodes[i].storage_size > 128) {
+        set_of_nodes_chosen[i] = -1; // To signify that it is not valid
+        reliability_of_nodes_chosen[i] = -1; // To signify that it is not valid
+        if (nodes[i].storage_size > 128 && j < 3) {
             set_of_nodes_chosen[j] = i;
+            reliability_of_nodes_chosen[j] = nodes[set_of_nodes_chosen[j]].probability_failure;
             j++;
-            if (j == 3) {
-                break;
-            }
         }
     }
     
-    printf("Initial set of nodes chosen as index in sorted tab: ");
-    for (i = 0; i < 3; i++) {
-        printf("%d (%d) ", set_of_nodes_chosen[i], nodes[set_of_nodes_chosen[i]].write_bandwidth);
-    }
-    printf("\n");
-    //~ exit(1);
+    //~ printf("Initial set of nodes chosen as index in sorted tab: ");
+    //~ for (i = 0; i < number_of_nodes; i++) {
+        //~ printf("%d (%d) ", set_of_nodes_chosen[i], nodes[set_of_nodes_chosen[i]].write_bandwidth);
+    //~ }
+    //~ printf("\n");
+    
     int index_max_reliability = 0;
     double max_reliability = DBL_MAX; // Initialize to a value lower than any reliability value
     int loop = 0;
-    double* reliability_of_nodes_chosen;
-    reliability_of_nodes_chosen = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen, 3);
+    //~ double* reliability_of_nodes_chosen = malloc(number_of_nodes * sizeof(int));
+    //~ reliability_of_nodes_chosen = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen, 3);
     
-    printf("Initial reliability: ");
-    for (i = 0; i < 3; i++) {
-        printf("%f = %f ", nodes[set_of_nodes_chosen[i]].probability_failure, reliability_of_nodes_chosen[i]);
-    }
-    printf("\n");
-    //~ exit(1);
+    //~ printf("Initial reliability: ");
+    //~ for (i = 0; i < 3; i++) {
+        //~ printf("%f = %f ", nodes[set_of_nodes_chosen[i]].probability_failure, reliability_of_nodes_chosen[i]);
+    //~ }
+    //~ printf("\n");
     
     while (!reliability_threshold_met_accurate(3, 1, reliability_threshold, reliability_of_nodes_chosen)) {
-        printf("Reliability not met with initial set\n");
+        //~ printf("Reliability not met with initial set\n"); fflush(stdout);
         if (loop > number_of_nodes - 3) {
             free(reliability_of_nodes_chosen);
+            free(set_of_nodes_chosen);
+            *K = -1;
+            *N = -1;
             gettimeofday(&end, NULL);
             seconds  = end.tv_sec  - start.tv_sec;
             useconds = end.tv_usec - start.tv_usec;
@@ -130,17 +133,16 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
         set_of_nodes_chosen[index_min_reliability] = index_max_reliability; 
     }
     
-    printf("Set of nodes chosen as index in sorted tab after reliability check: ");
-    for (i = 0; i < 3; i++) {
-        printf("%d (%d) ", set_of_nodes_chosen[i], nodes[set_of_nodes_chosen[i]].write_bandwidth);
-    }
-    printf("\n");
-        printf("New reliability: ");
-    for (i = 0; i < 3; i++) {
-        printf("%f = %f ", nodes[set_of_nodes_chosen[i]].probability_failure, reliability_of_nodes_chosen[i]);
-    }
-    printf("\n");
-    //~ exit(1);
+    //~ printf("Set of nodes chosen as index in sorted tab after reliability check: ");
+    //~ for (i = 0; i < 3; i++) {
+        //~ printf("%d (%d) ", set_of_nodes_chosen[i], nodes[set_of_nodes_chosen[i]].write_bandwidth);
+    //~ }
+    //~ printf("\n");
+
+    //~ for (i = 0; i < 3; i++) {
+        //~ printf("%f = %f ", nodes[set_of_nodes_chosen[i]].probability_failure, reliability_of_nodes_chosen[i]);
+    //~ }
+    //~ printf("\n");
     
     *N = 3;
     *K = 1;
@@ -157,78 +159,74 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
         }
     }
     int num_nodes_chosen = 3;
-    printf("rest_to_store = %f\n", rest_to_store);
-    for (i = 0; i < 3; i++) {
-        printf("%f ", size_to_stores[i]);
-    }
-    printf("\n"); 
-    //~ exit(1);
+    //~ printf("rest_to_store = %f\n", rest_to_store);
+    //~ for (i = 0; i < 3; i++) {
+        //~ printf("%f ", size_to_stores[i]);
+    //~ }
+    //~ printf("\n"); 
+
     if (rest_to_store != 0) { // We have leftovers to put on a fourth node or more
         all_good = false;
         for (j = 0; j < number_of_nodes; j++) {
-            printf("j = %d\n", j);
-            //~ i = set_of_nodes[j];
+            //~ printf("j = %d\n", j);
             i = j;
             bool already_chosen = false;
             for (k = 0; k < num_nodes_chosen; k++) {
                 if (i == set_of_nodes_chosen[k]) {
                     already_chosen = true;
-                    printf("break\n");
+                    //~ printf("break\n");
                     break;
                 }
             }
         
             if (!already_chosen && nodes[i].storage_size > 128) {
                 //~ set_of_nodes_chosen[num_nodes_chosen++] = i;
-                printf("add\n");
-                add_node_to_set(&set_of_nodes_chosen, &num_nodes_chosen, i);
+                //~ printf("add\n");
+                //~ add_node_to_set(&set_of_nodes_chosen, &num_nodes_chosen, i);
+                set_of_nodes_chosen[num_nodes_chosen] = i;
+                reliability_of_nodes_chosen[num_nodes_chosen] = nodes[i].probability_failure;
                 
-                printf("Set of nodes chosen as index in sorted tab after adding a node: ");
-                for (int ii = 0; ii < *N+1; ii++) {
-                    printf("%d (%d) ", set_of_nodes_chosen[ii], nodes[set_of_nodes_chosen[ii]].write_bandwidth);
-                }
-                printf("\n");
-                //~ exit(1);
-                //~ double reliability_of_nodes_chosen[num_nodes_chosen];
-                //~ for (k = 0; k < num_nodes_chosen; k++) {
-                    //~ reliability_of_nodes_chosen[k] = reliability_of_nodes[set_of_nodes_chosen[k]];
+                num_nodes_chosen++;
+                
+                //~ printf("Set of nodes chosen as index in sorted tab after adding a node: ");
+                //~ for (int ii = 0; ii < num_nodes_chosen; ii++) {
+                    //~ printf("%d (%d) prob %f ", set_of_nodes_chosen[ii], nodes[set_of_nodes_chosen[ii]].write_bandwidth, reliability_of_nodes_chosen[ii]);
                 //~ }
-                free(reliability_of_nodes_chosen);
+                //~ printf("\n");
+                
                 *N += 1;
                 *K += 1;
-                reliability_of_nodes_chosen = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen, *N);
 
                 if (reliability_threshold_met_accurate(*N, *K, reliability_threshold, reliability_of_nodes_chosen)) {
-                    printf("ok\n");
                     if (rest_to_store <= nodes[i].storage_size) {
                         size_to_stores[num_nodes_chosen - 1] = rest_to_store;
                         all_good = true;
-                            //~ printf("rest_to_store = %f\n", rest_to_store);
-                        for (int ii = 0; ii < num_nodes_chosen; ii++) {
-                            printf("%f ", size_to_stores[ii]);
-                        }
-                        printf("\n");
-                        printf("break\n");
+                        //~ for (int ii = 0; ii < num_nodes_chosen; ii++) {
+                            //~ printf("%f ", size_to_stores[ii]);
+                        //~ }
+                        //~ printf("\n"); printf("break\n");
                         break;
                     } else { // Need again another node
-                        printf("else\n");
                         rest_to_store -= nodes[i].storage_size;
                         size_to_stores[num_nodes_chosen - 1] = nodes[i].storage_size;
                     }
                 } else {
-                    printf("else\n");
                     *K -= 1;
                     *N -= 1;
-                    //~ num_nodes_chosen--;
-                    //~ printf("%d\n", num_nodes_chosen);
-                    //~ remove_node_from_set(&set_of_nodes_chosen, &num_nodes_chosen, i);
-                    remove_last_node(&set_of_nodes_chosen, &num_nodes_chosen);                    
-                    printf("Set of nodes chosen as index in sorted tab after removing a node: ");
-                    for (int ii = 0; ii < *N; ii++) {
-                        printf("%d (%d) ", set_of_nodes_chosen[ii], nodes[set_of_nodes_chosen[ii]].write_bandwidth);
-                    }
-                    printf("\n");
                     
+                set_of_nodes_chosen[num_nodes_chosen] = -1;
+                reliability_of_nodes_chosen[num_nodes_chosen] = -1;
+                    
+                    num_nodes_chosen--;
+                    //~ remove_node_from_set(&set_of_nodes_chosen, &num_nodes_chosen, i);
+                    //~ remove_last_node(&set_of_nodes_chosen, &num_nodes_chosen); 
+                    
+                                       
+                    //~ printf("Set of nodes chosen as index in sorted tab after removing a node: ");
+                    //~ for (int ii = 0; ii < *N; ii++) {
+                        //~ printf("%d (%d) ", set_of_nodes_chosen[ii], nodes[set_of_nodes_chosen[ii]].write_bandwidth);
+                    //~ }
+                    //~ printf("\n");                    
                 }
             }
         }
@@ -238,28 +236,36 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
     //~ }
     //~ printf("\n"); exit(1);
         if (!all_good) {
-            printf("Not good\n");
+            num_nodes_chosen = 3;
+            *N = 3;
+            *K = 1;
             // Need to loop and find a solution that works in terms of reliability
             for (i = 0; i < number_of_nodes - 2; i++) {
                 for (j = i + 1; j < number_of_nodes - 1; j++) {
                     for (k = j + 1; k < number_of_nodes; k++) {
-                        int temp_set[] = {i, j, k};
+                        //~ int temp_set[] = {i, j, k};
                         //~ double temp_reliability[] = {reliability_of_nodes[i], reliability_of_nodes[j], reliability_of_nodes[k]};
-                        double* temp_reliability = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen, *N);
-                        if (reliability_threshold_met_accurate(3, 1, reliability_threshold, temp_reliability)) { // replace 0.95 with actual threshold
-                            double temp_size_to_stores[3];
+                        set_of_nodes_chosen[0] = i;
+                        set_of_nodes_chosen[1] = j;
+                        set_of_nodes_chosen[2] = k;
+                        reliability_of_nodes_chosen[0] = nodes[i].probability_failure;
+                        reliability_of_nodes_chosen[1] = nodes[j].probability_failure;
+                        reliability_of_nodes_chosen[2] = nodes[k].probability_failure;
+                        //~ printf("%d %d %d %f %f %f\n", i, j, k, reliability_of_nodes_chosen[0], reliability_of_nodes_chosen[1], reliability_of_nodes_chosen[2]);
+                        
+                        if (reliability_threshold_met_accurate(3, 1, reliability_threshold, reliability_of_nodes_chosen)) {
+                            //~ double temp_size_to_stores[3]; // TODO a utiliser nan ?
                             bool all_good_2 = true;
                             for (l = 0; l < 3; l++) {
-                                int index = temp_set[l];
+                                int index = set_of_nodes_chosen[l];
                                 if (size <= nodes[index].storage_size) { // all fit
-                                    temp_size_to_stores[l] = size;
+                                    size_to_stores[l] = size;
                                 } else {
                                     all_good_2 = false;
                                     break;
                                 }
                             }
                             if (all_good_2) {
-                                memcpy(size_to_stores, temp_size_to_stores, sizeof(temp_size_to_stores));
                                 all_good = true;
                                 break;
                             }
@@ -271,8 +277,12 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
             }
 
             if (!all_good) {
-                printf("Error: size HDFS 3 replications failed\n");
+                //~ printf("Error: size HDFS 3 replications failed\n");
                 free(reliability_of_nodes_chosen);
+                free(set_of_nodes_chosen);
+                free(size_to_stores);
+                *K = -1;
+                *N = -1;
                 gettimeofday(&end, NULL);
                 seconds  = end.tv_sec  - start.tv_sec;
                 useconds = end.tv_usec - start.tv_usec;
@@ -281,14 +291,14 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
             }
         }
     }
-    printf("Updates %d %d %d\n", *N, *K, num_nodes_chosen);
+    //~ printf("Updates %d %d %d\n", *N, *K, num_nodes_chosen);
     // Updates
     if (*N != -1) { // We have a valid solution        
         double worst_transfer = -1;
         
         // Writing down the results
         double total_upload_time_to_print = 0;
-        //~ double chunk_size = size/(*K);
+
         *number_of_data_stored += 1;
         *total_N += *N;
         *total_storage_used += size*3;
@@ -297,7 +307,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
         for (int j = 0; j < *N; j++) {
             total_upload_time_to_print += size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth;
             nodes[set_of_nodes_chosen[j]].storage_size -= size_to_stores[j];
-            printf("Removed %f from node %d\n", size_to_stores[j], nodes[set_of_nodes_chosen[j]].id); 
+            //~ printf("Removed %f from node %d\n", size_to_stores[j], nodes[set_of_nodes_chosen[j]].id); 
             
             if (worst_transfer > size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth) {
                 worst_transfer = size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth;
@@ -317,9 +327,14 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
         double transfer_time_parralelized = worst_transfer;
         add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K);
         *total_upload_time += total_upload_time_to_print;
+        
+        free(used_combinations);
     }
 
-    //~ exit(1);
+    free(reliability_of_nodes_chosen);
+    free(set_of_nodes_chosen);
+    free(size_to_stores);
+
     gettimeofday(&end, NULL);
     seconds  = end.tv_sec  - start.tv_sec;
     useconds = end.tv_usec - start.tv_usec;
@@ -335,6 +350,7 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
     *N = RS1 + RS2;
     //~ printf("%d %d\n", *N, *K);
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_bandwidth_desc_with_condition);
+    print_nodes(nodes, number_of_nodes);
     
     double chunk_size = size / *K;
     
@@ -473,7 +489,6 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
                 useconds = end.tv_usec - start.tv_usec;
                 *total_scheduling_time += seconds + useconds/1000000.0;
                 return;
-            //~ }
             
         free(set_of_nodes_chosen_temp);
     free(reliability_of_nodes_chosen);
