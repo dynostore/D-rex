@@ -218,13 +218,6 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
                 reliability_of_nodes_chosen[num_nodes_chosen] = -1;
                     
                     num_nodes_chosen--;
-                    //~ remove_node_from_set(&set_of_nodes_chosen, &num_nodes_chosen, i);
-                    //~ remove_last_node(&set_of_nodes_chosen, &num_nodes_chosen); 
-                    
-                                       
-                    //~ printf("Set of nodes chosen as index in sorted tab after removing a node: ");
-                    //~ for (int ii = 0; ii < *N; ii++) {
-                        //~ printf("%d (%d) ", set_of_nodes_chosen[ii], nodes[set_of_nodes_chosen[ii]].write_bandwidth);
                     //~ }
                     //~ printf("\n");                    
                 }
@@ -309,7 +302,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
             nodes[set_of_nodes_chosen[j]].storage_size -= size_to_stores[j];
             //~ printf("Removed %f from node %d\n", size_to_stores[j], nodes[set_of_nodes_chosen[j]].id); 
             
-            if (worst_transfer > size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth) {
+            if (worst_transfer < size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth) {
                 worst_transfer = size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth;
             }
             
@@ -318,7 +311,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
         }
         
         // Adding the chunks in the chosen nodes
-        //~ add_shared_chunks_to_nodes(used_combinations, *N, data_id);
+        add_shared_chunks_to_nodes_3_replication(used_combinations, *N, data_id, size_to_stores);
         
         *total_parralelized_upload_time += worst_transfer;
         
@@ -350,7 +343,7 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
     *N = RS1 + RS2;
     //~ printf("%d %d\n", *N, *K);
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_bandwidth_desc_with_condition);
-    print_nodes(nodes, number_of_nodes);
+    //~ print_nodes(nodes, number_of_nodes);
     
     double chunk_size = size / *K;
     
@@ -470,7 +463,7 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
                 }
                 
                 // Adding the chunks in the chosen nodes
-                add_shared_chunks_to_nodes(used_combinations, *N, data_id);
+                add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size);
 
                 *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
                 

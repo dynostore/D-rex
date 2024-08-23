@@ -19,6 +19,10 @@ drex/inputs/data/FB_merged.csv
 drex/inputs/data/MEVA_merged.csv
 drex/inputs/get_stats_input_data
 alg4
+drex/schedulers/algorithm1.o
+drex/schedulers/glusterfs.o
+drex/schedulers/hdfs.o
+drex/schedulers/random.o
 output_alg_bogdan_stats.csv
 drex/utils/k_means_clustering.o
 drex/utils/combinations.o

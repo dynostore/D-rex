@@ -31,7 +31,7 @@ void init_chunk_list(Node* node) {
 }
 
 // Function to add a chunk to a single node's chunk list
-void add_chunk_to_node(Node* node, int chunk_id, int num_of_nodes_used, int* nodes_used) {
+void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_used, int* nodes_used) {
     Chunk* new_chunk = (Chunk*)malloc(sizeof(Chunk));
     if (new_chunk == NULL) {
         perror("Failed to allocate memory for new chunk");
@@ -40,6 +40,7 @@ void add_chunk_to_node(Node* node, int chunk_id, int num_of_nodes_used, int* nod
 
     // Initialize the new chunk
     new_chunk->chunk_id = chunk_id;
+    new_chunk->chunk_size = size;
     new_chunk->num_of_nodes_used = num_of_nodes_used;
     new_chunk->nodes_used = (int*)malloc(num_of_nodes_used * sizeof(int));
     if (new_chunk->nodes_used == NULL) {
@@ -59,7 +60,7 @@ void add_chunk_to_node(Node* node, int chunk_id, int num_of_nodes_used, int* nod
 }
 
 // Function to add shared chunks to multiple nodes
-void add_shared_chunks_to_nodes(Node** nodes_used, int num_of_nodes_used, int chunk_id) {
+void add_shared_chunks_to_nodes(Node** nodes_used, int num_of_nodes_used, int chunk_id, double chunk_size) {
     int* node_ids = (int*)malloc(num_of_nodes_used * sizeof(int));
     if (node_ids == NULL) {
         perror("Failed to allocate memory for node_ids");
@@ -73,7 +74,28 @@ void add_shared_chunks_to_nodes(Node** nodes_used, int num_of_nodes_used, int ch
 
     // Add a separate chunk to each node
     for (int i = 0; i < num_of_nodes_used; i++) {
-        add_chunk_to_node(nodes_used[i], chunk_id, num_of_nodes_used, node_ids);
+        add_chunk_to_node(nodes_used[i], chunk_id, chunk_size, num_of_nodes_used, node_ids);
+    }
+
+    free(node_ids);
+}
+
+// Function to add shared chunks to multiple nodes
+void add_shared_chunks_to_nodes_3_replication(Node** nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores) {
+    int* node_ids = (int*)malloc(num_of_nodes_used * sizeof(int));
+    if (node_ids == NULL) {
+        perror("Failed to allocate memory for node_ids");
+        exit(EXIT_FAILURE);
+    }
+
+    // Fill node IDs array
+    for (int i = 0; i < num_of_nodes_used; i++) {
+        node_ids[i] = nodes_used[i]->id;
+    }
+
+    // Add a separate chunk to each node
+    for (int i = 0; i < num_of_nodes_used; i++) {
+        add_chunk_to_node(nodes_used[i], chunk_id, size_to_stores[i], num_of_nodes_used, node_ids);
     }
 
     free(node_ids);
@@ -108,7 +130,7 @@ void print_all_chunks(Node* nodes, int num_nodes) {
             printf("Node ID: %d\n", nodes[i].id);
             Chunk* current_chunk = nodes[i].chunks->head;
             while (current_chunk != NULL) {
-                printf("Chunk ID: %d / ", current_chunk->chunk_id);
+                printf("Chunk ID: %d / Size: %f / ", current_chunk->chunk_id, current_chunk->chunk_size);
                 printf("Number of Nodes Used: %d / ", current_chunk->num_of_nodes_used);
                 printf("Nodes Holding This Chunk: ");
                 for (int j = 0; j < current_chunk->num_of_nodes_used; j++) {
@@ -733,7 +755,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             }
             
             // Adding the chunks in the chosen nodes
-            add_shared_chunks_to_nodes(combinations[best_index]->nodes, combinations[best_index]->num_elements, data_id);
+            add_shared_chunks_to_nodes(combinations[best_index]->nodes, combinations[best_index]->num_elements, data_id, chunk_size);
             
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             *total_upload_time += total_upload_time_to_print;
@@ -816,7 +838,7 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
             }
             
             // Adding the chunks in the chosen nodes
-            add_shared_chunks_to_nodes(combinations[best_index]->nodes, combinations[best_index]->num_elements, data_id);
+            add_shared_chunks_to_nodes(combinations[best_index]->nodes, combinations[best_index]->num_elements, data_id, chunk_size);
 
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             *total_upload_time += total_upload_time_to_print;
@@ -1240,14 +1262,14 @@ int main(int argc, char *argv[]) {
     double total_remaining_size = total_storage_size; // Used for system saturation
     int closest_index = 0;
     int nearest_size = 0;
-    
+    int removed_node_index;
     // Current number of nodes being used. Will be updated when next node time is reached
     int current_number_of_nodes = number_of_initial_nodes;
     double input_data_sum_of_size_already_stored = 0;
     
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
-        if (i%1000 == 0) {
+        if (i%10000 == 0) {
             printf("Data %d/%d of size %f\n", i, count, sizes[i]);
         }
         
@@ -1273,11 +1295,15 @@ int main(int argc, char *argv[]) {
         if (remove_node_pattern != 0) {
             printf("Node removal\n");
             global_current_data_value = i;
-            if (remove_node_pattern == 1) {
+            if (remove_node_pattern == 1 && i == 10000) { // Remove a node at job 10000 randomly
                 remove_random_node(current_number_of_nodes, nodes);
+                reschedule_lost_chunks(); // TODO
             }
             if (remove_node_pattern == 2) {
-                remove_node_following_failure_rate(current_number_of_nodes, nodes);
+                removed_node_index = remove_node_following_failure_rate(current_number_of_nodes, nodes);
+                if (removed_node_index != -1) {
+                    reschedule_lost_chunks(&nodes[removed_node_index]); // TODO
+                }
             }
             else {
                 printf("ERROR: remove_node_pattern = %d not supported\n", remove_node_pattern);
@@ -1289,7 +1315,6 @@ int main(int argc, char *argv[]) {
                 free_combinations(combinations, total_combinations);
                 combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
             }
-            reschedule_lost_chunks(); // TODO
         }
         
         /** Resorting the nodes and combinations after every 100 GB of data stored **/
@@ -1330,9 +1355,9 @@ int main(int argc, char *argv[]) {
         else {
             printf("Algorithm %d not valid\n", algorithm);
         }
-        //~ #ifdef PRINT
+        #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        //~ #endif
+        #endif
         
         //~ print_all_chunks(nodes, current_number_of_nodes);
          
