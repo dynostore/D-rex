@@ -57,7 +57,7 @@ void create_combinations(Node *nodes, int n, int r, Combination **combinations, 
         combinations[*combination_count]->sum_reliability = 0;
         combinations[*combination_count]->variance_reliability = 0;
         combinations[*combination_count]->write_bandwidth = malloc(r * sizeof(int));
-        combinations[*combination_count]->min_remaining_size = DBL_MAX;
+        //~ combinations[*combination_count]->min_remaining_size = DBL_MAX;
         combinations[*combination_count]->min_write_bandwidth = INT_MAX;
 
         for (int i = 0; i < r; i++) {
@@ -67,9 +67,9 @@ void create_combinations(Node *nodes, int n, int r, Combination **combinations, 
             combinations[*combination_count]->variance_reliability += nodes[indices[i]].probability_failure * (1 - nodes[indices[i]].probability_failure);
             combinations[*combination_count]->write_bandwidth[i] = nodes[indices[i]].write_bandwidth;
             //~ printf("Adding %d\n", nodes[indices[i]].write_bandwidth);
-            if (nodes[indices[i]].storage_size < combinations[*combination_count]->min_remaining_size) {
-                combinations[*combination_count]->min_remaining_size = nodes[indices[i]].storage_size;
-            }
+            //~ if (nodes[indices[i]].storage_size < combinations[*combination_count]->min_remaining_size) {
+                //~ combinations[*combination_count]->min_remaining_size = nodes[indices[i]].storage_size;
+            //~ }
             if (nodes[indices[i]].write_bandwidth < combinations[*combination_count]->min_write_bandwidth) {
                 combinations[*combination_count]->min_write_bandwidth = nodes[indices[i]].write_bandwidth;
             }
@@ -117,7 +117,7 @@ void create_combinations_with_limit(Node *nodes, int n, int r, Combination **com
         combinations[*combination_count]->sum_reliability = 0;
         combinations[*combination_count]->variance_reliability = 0;
         combinations[*combination_count]->write_bandwidth = malloc(r * sizeof(int));
-        combinations[*combination_count]->min_remaining_size = DBL_MAX;
+        //~ combinations[*combination_count]->min_remaining_size = DBL_MAX;
         combinations[*combination_count]->min_write_bandwidth = INT_MAX;
 
         for (int i = 0; i < r; i++) {
@@ -126,9 +126,9 @@ void create_combinations_with_limit(Node *nodes, int n, int r, Combination **com
             combinations[*combination_count]->sum_reliability += nodes[indices[i]].probability_failure;
             combinations[*combination_count]->variance_reliability += nodes[indices[i]].probability_failure * (1 - nodes[indices[i]].probability_failure);
             combinations[*combination_count]->write_bandwidth[i] = nodes[indices[i]].write_bandwidth;
-            if (nodes[indices[i]].storage_size < combinations[*combination_count]->min_remaining_size) {
-                combinations[*combination_count]->min_remaining_size = nodes[indices[i]].storage_size;
-            }
+            //~ if (nodes[indices[i]].storage_size < combinations[*combination_count]->min_remaining_size) {
+                //~ combinations[*combination_count]->min_remaining_size = nodes[indices[i]].storage_size;
+            //~ }
             if (nodes[indices[i]].write_bandwidth < combinations[*combination_count]->min_write_bandwidth) {
                 combinations[*combination_count]->min_write_bandwidth = nodes[indices[i]].write_bandwidth;
             }

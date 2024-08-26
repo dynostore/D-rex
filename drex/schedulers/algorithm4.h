@@ -1,26 +1,12 @@
 #ifndef ALG4_H
 #define ALG4_H
 
-// Struct representing a chunk of data
-typedef struct chunk {
-    int chunk_id;           // ID of the chunk
-    double chunk_size;
-    int num_of_nodes_used;  // Number of nodes used to store this chunk
-    int* nodes_used;        // Array of node IDs holding this chunk
-    struct chunk* next;     // Pointer to the next chunk in the list
-} Chunk;
+typedef struct chunk Chunk;  // Forward declaration of Chunk
 
 // Struct representing the linked list of chunks
 typedef struct {
     Chunk* head;  // Pointer to the first chunk in the list
 } ChunkList;
-
-typedef struct {
-    double *probabilities;
-    int n;
-} PoiBin;
-
-extern int global_current_data_value;
 
 typedef struct {
     int id;
@@ -32,6 +18,38 @@ typedef struct {
     int add_after_x_jobs;   // Number of jobs after which the node becomes available
     ChunkList *chunks;       // Linked list of chunks stored in this node
 } Node;
+
+// Struct representing a chunk of data
+struct chunk {
+    int chunk_id;           // ID of the chunk
+    double chunk_size;
+    int num_of_nodes_used;  // Number of nodes used to store this chunk
+    Node** nodes_used;        // Array of node IDs holding this chunk
+    struct chunk* next;     // Pointer to the next chunk in the list
+};
+
+//~ // Struct representing the linked list of chunks
+//~ typedef struct {
+    //~ Chunk* head;  // Pointer to the first chunk in the list
+//~ } ChunkList;
+
+typedef struct {
+    double *probabilities;
+    int n;
+} PoiBin;
+
+extern int global_current_data_value;
+
+//~ typedef struct {
+    //~ int id;
+    //~ double storage_size;
+    //~ int write_bandwidth;
+    //~ int read_bandwidth;
+    //~ double probability_failure;
+    //~ double daily_failure_rate;
+    //~ int add_after_x_jobs;   // Number of jobs after which the node becomes available
+    //~ ChunkList *chunks;       // Linked list of chunks stored in this node
+//~ } Node;
 
 typedef struct data_to_print {
     int id;
@@ -56,7 +74,7 @@ typedef struct {
     double variance_reliability; // To avoid having to compute it all the time
     double sum_reliability; // To avoid having to compute it all the time
     int* write_bandwidth; // Array of bandwidths
-    double min_remaining_size; // Smallest node's remaining memory in the combination. Used to quickly skip an unvalid combination
+    //~ double min_remaining_size; // Smallest node's remaining memory in the combination. Used to quickly skip an unvalid combination
     int min_write_bandwidth; // Smallest node's write bandwidth in the combination
     
     // Sub values for pareto front
@@ -79,6 +97,7 @@ void add_shared_chunks_to_nodes(Node** nodes_used, int num_of_nodes_used, int ch
 int compare_nodes_by_bandwidth_desc_with_condition(const void *a, const void *b);
 int get_max_K_from_reliability_threshold_and_nodes_chosen(int number_of_nodes, float reliability_threshold, double sum_reliability, double variance_reliability, double* reliability_of_nodes);
 void add_shared_chunks_to_nodes_3_replication(Node** nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores);
+void remove_shared_chunk_from_nodes(Node** nodes_used, int num_of_nodes_used, int chunk_id);
 
 #endif
 
