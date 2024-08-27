@@ -107,7 +107,7 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
                 //~ printf("P = %d, D= %d\n", P, D);
                 
                 if (!is_P_and_D_combination_possible(D, P, nodes, reliability_threshold, number_of_nodes)) {
-                    printf("Not possible for reliability, continue\n");
+                    //~ printf("Not possible for reliability, continue\n");
                     continue;
                 }
                 
@@ -165,7 +165,7 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         *total_storage_used += chunk_size*(*N);
         *total_remaining_size -= chunk_size*(*N);
         
-        Node** used_combinations = malloc(*N * sizeof(Node*));
+        int* used_combinations = malloc(*N * sizeof(int));
         
         for (j = 0; j < *N; j++) {
             total_upload_time_to_print += chunk_size/nodes[j].write_bandwidth;
@@ -175,11 +175,11 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
             }
             
             // To track the chunks I a fill a temp struct with nodes
-            used_combinations[j] = &nodes[j];
+            used_combinations[j] = nodes[j].id;
         }
         
         // Adding the chunks in the chosen nodes
-        add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size);
+        add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes);
 
         *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
         
@@ -189,6 +189,8 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         add_node_to_print(list, data_id, S, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K);
 
         *total_upload_time += total_upload_time_to_print;
+        
+        free(used_combinations);
     }
 
     gettimeofday(&end, NULL);

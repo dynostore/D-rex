@@ -1,3 +1,5 @@
+# python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
+
 import pandas as pd
 import matplotlib as mpl
 from matplotlib.patches import Patch

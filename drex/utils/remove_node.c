@@ -6,34 +6,38 @@
 #include <time.h>
 
 void reschedule_lost_chunks(Node* removed_node) {
-    printf("Start of reschedule_lost_chunks for node %d\n", removed_node->id);
-    int i = 0;
-    if (removed_node->chunks->head != NULL) {
-        Chunk* current_chunk = removed_node->chunks->head;
-        while (current_chunk != NULL) {
+    //~ printf("Start of reschedule_lost_chunks for node %d\n", removed_node->id);
+    //~ int i = 0;
+    //~ int j = 0;
+    //~ if (removed_node->chunks->head != NULL) {
+        //~ Chunk* current_chunk = removed_node->chunks->head;
+        //~ while (current_chunk != NULL) {
             //~ printf("Chunk ID: %d / Size: %f / ", current_chunk->chunk_id, current_chunk->chunk_size);
             //~ printf("Number of Nodes Used: %d / ", current_chunk->num_of_nodes_used);
             //~ printf("Nodes Holding This Chunk: ");
-            printf("Remove chunk %d\n", current_chunk->chunk_id);
-            for (i = 0; i < current_chunk->num_of_nodes_used; i++) {
-                printf("%d ", current_chunk->nodes_used[i]->id);
-            }
-            printf("\n");
+            //~ printf("Remove chunk %d\n", current_chunk->chunk_id);
+            //~ for (i = 0; i < current_chunk->num_of_nodes_used; i++) {
+                //~ printf("%d ", current_chunk->nodes_used[i]);
+            //~ }
+            //~ printf("\n");
+
+            // Find node to remove from
+            //~ for (j = 0; j <  current_chunk->nodes_used[i]
             
-            // Remove space
-            for (i = 0; i < current_chunk->num_of_nodes_used; i++) {
-                current_chunk->nodes_used[i]->storage_size += current_chunk->chunk_size;
+            //~ // Remove space
+            //~ for (i = 0; i < current_chunk->num_of_nodes_used; i++) {
+                //~ current_chunk->nodes_used[i]->storage_size += current_chunk->chunk_size;
                 //~ printf("Adding %f to node %d\n", current_chunk->chunk_size, current_chunk->nodes_used[i]->id);
-            }
+            //~ }
             
             // Remove chunks
             //~ printf("Remove chunk %d\n", current_chunk->chunk_id);
-            remove_shared_chunk_from_nodes(current_chunk->nodes_used, current_chunk->num_of_nodes_used, current_chunk->chunk_id);
-            return;
+            //~ remove_shared_chunk_from_nodes(current_chunk->nodes_used, current_chunk->num_of_nodes_used, current_chunk->chunk_id);
+            //~ return;
             // Would need to update total_storage_size and total_remaining_size if alg4 used them but it does not soo no need
                         
-            current_chunk = current_chunk->next;
-        }
+            //~ current_chunk = current_chunk->next;
+        //~ }
         
         // Call the algorithms again
         //~ current_chunk = removed_node->chunks->head;
@@ -45,7 +49,7 @@ void reschedule_lost_chunks(Node* removed_node) {
             
             //~ current_chunk = current_chunk->next;
         //~ }
-    }
+    //~ }
 }
 
 int check_if_node_failed(Node *node) {

@@ -70,7 +70,7 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                 *total_N += *N;
                 *total_storage_used += chunk_size*(*N);
                 
-                Node** used_combinations = malloc(*N * sizeof(Node*));
+                int* used_combinations = malloc(*N * sizeof(int));
                 
                 for (int j = 0; j < *N; j++) {
                     total_upload_time_to_print += chunk_size/nodes[j].write_bandwidth;
@@ -80,11 +80,11 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                     }
                     
                     // To track the chunks I a fill a temp struct with nodes
-                    used_combinations[j] = &nodes[j];
+                    used_combinations[j] = nodes[j].id;
                 }
                 
                 // Adding the chunks in the chosen nodes
-                add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size);
+                add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes);
 
                 *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
                 
@@ -96,6 +96,7 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                 *total_upload_time += total_upload_time_to_print;
                 
                 free(set_of_nodes_chosen_temp);
+                free(used_combinations);
                 free(reliability_of_nodes_chosen);
 
                 gettimeofday(&end, NULL);

@@ -31,7 +31,7 @@ void init_chunk_list(Node* node) {
 }
 
 // Function to add a chunk to a single node's chunk list
-void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_used, Node** nodes_used) {
+void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_used, int* nodes_used) {
     Chunk* new_chunk = (Chunk*)malloc(sizeof(Chunk));
     if (new_chunk == NULL) {
         perror("Failed to allocate memory for new chunk");
@@ -42,7 +42,7 @@ void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_u
     new_chunk->chunk_id = chunk_id;
     new_chunk->chunk_size = size;
     new_chunk->num_of_nodes_used = num_of_nodes_used;
-    new_chunk->nodes_used = malloc(num_of_nodes_used * sizeof(Node*));
+    new_chunk->nodes_used = malloc(num_of_nodes_used * sizeof(int));
     if (new_chunk->nodes_used == NULL) {
         perror("Failed to allocate memory for nodes_used");
         free(new_chunk);
@@ -52,7 +52,7 @@ void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_u
     // Copy the node IDs into the new chunk
     for (int i = 0; i < num_of_nodes_used; i++) {
         new_chunk->nodes_used[i] = nodes_used[i];
-        //~ printf("Added in add_chunk_to_node to node %d\n", new_chunk->nodes_used[i]->id);
+        //~ printf("Added in add_chunk_to_node to node %d\n", new_chunk->nodes_used[i]);
     }
 
     // Insert the new chunk at the beginning of the chunk list
@@ -61,28 +61,45 @@ void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_u
 }
 
 // Function to add shared chunks to multiple nodes
-void add_shared_chunks_to_nodes(Node** nodes_used, int num_of_nodes_used, int chunk_id, double chunk_size) {
-    // Add a separate chunk to each node
-    for (int i = 0; i < num_of_nodes_used; i++) {
-        //~ printf("Add chunk %d to node %d\n", chunk_id, nodes_used[i]->id);
-        add_chunk_to_node(nodes_used[i], chunk_id, chunk_size, num_of_nodes_used, nodes_used);
-    }
+void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, double chunk_size, Node* nodes, int number_of_nodes) {
+    //~ // Add a separate chunk to each node
+    //~ int i = 0;
+    //~ int j = 0;
+    
+    //~ for (i = 0; i < num_of_nodes_used; i++) {
+        //~ for (j = 0; j < number_of_nodes; j++) {
+            //~ if (nodes[j].id == nodes_used[i]) {
+                //~ break;
+            //~ }
+        //~ }
+        // printf("Add chunk %d to node %d\n", chunk_id, nodes_used[i]->id);
+        //~ add_chunk_to_node(&nodes[j], chunk_id, chunk_size, num_of_nodes_used, nodes_used);
+    //~ }
 }
 
 // Function to add shared chunks to multiple nodes
-void add_shared_chunks_to_nodes_3_replication(Node** nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores) {
-    // Add a separate chunk to each node
-    for (int i = 0; i < num_of_nodes_used; i++) {
-        add_chunk_to_node(nodes_used[i], chunk_id, size_to_stores[i], num_of_nodes_used, nodes_used);
-    }
+void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores, Node* nodes, int number_of_nodes) {
+    //~ // Add a separate chunk to each node
+    //~ int i = 0;
+    //~ int j = 0;
+    
+    //~ for (i = 0; i < num_of_nodes_used; i++) {
+        //~ for (j = 0; j < number_of_nodes; j++) {
+            //~ if (nodes[j].id == nodes_used[i]) {
+                //~ break;
+            //~ }
+        //~ }
+        // printf("Add chunk %d to node %d\n", chunk_id, nodes_used[i]->id);
+        //~ add_chunk_to_node(&nodes[j], chunk_id, size_to_stores[i], num_of_nodes_used, nodes_used);
+    //~ }
 }
 
-void remove_chunk_from_node(Node* node, int chunk_id) {
-    if (node->chunks == NULL || node->chunks->head == NULL) {
+void remove_chunk_from_node(int index_node_used, int chunk_id, Node* nodes) {
+    if (nodes[index_node_used].chunks == NULL || nodes[index_node_used].chunks->head == NULL) {
         return; // No chunks to remove
     }
 
-    Chunk* current = node->chunks->head;
+    Chunk* current = nodes[index_node_used].chunks->head;
     Chunk* prev = NULL;
 
     // Traverse the list to find the chunk with the given chunk_id
@@ -91,7 +108,7 @@ void remove_chunk_from_node(Node* node, int chunk_id) {
             // Found the chunk, remove it from the list
             if (prev == NULL) {
                 // The chunk is the first in the list
-                node->chunks->head = current->next;
+                nodes[index_node_used].chunks->head = current->next;
             } else {
                 // The chunk is in the middle or at the end of the list
                 prev->next = current->next;
@@ -109,11 +126,11 @@ void remove_chunk_from_node(Node* node, int chunk_id) {
     }
 }
 
-void remove_shared_chunk_from_nodes(Node** nodes_used, int num_of_nodes_used, int chunk_id) {
+void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes) {
     // Remove the chunk from each node
     for (int i = 0; i < num_of_nodes_used; i++) {
-        printf("Remove chunk %d from node %d\n", chunk_id, nodes_used[i]->id);
-        remove_chunk_from_node(nodes_used[i], chunk_id);
+        printf("Remove chunk %d from node %d\n", chunk_id, nodes_used[i]);
+        remove_chunk_from_node(nodes_used[i], chunk_id, nodes);
     }
 }
 
@@ -150,7 +167,7 @@ void print_all_chunks(Node* nodes, int num_nodes) {
                 printf("Number of Nodes Used: %d / ", current_chunk->num_of_nodes_used);
                 printf("Nodes Holding This Chunk: ");
                 for (int j = 0; j < current_chunk->num_of_nodes_used; j++) {
-                    printf("%d ", current_chunk->nodes_used[j]->id);
+                    printf("%d ", current_chunk->nodes_used[j]);
                 }
                 printf("\n");
                 current_chunk = current_chunk->next;
@@ -614,7 +631,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     *K = -1;
 
     // 1. Get system saturation
-    //~ double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, *total_remaining_size);    
+    double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, *total_remaining_size);    
     #ifdef PRINT
     //~ printf("System saturation = %f\n", system_saturation);
     printf("Data size = %f\n", size);
@@ -721,74 +738,69 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         #endif
         
         // Compute score with % progress
-        //~ double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
-        //~ double total_progress_size_score = max_size_score - min_size_score;
-        //~ double totagdb --argsl_progress_replication_and_write_time = max_replication_and_write_time - min_replication_and_write_time;
-        //~ #ifdef PRINT
-        //~ printf("Progresses are %f %f %f\n", total_progress_storage_overhead, total_progress_size_score, total_progress_replication_and_write_time);
-        //~ #endif
-        //~ double time_score = 0;
-        //~ double space_score = 0;
-        //~ double total_score = 0;
-        //~ double max_score = -DBL_MAX;
-        //~ int idx = 0;
+        double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
+        double total_progress_size_score = max_size_score - min_size_score;
+        double total_progress_replication_and_write_time = max_replication_and_write_time - min_replication_and_write_time;
+        #ifdef PRINT
+        printf("Progresses are %f %f %f\n", total_progress_storage_overhead, total_progress_size_score, total_progress_replication_and_write_time);
+        #endif
+        double time_score = 0;
+        double space_score = 0;
+        double total_score = 0;
+        double max_score = -DBL_MAX;
+        int idx = 0;
         
         int best_index = -1;
         
         // Getting combination with best score using pareto front progress
-        //~ for (i = 0; i < pareto_count; i++) {
-            //~ idx = pareto_indices[i];
-            //~ if (total_progress_replication_and_write_time > 0) {  // In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
-                //~ time_score = 100 - ((combinations[idx]->replication_and_write_time - min_replication_and_write_time)*100)/total_progress_replication_and_write_time;
-            //~ }
+        for (i = 0; i < pareto_count; i++) {
+            idx = pareto_indices[i];
+            if (total_progress_replication_and_write_time > 0) {  // In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
+                time_score = 100 - ((combinations[idx]->replication_and_write_time - min_replication_and_write_time)*100)/total_progress_replication_and_write_time;
+            }
             
-            //~ if (total_progress_storage_overhead > 0) {
-                //~ space_score = 100 - ((combinations[idx]->storage_overhead - min_storage_overhead)*100)/total_progress_storage_overhead;
-            //~ }
-            //~ if (total_progress_size_score > 0) {
-                //~ space_score += 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
-            //~ }
+            if (total_progress_storage_overhead > 0) {
+                space_score = 100 - ((combinations[idx]->storage_overhead - min_storage_overhead)*100)/total_progress_storage_overhead;
+            }
+            if (total_progress_size_score > 0) {
+                space_score += 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
+            }
 
-            //~ // first idea
-            //~ // total_score = time_score + (space_score/2.0)*system_saturation;
+            // first idea
+            total_score = time_score + (space_score/2.0)*system_saturation;
             
-            //~ // alternative idea
-            //~ total_score = (1 - system_saturation)*time_score + space_score/2.0;
+            // alternative idea
+            // total_score = (1 - system_saturation)*time_score + space_score/2.0;
             
-            //~ if (max_score < total_score) { // Higher score the better
-                //~ max_score = total_score;
-                //~ best_index = idx;
-            //~ }
+            if (max_score < total_score) { // Higher score the better
+                max_score = total_score;
+                best_index = idx;
+            }
+        }
+        
+        //~ // Getting combination with best score using 3D pareto knee bend angle max
+        //~ // TODO if we keep this ne need to compute system saturation
+        //~ double knee_point[3];
+        //~ #ifdef PRINT
+        //~ printf("max_time_index %d, max_saturation_index %d pareto_count %d\n", max_time_index, max_saturation_index, pareto_count);
+        //~ #endif
+        //~ if (pareto_count == 1) {
+            //~ best_index = pareto_indices[0];
         //~ }
-        
-        // Getting combination with best score using 3D pareto knee bend angle max todo use threshold?
-        // TODO if we keep this ne need to compute system saturation
-        double knee_point[3];
-        
-        #ifdef PRINT
-        printf("max_time_index %d, max_saturation_index %d pareto_count %d\n", max_time_index, max_saturation_index, pareto_count);
-        #endif
-        
-        if (pareto_count == 1) {
-            best_index = pareto_indices[0];
-        }
-        else {
-            best_index = pareto_indices[find_knee_point_3d(pareto_front, pareto_count, knee_point, max_time_index, max_saturation_index)];
-        }
-         //~ printf("0.5\n"); fflush(stdout);
-        #ifdef PRINT
-        printf("Knee Point: %d (%.2f, %.2f, %.2f)\n", best_index, knee_point[0], knee_point[1], knee_point[2]);
-        printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
-        printf("..\n");
-        #endif
+        //~ else {
+            //~ best_index = pareto_indices[find_knee_point_3d(pareto_front, pareto_count, knee_point, max_time_index, max_saturation_index)];
+        //~ }
+        //~ #ifdef PRINT
+        //~ printf("Knee Point: %d (%.2f, %.2f, %.2f)\n", best_index, knee_point[0], knee_point[1], knee_point[2]);
+        //~ printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
+        //~ printf("..\n");
+        //~ #endif
 
         *N = combinations[best_index]->num_elements;
         *K = combinations[best_index]->K;
         gettimeofday(&end, NULL);
         
         double total_upload_time_to_print = 0;
-        //~ int index_min_size = -1;
-        //~ double min_size = DBL_MAX;
         
         // Writing down the results
         if (*N != -1 && *K != -1) {
@@ -798,6 +810,8 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             *total_storage_used += chunk_size*(*N);
             *total_remaining_size -= chunk_size*(*N);
             *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
+            int* used_combinations = malloc(*N * sizeof(int));
+            
             for (i = 0; i < combinations[best_index]->num_elements; i++) {
                 total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
                 
@@ -808,24 +822,15 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
 
                 combinations[best_index]->nodes[i]->storage_size -= chunk_size;
                 
-                //~ if (combinations[best_index]->nodes[i]->storage_size < min_size) {
-                    //~ min_size = combinations[best_index]->nodes[i]->storage_size;
-                    //~ index_min_size = i;
-                //~ }
-                //~ printf("Used node %d for data %d\n", combinations[best_index]->nodes[i]->id, data_id);
+                used_combinations[i] = combinations[best_index]->nodes[i]->id;
             }
             
-            // Adding the chunks in the chosen nodes
-            add_shared_chunks_to_nodes(combinations[best_index]->nodes, combinations[best_index]->num_elements, data_id, chunk_size);
+            // Adding the chunks in the chosen nodes ids
+            add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes);
             
-            //~ printf("1.\n"); fflush(stdout);
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             *total_upload_time += total_upload_time_to_print;
-            //~ printf("2.\n"); fflush(stdout);
-            // Finding the new min in the combination and updating min_remaining_size
-            //~ if (best_index == 1004) {            printf("index min size is %d\n", index_min_size); }
-            //~ combinations[best_index]->min_remaining_size = combinations[best_index]->nodes[index_min_size]->storage_size;
-            //~ if (best_index == 1004) {            printf("min remaining size is now %f\n", combinations[best_index]->min_remaining_size); }
+            free(used_combinations);
         }
     }
     else {
@@ -909,13 +914,18 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
             *total_N += *N;
             *total_storage_used += chunk_size*(*N);
             *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
+            
+            int* used_combinations = malloc(*N * sizeof(int));
+            
             for (i = 0; i < combinations[best_index]->num_elements; i++) {
                 total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
-                combinations[best_index]->nodes[i]->storage_size -= chunk_size;                
+                combinations[best_index]->nodes[i]->storage_size -= chunk_size;  
+                
+                used_combinations[i] = combinations[best_index]->nodes[i]->id;              
             }
             
             // Adding the chunks in the chosen nodes
-            add_shared_chunks_to_nodes(combinations[best_index]->nodes, combinations[best_index]->num_elements, data_id, chunk_size);
+            add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes);
 
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             *total_upload_time += total_upload_time_to_print;
@@ -1351,7 +1361,7 @@ int main(int argc, char *argv[]) {
     
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
-        if (i%10000 == 0) {
+        if (i%22000 == 0) {
             printf("Data %d/%d of size %f\n", i, count, sizes[i]);
         }
         

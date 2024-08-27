@@ -105,9 +105,17 @@ df1['algorithm'] = df1['algorithm'].str.replace('_reduced_complexity', '_rc')
 df1['algorithm'] = df1['algorithm'].str.replace('alg1', 'Min_Storage')
 df1['algorithm'] = df1['algorithm'].str.replace('alg4', 'D-rex')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_three_replications', '3_replications')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfs_3_replication_c', 'hdfs_3_replications')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'HDFS_RS(3,2)')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_6_3', 'HDFS_RS(6,3)')
 df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
+df1['algorithm'] = df1['algorithm'].str.replace('Min_Storage_c', 'Min_Storage')
+df1['algorithm'] = df1['algorithm'].str.replace('alg_bogdan', 'Greedy_Load_Balancing')
+df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4_c', 'GlusterFS')
+df1['algorithm'] = df1['algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS_RS(3,2)')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS_RS(6,3)')
+df1['algorithm'] = df1['algorithm'].str.replace('random_c', 'Random')
 
 # Define colors
 colors = {
@@ -116,8 +124,11 @@ colors = {
     'alg3': 'blue',
     'D-rex': 'blue',
     'random': 'green',
+    'Random': 'green',
     'hdfs': 'green',
     '3_replications': 'red',
+    'hdfs_3_replications': 'red',
+    'Greedy_Load_Balancing': 'green',
     'alg2_rc': 'blue',
     'alg3_rc': 'blue',
     'alg4_rc': 'blue',
@@ -251,6 +262,16 @@ plt.tight_layout()
 plt.savefig(folder_path + '/total_chunking_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
 # Plotting mean chunking time
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['mean_chunking_time'] + df1['mean_parralelized_upload_time'], color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Mean Upload + Replication Time')
+plt.title('Mean Upload + Replication Time (s)')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/mean_chunking_and_parallel_upload_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# Plotting mean chunking time + paralel
 plt.figure(figsize=(10, 6))
 plt.bar(df1['algorithm'], df1['mean_chunking_time'], color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
