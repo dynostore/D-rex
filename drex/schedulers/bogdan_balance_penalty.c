@@ -77,7 +77,7 @@ for (i = 0; i < K; i++) {
  * Idea that you have a penalty for nodes that need to store a chunk and a penalty for nodes that don't and you need to add all of them up to obtain the overall penalty
  **/
 //~ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size, DataList* list, int data_id) {
-void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliability_threshold, double S, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, double* total_remaining_size, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id) {
+void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliability_threshold, double S, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, double* total_remaining_size, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id, int max_N) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -101,9 +101,9 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
     double avg_free_capacity = get_avg_free_storage(number_of_nodes, nodes); // TODO: do this when adding data to a node so we don't have to compute it for every single call of the function ?
     //~ printf("avg_free_capacity = %f\n", avg_free_capacity);
 
-    for (P = 1; P < number_of_nodes - 1; P++) {
+    for (P = 1; P < max_N - 1; P++) {
         if (min_D == -1) { // We only increase P if we haven't found a solution yet
-            for (D = 2; D < number_of_nodes - P; D++) {
+            for (D = 2; D < max_N - P; D++) {
                 //~ printf("P = %d, D= %d\n", P, D);
                 
                 if (!is_P_and_D_combination_possible(D, P, nodes, reliability_threshold, number_of_nodes)) {

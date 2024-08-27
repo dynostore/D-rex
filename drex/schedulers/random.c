@@ -101,7 +101,7 @@ int get_random_excluding_exclusions(int number_of_nodes, int* already_looked_at,
 
 // Function to return a pair N and K that matches the reliability threshold
 //~ void random_schedule(int number_of_nodes, double* reliability_of_nodes, double reliability_threshold, double* node_sizes, double file_size, int** set_of_nodes_chosen, int* N, int* K, double* updated_node_sizes) {
-void random_schedule(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id) {
+void random_schedule(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id, int max_N) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -119,7 +119,8 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
     
     while (!solution_found) {
-        *N = get_random_excluding_exclusions(number_of_nodes, already_looked_at, already_looked_at_count);
+        //~ *N = get_random_excluding_exclusions(number_of_nodes, already_looked_at, already_looked_at_count);
+        *N = get_random_excluding_exclusions(max_N, already_looked_at, already_looked_at_count);
         if (*N == -1) {
             free(set_of_nodes_chosen);
             free(reliability_of_nodes_chosen);
@@ -135,7 +136,7 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
         *K = rand() % (*N - 1) + 1;
         set_of_nodes_chosen = malloc(*N * sizeof(int));
         //~ printf("N %d K %d\n", *N, *K);  
-        get_random_sample(set_of_nodes_chosen, number_of_nodes, *N);
+        get_random_sample(set_of_nodes_chosen, max_N, *N);
         reliability_of_nodes_chosen = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen, *N);
 
         //~ printf("Selected nodes: ");
@@ -163,12 +164,12 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
         //~ }
         int decrease_K = 0;
         while (!reliability_threshold_met_accurate(*N, *K, reliability_threshold, reliability_of_nodes_chosen)) {
-            if (decrease_K == number_of_nodes - 1) { break; } // TODO fix this
-            *N = rand() % (number_of_nodes - 1) + 2;
+            if (decrease_K == max_N - 1) { break; } // TODO fix this
+            *N = rand() % (max_N - 1) + 2;
             *K = rand() % (*N - 1 - decrease_K) + 1;
             free(reliability_of_nodes_chosen);
             free(set_of_nodes_chosen);
-            get_random_sample(set_of_nodes_chosen, number_of_nodes, *N);
+            get_random_sample(set_of_nodes_chosen, max_N, *N);
             reliability_of_nodes_chosen = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen, *N);
             decrease_K++;
         }

@@ -6,19 +6,19 @@
 #include <../schedulers/algorithm4.h>
 #include "../utils/prediction.h"
 
-void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id) {
+void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id, int max_N) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
-    //~ printf("min storage\n");
     *N = -1;
     *K = -1;
-        
+
     // Sort indices based on bandwidth in descending order
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
     //~ print_nodes(nodes, number_of_nodes);
     int temp_N = 0;
-    for (temp_N = number_of_nodes; temp_N > 2; temp_N--) {
+    //~ for (temp_N = number_of_nodes; temp_N > 2; temp_N--) {
+    for (temp_N = max_N; temp_N > 2; temp_N--) {
         int* set_of_nodes_chosen_temp = (int*)malloc(temp_N * sizeof(int));
         if (set_of_nodes_chosen_temp == NULL) {
             perror("Failed to allocate memory");
@@ -28,7 +28,6 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
         // Select the top N nodes
         for (int i = 0; i < temp_N; i++) {
             set_of_nodes_chosen_temp[i] = i;
-            //~ printf("%d\n", i);
         }
         
         double* reliability_of_nodes_chosen = (double*)malloc(temp_N * sizeof(double));
@@ -46,7 +45,6 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
         //~ int K = get_max_K_from_reliability_threshold_and_nodes_chosen(N, reliability_threshold, reliability_of_nodes_chosen);
         *K = get_max_K_from_reliability_threshold_and_nodes_chosen(temp_N, reliability_threshold, 0, 0, reliability_of_nodes_chosen);
         
-        //~ printf("N %d K %d\n", temp_N, *K);
         if (*K != -1) {
             int found = 1;
             for (int i = 0; i < temp_N; i++) {

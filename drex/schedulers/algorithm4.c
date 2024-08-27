@@ -614,7 +614,7 @@ void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pa
     }
 }
 
-void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size, DataList* list, int data_id) {
+void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size, DataList* list, int data_id, int max_N) {
     int i = 0;
     int j = 0;
     double chunk_size = 0;
@@ -636,18 +636,17 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     //~ printf("System saturation = %f\n", system_saturation);
     printf("Data size = %f\n", size);
     #endif
-    //~ printf("0.\n"); fflush(stdout);
+    //~ printf("0 max_N %d.\n", max_N); fflush(stdout);
     //~ printf("In alg4 %d nodes\n", number_of_nodes);
     //~ qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
     //~ print_nodes(nodes, number_of_nodes);
     
     // 2. Iterates over a range of nodes combination
     for (i = 0; i < total_combinations; i++) {
-        *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability, combinations[i]->probability_failure);
+        if (max_N < combinations[i]->num_elements) { combinations[i]->K = -1; continue; }
+        //~ printf("%d\n", combinations[i]->num_elements);
         
-        #ifdef PRINT
-        printf("Max K for combination %d is %d\n", i, *K);
-        #endif
+        *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability, combinations[i]->probability_failure);
         
         // Reset from last expe the values used in pareto front
         combinations[i]->storage_overhead = 0.0;
@@ -655,11 +654,11 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         combinations[i]->replication_and_write_time = 0.0;
         combinations[i]->transfer_time_parralelized = 0.0;
         combinations[i]->chunking_time = 0.0;
-        //~ combinations[i]->storage_overhead = DBL_MAX;
-        //~ combinations[i]->size_score = DBL_MAX;
-        //~ combinations[i]->replication_and_write_time = DBL_MAX;
-        //~ combinations[i]->transfer_time_parralelized = DBL_MAX;
-        //~ combinations[i]->chunking_time = DBL_MAX;
+
+        #ifdef PRINT
+        printf("Max K for combination %d is %d\n", i, *K);
+        #endif
+        
         combinations[i]->K = *K;
         
         if (*K != -1) {
@@ -670,7 +669,6 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             
             valid_size = true;
             for (j = 0; j < combinations[i]->num_elements; j++) {
-                //~ printf("node %d %f vs %f\n", combinations[i]->nodes[j]->id, combinations[i]->nodes[j]->storage_size, chunk_size);
                 if (combinations[i]->nodes[j]->storage_size - chunk_size < 0) {
                     valid_size = false;
                     break;
@@ -816,7 +814,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
                 total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
                 
                 if (combinations[best_index]->nodes[i]->storage_size - chunk_size < 0) {
-                    printf("Error node %d memory %f chunk size %f best_index %d\n", combinations[best_index]->nodes[i]->id, combinations[best_index]->nodes[i]->storage_size, chunk_size, best_index);
+                    printf("Error node %d memory %f chunk size %f K %d best_index %d\n", combinations[best_index]->nodes[i]->id, combinations[best_index]->nodes[i]->storage_size, chunk_size, *K, best_index);
                     exit(1);
                 }
 
@@ -841,7 +839,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     *total_scheduling_time += seconds + useconds/1000000.0;
 }
 
-void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size, DataList* list, int data_id) {
+void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size, DataList* list, int data_id, int max_N) {
     int i = 0;
     int j = 0;
     double chunk_size = 0;
@@ -860,6 +858,7 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
         
     // 1. Iterates over a range of nodes combination
     for (i = 0; i < total_combinations; i++) {
+        if (max_N < combinations[i]->num_elements) { continue; }
         *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability, combinations[i]->probability_failure);
         #ifdef PRINT
         printf("Max K for combination %d is %d\n", i, *K);
@@ -1112,8 +1111,8 @@ void print_nodes(Node *nodes, int num_nodes) {
 
 int main(int argc, char *argv[]) {
     int i = 0;
-    if (argc < 10) {
-        fprintf(stderr, "Usage: %s <input_node> <input_data> <data_duration_on_system> <reliability_threshold> <number_of_repetition> <algorithm> <input_supplementary_node> <remove_node_pattern> <fixed_random_seed>\n", argv[0]);
+    if (argc < 11) {
+        fprintf(stderr, "Usage: %s <input_node> <input_data> <data_duration_on_system> <reliability_threshold> <number_of_repetition> <algorithm> <input_supplementary_node> <remove_node_pattern> <fixed_random_seed> <max_N>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -1129,16 +1128,17 @@ int main(int argc, char *argv[]) {
     int remove_node_pattern = atoi(argv[8]); // 0 for no removal, 1 for removal randomly, 2 for following failure rate
     unsigned int seed = atoi(argv[9]);  // We fix the seed so all algorithm have the same one
     srand(seed); // Set the seed up
-
+    int max_N = atoi(argv[10]); // 0 if no max_N, otherwise if we set up a max_N
+    
     // For certain algorithms there are additional args
     int RS1;
     int RS2;
     if (algorithm == 6 || algorithm == 7) {
-        RS1 = atoi(argv[10]);
-        RS2 = atoi(argv[11]);
+        RS1 = atoi(argv[11]);
+        RS2 = atoi(argv[12]);
     }
     
-    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern);
+    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d. Seed is %d. Max_N is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern, seed, max_N);
     
     DataList list;
     init_list(&list);
@@ -1359,6 +1359,10 @@ int main(int argc, char *argv[]) {
     double input_data_sum_of_size_already_stored = 0;
     int next_node_to_add_index = 0;
     
+    if (max_N == 0) { // max_N is just the number of nodes if we don't use it
+        max_N = current_number_of_nodes;
+    }
+    
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
         if (i%22000 == 0) {
@@ -1375,6 +1379,10 @@ int main(int argc, char *argv[]) {
             global_current_data_value = i;
             printf("Adding node %d\n", nodes[number_of_initial_nodes + next_node_to_add_index].id);
             current_number_of_nodes += 1;
+            
+            if (max_N == 0) { // max_N is just the number of nodes if we don't use it
+                max_N = current_number_of_nodes;
+            }
             
             total_storage_size += total_storage_supplementary_nodes[next_node_to_add_index];
             if (max_node_size < max_node_size_supplementary_nodes[next_node_to_add_index]) {
@@ -1402,6 +1410,11 @@ int main(int argc, char *argv[]) {
                 removed_node_index = remove_random_node(current_number_of_nodes, nodes);
                 reschedule_lost_chunks(&nodes[removed_node_index]); // TODO
                 current_number_of_nodes -=1;
+                
+                if (max_N == 0) { // max_N is just the number of nodes if we don't use it
+                    max_N = current_number_of_nodes;
+                }
+    
                 qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
             }
             if (remove_node_pattern == 2) {
@@ -1410,6 +1423,11 @@ int main(int argc, char *argv[]) {
                     print_all_chunks(nodes, current_number_of_nodes);
                     reschedule_lost_chunks(&nodes[removed_node_index]); // TODO
                     current_number_of_nodes -=1;
+                    
+                    if (max_N == 0) { // max_N is just the number of nodes if we don't use it
+                        max_N = current_number_of_nodes;
+                    }
+                    
                     qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition); // This is messing with the chunks for some reason idk why Maybe we need to just put the ids then and manually add them and remove them. So like we dd before and just go though the node at the removal and individually remove the chunks
                     
                     printf("current_number_of_nodes after removal = %d\n", current_number_of_nodes);
@@ -1449,13 +1467,13 @@ int main(int argc, char *argv[]) {
         find_closest(sizes[i], &nearest_size, &closest_index);
         
         if (algorithm == 0) {
-            random_schedule(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i);
+            random_schedule(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i, max_N);
         }
         else if (algorithm == 1) {
-            min_storage(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i);
+            min_storage(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i, max_N);
         }
         else if (algorithm == 3) {
-            hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i);
+            hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i, max_N);
         }
         else if (algorithm == 6) {
             hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, i, RS1, RS2);
@@ -1465,21 +1483,21 @@ int main(int argc, char *argv[]) {
         }
         
         else if (algorithm == 2) {
-            algorithm2(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
+            algorithm2(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, nearest_size, &list, i, max_N);
         }
         else if (algorithm == 4) {
-            algorithm4(current_number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i);
+            algorithm4(current_number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, i, max_N);
         }
         else if (algorithm == 5) {
-            balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, &total_remaining_size, closest_index, models, nearest_size, &list, i);
+            balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, &total_remaining_size, closest_index, models, nearest_size, &list, i, max_N);
         }
         else {
             printf("Algorithm %d not valid\n", algorithm);
         }
         
-        #ifdef PRINT
+        //~ #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        #endif
+        //~ #endif
         
         //~ print_all_chunks(nodes, current_number_of_nodes);
          

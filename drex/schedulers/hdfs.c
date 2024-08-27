@@ -39,7 +39,7 @@ void remove_last_node(int** set_of_nodes_chosen, int* num_nodes_chosen) {
     }
 }
 
-void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id) {
+void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id, int max_N) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -165,13 +165,11 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
     if (rest_to_store != 0) { // We have leftovers to put on a fourth node or more
         all_good = false;
         for (j = 0; j < number_of_nodes; j++) {
-            //~ printf("j = %d\n", j);
             i = j;
             bool already_chosen = false;
             for (k = 0; k < num_nodes_chosen; k++) {
                 if (i == set_of_nodes_chosen[k]) {
                     already_chosen = true;
-                    //~ printf("break\n");
                     break;
                 }
             }
@@ -193,6 +191,20 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
                 
                 *N += 1;
                 *K += 1;
+                
+                if (*N > max_N) {
+                    free(reliability_of_nodes_chosen);
+                    free(set_of_nodes_chosen);
+                    free(size_to_stores);
+                    *K = -1;
+                    *N = -1;
+                    gettimeofday(&end, NULL);
+                    seconds  = end.tv_sec  - start.tv_sec;
+                    useconds = end.tv_usec - start.tv_usec;
+                    *total_scheduling_time += seconds + useconds/1000000.0;
+                    return;
+                }
+                    
 
                 if (reliability_threshold_met_accurate(*N, *K, reliability_threshold, reliability_of_nodes_chosen)) {
                     if (rest_to_store <= nodes[i].storage_size) {
