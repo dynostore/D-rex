@@ -1,6 +1,7 @@
 # python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_used_nodes_MEVA_merged_365_ _20
 # python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_unreliable_nodes_MEVA_merged_365_ _250
 # python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_used_nodes_MEVA_merged_365_ _250
+# python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_used_nodes_MEVA_merged_365_ _25_max6
 
 import os
 import pandas as pd
@@ -32,6 +33,7 @@ def count_decimal_places(value):
 folder_prefix = sys.argv[1]
 folder_suffix = sys.argv[2]
 
+print(folder_suffix)
 # Base directory where your folders are located
 base_dir = 'plot/drex_only'
 # ~ base_dir = 'plot/drex_only/with_old_strat_26_08'
@@ -97,6 +99,7 @@ for metric in metrics_to_plot:
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS_RS(3,2)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS_RS(6,3)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS_RS(4,2)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
 
     # Sort the DataFrame by Reliability Threshold in increasing order

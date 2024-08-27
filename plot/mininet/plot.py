@@ -50,6 +50,7 @@ if is_int(sys.argv[6]):
 else:
     input_data = sys.argv[6]
     number_of_loops = int(sys.argv[7])
+    max_N = int(sys.argv[8])
     input_data_to_print = input_data.split('/')[-1]
     input_data_to_print = input_data_to_print.rsplit('.', 1)[0]
     # ~ number_input_data = count_lines_minus_one(input_data)
@@ -66,7 +67,7 @@ print(number_input_data, "input data")
 input_nodes_to_print = input_nodes.split('/')[-1]
 input_nodes_to_print = input_nodes_to_print.rsplit('.', 1)[0]
 
-folder_path = "plot/" + mode + "/" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(number_of_loops)
+folder_path = "plot/" + mode + "/" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(number_of_loops) + "_max" + str(max_N)
 create_folder(folder_path)
 
 if mode != "mininet" and mode != "drex_only":
@@ -115,6 +116,7 @@ df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4_c', 'GlusterFS')
 df1['algorithm'] = df1['algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS_RS(3,2)')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS_RS(6,3)')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS_RS(4,2)')
 df1['algorithm'] = df1['algorithm'].str.replace('random_c', 'Random')
 
 # Define colors
@@ -133,6 +135,7 @@ colors = {
     'alg3_rc': 'blue',
     'alg4_rc': 'blue',
     'HDFS_RS(3,2)': 'red',
+    'HDFS_RS(4,2)': 'red',
     'HDFS_RS(6,3)': 'red',
     'RS(10,4)': 'red',
     'vandermonders_3_2': 'red',
