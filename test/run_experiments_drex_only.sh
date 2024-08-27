@@ -74,6 +74,10 @@ else
     echo "Input nodes: $input_nodes / Input data: $number_of_data data of size $data_size"
 fi
 
+remove_node_pattern=$7
+fixed_random_seed=$8
+max_N=$9
+
 # Choosing our alg4 version
 if [ $number_nodes -ge 1 ]; then
     alg4=alg4_rc
@@ -82,15 +86,16 @@ else
 fi
 
 make
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} 0 0
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 1 ${add_data_pattern} 0 0
-# ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 2 ${add_data_pattern} 0 0
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 5 ${add_data_pattern} 0 0
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 3 ${add_data_pattern} 0 0
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 7 ${add_data_pattern} 0 0 6 4
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} 0 0 3 2
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} 0 0 6 3
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 0 ${add_data_pattern} 0 0
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 1 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+# ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 2 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 5 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 3 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 7 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 6 4
+#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 3 2
+#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 6 3
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 4 2
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 0 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
 
 #~ # for alg in alg1 alg2 ${alg4} random hdfs_three_replications; do
 #~ # for alg in alg1 ${alg4} random hdfs_three_replications; do
@@ -136,7 +141,7 @@ make
 
 # Plotting results
 if [[ "$4" == *.csv ]]; then
-    python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
+    python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N))
     #~ python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
 else
     #~ python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))

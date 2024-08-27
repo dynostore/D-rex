@@ -1495,9 +1495,11 @@ int main(int argc, char *argv[]) {
             printf("Algorithm %d not valid\n", algorithm);
         }
         
-        //~ #ifdef PRINT
+        #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        //~ #endif
+        #endif
+        
+        if (N > max_N) { printf("error N > max_N\n"); exit(1); }
         
         //~ print_all_chunks(nodes, current_number_of_nodes);
          

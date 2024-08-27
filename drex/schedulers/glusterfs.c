@@ -124,10 +124,10 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
     
     // Update
     
-    for (int i = 0; i < *N; i++) {
-        printf("%d ", nodes[set_of_nodes_chosen_temp[i]].id);
-    }
-    printf("\n");
+    //~ for (int i = 0; i < *N; i++) {
+        //~ printf("%d ", nodes[set_of_nodes_chosen_temp[i]].id);
+    //~ }
+    //~ printf("\n");
     
     //~ if (found) {
                 //~ *N = temp_N;
