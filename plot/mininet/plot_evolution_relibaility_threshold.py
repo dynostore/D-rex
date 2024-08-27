@@ -1,5 +1,6 @@
 # python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_used_nodes_MEVA_merged_365_ _20
 # python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_unreliable_nodes_MEVA_merged_365_ _250
+# python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_used_nodes_MEVA_merged_365_ _250
 
 import os
 import pandas as pd
@@ -14,7 +15,7 @@ def create_folder(folder_path):
     try:
         # Create the folder if it does not exist
         os.makedirs(folder_path, exist_ok=True)
-        print(f"Folder '{folder_path}' is ready.")
+        # ~ print(f"Folder '{folder_path}' is ready.")
     except Exception as e:
         print(f"An error occurred: {e}")
 
@@ -32,10 +33,11 @@ folder_prefix = sys.argv[1]
 folder_suffix = sys.argv[2]
 
 # Base directory where your folders are located
-# ~ base_dir = 'plot/drex_only'
-base_dir = 'plot/drex_only/with_old_strat_26_08'
+base_dir = 'plot/drex_only'
+# ~ base_dir = 'plot/drex_only/with_old_strat_26_08'
 # Regular expression to extract reliability threshold from folder name
-threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix))
+# ~ threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix))
+threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix) + r'$')
 # List of metrics to plot
 metrics_to_plot = ['total_chunking_time', 'total_storage_used', 'total_parralelized_upload_time', 'mean_storage_used', 'total_upload_time', 'number_of_data_stored', 'combined_mean_upload_chunk', 'combined_total_upload_chunk']
 markers = ['o', 's', 'D', '^', 'v', '>', '<', 'p', 'h', '*']
@@ -49,10 +51,13 @@ for metric in metrics_to_plot:
     # Traverse through each folder
     for folder in os.listdir(base_dir):
         folder_path = os.path.join(base_dir, folder)
+        # ~ print(folder_path)
         if os.path.isdir(folder_path):
+            # ~ print(folder_path)
             # Extract reliability threshold from the folder name
             match = threshold_regex.search(folder)
             if match:
+                print(folder_path)
                 reliability_threshold = float(match.group(1))
                 index = count_decimal_places(reliability_threshold)
 
