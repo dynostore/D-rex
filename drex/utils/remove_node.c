@@ -5,39 +5,42 @@
 #include <remove_node.h>
 #include <time.h>
 
-void reschedule_lost_chunks(Node* removed_node) {
-    //~ printf("Start of reschedule_lost_chunks for node %d\n", removed_node->id);
-    //~ int i = 0;
-    //~ int j = 0;
-    //~ if (removed_node->chunks->head != NULL) {
-        //~ Chunk* current_chunk = removed_node->chunks->head;
-        //~ while (current_chunk != NULL) {
-            //~ printf("Chunk ID: %d / Size: %f / ", current_chunk->chunk_id, current_chunk->chunk_size);
-            //~ printf("Number of Nodes Used: %d / ", current_chunk->num_of_nodes_used);
-            //~ printf("Nodes Holding This Chunk: ");
-            //~ printf("Remove chunk %d\n", current_chunk->chunk_id);
-            //~ for (i = 0; i < current_chunk->num_of_nodes_used; i++) {
-                //~ printf("%d ", current_chunk->nodes_used[i]);
-            //~ }
-            //~ printf("\n");
-
+void reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_nodes, double* total_remaining_size) {
+    printf("Start of reschedule_lost_chunks for node %d\n", removed_node->id);
+    int i = 0;
+    int j = 0;
+    if (removed_node->chunks->head != NULL) {
+        Chunk* current_chunk = removed_node->chunks->head;
+        while (current_chunk != NULL) {
+            printf("Remove chunk %d from:\n", current_chunk->chunk_id);
+            for (i = 0; i < current_chunk->num_of_nodes_used; i++) {
+                printf("%d ", current_chunk->nodes_used[i]);
+            }
+            printf("\n");
+            //~ exit(1);
+            
             // Find node to remove from
-            //~ for (j = 0; j <  current_chunk->nodes_used[i]
+            for (i = 0; i < current_chunk->num_of_nodes_used; i++) {
+                for (j = 0; j < number_of_nodes; j++) {
+                    if (nodes[j].id == current_chunk->nodes_used[i]) {
+                        // Remove space
+                        nodes[j].storage_size += current_chunk->chunk_size;
+                        *total_remaining_size += current_chunk->chunk_size;
+                        printf("Adding %f to node %d\n", current_chunk->chunk_size, nodes[j].id);
+                    }
+                }
+            }
             
-            //~ // Remove space
-            //~ for (i = 0; i < current_chunk->num_of_nodes_used; i++) {
-                //~ current_chunk->nodes_used[i]->storage_size += current_chunk->chunk_size;
-                //~ printf("Adding %f to node %d\n", current_chunk->chunk_size, current_chunk->nodes_used[i]->id);
-            //~ }
+            printf("total_remaining_size = %f\n", *total_remaining_size);
             
+            exit(1);
             // Remove chunks
-            //~ printf("Remove chunk %d\n", current_chunk->chunk_id);
-            //~ remove_shared_chunk_from_nodes(current_chunk->nodes_used, current_chunk->num_of_nodes_used, current_chunk->chunk_id);
-            //~ return;
-            // Would need to update total_storage_size and total_remaining_size if alg4 used them but it does not soo no need
+            remove_shared_chunk_from_nodes(current_chunk->nodes_used, current_chunk->num_of_nodes_used, current_chunk->chunk_id, nodes);
                         
-            //~ current_chunk = current_chunk->next;
-        //~ }
+            // Remove actually all chunks of these data and update all storage, even on nodes that did not lost the chunks because you'll need to recreate the cunks from scratch. So need to remove from all nodes all chunks lost and reschedule from 0 this data
+                        
+            current_chunk = current_chunk->next;
+        }
         
         // Call the algorithms again
         //~ current_chunk = removed_node->chunks->head;
@@ -49,7 +52,7 @@ void reschedule_lost_chunks(Node* removed_node) {
             
             //~ current_chunk = current_chunk->next;
         //~ }
-    //~ }
+    }
 }
 
 int check_if_node_failed(Node *node) {
@@ -66,18 +69,20 @@ int check_if_node_failed(Node *node) {
     }
 }
 
-int remove_random_node (int number_of_nodes, Node* node) {
+int remove_random_node (int number_of_nodes, Node* node, int* removed_node_id) {
     int random_number = rand() % (number_of_nodes);
     printf("Randomly chose node at index %d to fail\n", random_number);
     node[random_number].add_after_x_jobs = -1;
+    *removed_node_id = node[random_number].id;
     return random_number;
 }
 
-int remove_node_following_failure_rate (int number_of_nodes, Node* nodes) {
+int remove_node_following_failure_rate (int number_of_nodes, Node* nodes, int* removed_node_id) {
     for (int i = 0; i < number_of_nodes; i++) {
         if (check_if_node_failed(&nodes[i])) {
-            printf("Node at index %d: %d failed\n", i, nodes[i].id);
+            printf("Node %d failed\n", nodes[i].id);
             nodes[i].add_after_x_jobs = -1;
+            *removed_node_id = nodes[i].id;
             return i;
         }
     }

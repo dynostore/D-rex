@@ -62,36 +62,35 @@ void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_u
 
 // Function to add shared chunks to multiple nodes
 void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, double chunk_size, Node* nodes, int number_of_nodes) {
-    //~ // Add a separate chunk to each node
-    //~ int i = 0;
-    //~ int j = 0;
+    // Add a separate chunk to each node
+    int i = 0;
+    int j = 0;
     
-    //~ for (i = 0; i < num_of_nodes_used; i++) {
-        //~ for (j = 0; j < number_of_nodes; j++) {
-            //~ if (nodes[j].id == nodes_used[i]) {
-                //~ break;
-            //~ }
-        //~ }
-        // printf("Add chunk %d to node %d\n", chunk_id, nodes_used[i]->id);
-        //~ add_chunk_to_node(&nodes[j], chunk_id, chunk_size, num_of_nodes_used, nodes_used);
-    //~ }
+    for (i = 0; i < num_of_nodes_used; i++) {
+        for (j = 0; j < number_of_nodes; j++) {
+            if (nodes[j].id == nodes_used[i]) {
+                break;
+            }
+        }
+        printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
+        add_chunk_to_node(&nodes[j], chunk_id, chunk_size, num_of_nodes_used, nodes_used);
+    }
 }
 
 // Function to add shared chunks to multiple nodes
 void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores, Node* nodes, int number_of_nodes) {
-    //~ // Add a separate chunk to each node
-    //~ int i = 0;
-    //~ int j = 0;
+    int i = 0;
+    int j = 0;
     
-    //~ for (i = 0; i < num_of_nodes_used; i++) {
-        //~ for (j = 0; j < number_of_nodes; j++) {
-            //~ if (nodes[j].id == nodes_used[i]) {
-                //~ break;
-            //~ }
-        //~ }
-        // printf("Add chunk %d to node %d\n", chunk_id, nodes_used[i]->id);
-        //~ add_chunk_to_node(&nodes[j], chunk_id, size_to_stores[i], num_of_nodes_used, nodes_used);
-    //~ }
+    for (i = 0; i < num_of_nodes_used; i++) {
+        for (j = 0; j < number_of_nodes; j++) {
+            if (nodes[j].id == nodes_used[i]) {
+                break;
+            }
+        }
+        printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
+        add_chunk_to_node(&nodes[j], chunk_id, size_to_stores[i], num_of_nodes_used, nodes_used);
+    }
 }
 
 void remove_chunk_from_node(int index_node_used, int chunk_id, Node* nodes) {
@@ -820,6 +819,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
 
                 combinations[best_index]->nodes[i]->storage_size -= chunk_size;
                 
+                printf("Alg4 chose node %d\n", combinations[best_index]->nodes[i]->id);
                 used_combinations[i] = combinations[best_index]->nodes[i]->id;
             }
             
@@ -1363,6 +1363,9 @@ int main(int argc, char *argv[]) {
         max_N = current_number_of_nodes;
     }
     
+    printf("total_storage_size = %f\n", total_storage_size);
+    int removed_node_id = -1;
+    
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
         if (i%22000 == 0) {
@@ -1385,6 +1388,7 @@ int main(int argc, char *argv[]) {
             }
             
             total_storage_size += total_storage_supplementary_nodes[next_node_to_add_index];
+            printf("total_storage_size = %f\n", total_storage_size);
             if (max_node_size < max_node_size_supplementary_nodes[next_node_to_add_index]) {
                 max_node_size = max_node_size_supplementary_nodes[next_node_to_add_index];
                 printf("New max node size %f\n", max_node_size_supplementary_nodes[next_node_to_add_index]);
@@ -1402,13 +1406,18 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        printf("total_remaining_size = %f\n", total_remaining_size);
         /** Removing a node **/
         if (remove_node_pattern != 0) {
             printf("Node removal\n");
             global_current_data_value = i;
             if (remove_node_pattern == 1 && i == 10000) { // Remove a node at job 10000 randomly
-                removed_node_index = remove_random_node(current_number_of_nodes, nodes);
-                reschedule_lost_chunks(&nodes[removed_node_index]); // TODO
+                removed_node_index = remove_random_node(current_number_of_nodes, nodes, &removed_node_id);
+                
+                total_storage_size -= initial_node_sizes[removed_node_id];
+                printf("total_storage_size = %f\n", total_storage_size);
+                
+                reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &total_remaining_size); // TODO
                 current_number_of_nodes -=1;
                 
                 if (max_N == 0) { // max_N is just the number of nodes if we don't use it
@@ -1418,21 +1427,24 @@ int main(int argc, char *argv[]) {
                 qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
             }
             if (remove_node_pattern == 2) {
-                removed_node_index = remove_node_following_failure_rate(current_number_of_nodes, nodes);
+                removed_node_index = remove_node_following_failure_rate(current_number_of_nodes, nodes, &removed_node_id);
                 if (removed_node_index != -1) {
+                    
+                    total_storage_size -= initial_node_sizes[removed_node_id];
+                    printf("total_storage_size = %f\n", total_storage_size);
+                
                     print_all_chunks(nodes, current_number_of_nodes);
-                    reschedule_lost_chunks(&nodes[removed_node_index]); // TODO
+                    reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &total_remaining_size); // TODO
                     current_number_of_nodes -=1;
                     
                     if (max_N == 0) { // max_N is just the number of nodes if we don't use it
                         max_N = current_number_of_nodes;
                     }
                     
-                    qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition); // This is messing with the chunks for some reason idk why Maybe we need to just put the ids then and manually add them and remove them. So like we dd before and just go though the node at the removal and individually remove the chunks
+                    qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition); // This is messing with the chunks for some reason idk why Maybe we need to just put the ids then and manually add them and remove them. So like we did before and just go though the node at the removal and individually remove the chunks
                     
                     printf("current_number_of_nodes after removal = %d\n", current_number_of_nodes);
                     print_all_chunks(nodes, current_number_of_nodes);
-                    exit(1);
                 }
             }
             else {
@@ -1495,9 +1507,9 @@ int main(int argc, char *argv[]) {
             printf("Algorithm %d not valid\n", algorithm);
         }
         
-        #ifdef PRINT
+        //~ #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        #endif
+        //~ #endif
         
         if (N > max_N) { printf("error N > max_N\n"); exit(1); }
         

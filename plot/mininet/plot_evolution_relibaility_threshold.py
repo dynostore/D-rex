@@ -59,12 +59,13 @@ for metric in metrics_to_plot:
             # Extract reliability threshold from the folder name
             match = threshold_regex.search(folder)
             if match:
-                print(folder_path)
+                # ~ print(folder_path)
                 reliability_threshold = float(match.group(1))
                 index = count_decimal_places(reliability_threshold)
 
                 # Read all CSV files in the folder
                 for file in os.listdir(folder_path):
+                    # ~ print("read", file);
                     if file.endswith('.csv'):
                         file_path = os.path.join(folder_path, file)
                         df = pd.read_csv(file_path, quotechar='"', doublequote=True, skipinitialspace=True)
