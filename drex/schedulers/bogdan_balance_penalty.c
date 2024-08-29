@@ -179,7 +179,7 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         }
         
         // Adding the chunks in the chosen nodes
-        add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes);
+        add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes, S);
 
         *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
         

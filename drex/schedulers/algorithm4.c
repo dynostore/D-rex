@@ -20,6 +20,15 @@
 
 int global_current_data_value;
 
+double get_total_remaining_size(Node* nodes, int current_number_of_nodes) {
+    double new_total_remaining_size = 0;
+    for (int i = 0; i < current_number_of_nodes; i++) {
+        printf("Adding %f from node %d\n", nodes[i].storage_size, nodes[i].id);
+        new_total_remaining_size += nodes[i].storage_size;
+    }
+    return new_total_remaining_size;
+}
+
 // Initialize the chunk list in the node
 void init_chunk_list(Node* node) {
     node->chunks = (ChunkList*)malloc(sizeof(ChunkList));
@@ -31,7 +40,7 @@ void init_chunk_list(Node* node) {
 }
 
 // Function to add a chunk to a single node's chunk list
-void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_used, int* nodes_used) {
+void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_used, int* nodes_used, double original_data_size) {
     Chunk* new_chunk = (Chunk*)malloc(sizeof(Chunk));
     if (new_chunk == NULL) {
         perror("Failed to allocate memory for new chunk");
@@ -41,8 +50,10 @@ void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_u
     // Initialize the new chunk
     new_chunk->chunk_id = chunk_id;
     new_chunk->chunk_size = size;
+    //~ printf("New chunk %d size is %f\n", chunk_id, new_chunk->chunk_size);
     new_chunk->num_of_nodes_used = num_of_nodes_used;
     new_chunk->nodes_used = malloc(num_of_nodes_used * sizeof(int));
+    new_chunk->original_data_size = original_data_size;
     if (new_chunk->nodes_used == NULL) {
         perror("Failed to allocate memory for nodes_used");
         free(new_chunk);
@@ -61,7 +72,7 @@ void add_chunk_to_node(Node* node, int chunk_id, double size, int num_of_nodes_u
 }
 
 // Function to add shared chunks to multiple nodes
-void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, double chunk_size, Node* nodes, int number_of_nodes) {
+void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, double chunk_size, Node* nodes, int number_of_nodes, double original_data_size) {
     // Add a separate chunk to each node
     int i = 0;
     int j = 0;
@@ -73,12 +84,12 @@ void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chun
             }
         }
         printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
-        add_chunk_to_node(&nodes[j], chunk_id, chunk_size, num_of_nodes_used, nodes_used);
+        add_chunk_to_node(&nodes[j], chunk_id, chunk_size, num_of_nodes_used, nodes_used, original_data_size);
     }
 }
 
 // Function to add shared chunks to multiple nodes
-void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores, Node* nodes, int number_of_nodes) {
+void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores, Node* nodes, int number_of_nodes, double original_data_size) {
     int i = 0;
     int j = 0;
     
@@ -89,60 +100,84 @@ void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_
             }
         }
         printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
-        add_chunk_to_node(&nodes[j], chunk_id, size_to_stores[i], num_of_nodes_used, nodes_used);
+        add_chunk_to_node(&nodes[j], chunk_id, size_to_stores[i], num_of_nodes_used, nodes_used, original_data_size);
     }
 }
 
-void remove_chunk_from_node(int index_node_used, int chunk_id, Node* nodes, int number_of_nodes) {
-    int j = 0;
-    
-    // Find node to remove from
-    for (j = 0; j < number_of_nodes; j++) {
-        if (nodes[j].id == index_node_used) {
-            break;
+void remove_chunk_from_node(int* index_node_used, int index_count, int chunk_id, Node* nodes, int number_of_nodes) {
+    // Allocate memory for the new array
+    int* copied_indices = (int*)malloc(index_count * sizeof(int));
+    if (copied_indices == NULL) {
+        printf("Memory allocation failed\n");
+        return;
+    }
+
+    // Copy the contents of index_node_used into copied_indices
+    for (int i = 0; i < index_count; i++) {
+        copied_indices[i] = index_node_used[i];
+    }
+
+    // Now, you can use copied_indices for further processing
+    for (int i = 0; i < index_count; i++) {
+        int current_node_index = copied_indices[i];
+        int j = 0;
+
+        // Find the node to remove from
+        for (j = 0; j < number_of_nodes; j++) {
+            if (nodes[j].id == current_node_index) {
+                break;
+            }
         }
-    }
 
-    if (nodes[j].chunks == NULL || nodes[j].chunks->head == NULL) {
-        printf("No chunks to remove\n");
-        return; // No chunks to remove
-    }
+        if (j == number_of_nodes) {
+            printf("Node with id %d not found\n", current_node_index);
+            continue;
+        }
 
-    Chunk* current = nodes[j].chunks->head;
-    Chunk* prev = NULL;
+        if (nodes[j].chunks == NULL || nodes[j].chunks->head == NULL) {
+            printf("No chunks to remove in node %d\n", current_node_index);
+            continue; // No chunks to remove
+        }
 
-    // Traverse the list to find the chunk with the given chunk_id
-    while (current != NULL) {
-        if (current->chunk_id == chunk_id) {
-            printf("Remove %d in remove_chunk\n", chunk_id);
-            // Found the chunk, remove it from the list
-            if (prev == NULL) {
-                // The chunk is the first in the list
-                nodes[j].chunks->head = current->next;
-            } else {
-                // The chunk is in the middle or at the end of the list
-                prev->next = current->next;
+        Chunk* current = nodes[j].chunks->head;
+        Chunk* prev = NULL;
+
+        // Traverse the list to find the chunk with the given chunk_id
+        while (current != NULL) {
+            if (current->chunk_id == chunk_id) {
+                printf("Remove chunk %d from node %d in remove_chunk\n", chunk_id, current_node_index);
+                // Found the chunk, remove it from the list
+                if (prev == NULL) {
+                    // The chunk is the first in the list
+                    nodes[j].chunks->head = current->next;
+                } else {
+                    // The chunk is in the middle or at the end of the list
+                    prev->next = current->next;
+                }
+
+                // Free the memory allocated for this chunk
+                free(current->nodes_used);
+                free(current);
+                break;  // Exit the loop since the chunk is removed
             }
 
-            // Free the memory allocated for this chunk
-            free(current->nodes_used);
-            free(current);
-            return;
+            // Move to the next chunk
+            prev = current;
+            current = current->next;
         }
-
-        // Move to the next chunk
-        prev = current;
-        current = current->next;
     }
+
+    // Free the memory allocated for copied_indices
+    free(copied_indices);
 }
 
-void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes, int number_of_nodes) {
-    // Remove the chunk from each node
-    for (int i = 0; i < num_of_nodes_used; i++) {
-        printf("Remove chunk %d from node %d\n", chunk_id, nodes_used[i]);
-        remove_chunk_from_node(nodes_used[i], chunk_id, nodes, number_of_nodes);
-    }
-}
+//~ void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes, int number_of_nodes) {
+    //~ // Remove the chunk from each node
+    //~ for (int i = 0; i < num_of_nodes_used; i++) {
+        //~ printf("i %d Remove chunk %d from node %d\n", i, chunk_id, nodes_used[i]);
+        //~ remove_chunk_from_node(nodes_used[i], chunk_id, nodes, number_of_nodes);
+    //~ }
+//~ }
 
 DataToPrint* create_node(int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K) {
     DataToPrint *new_node = (DataToPrint*)malloc(sizeof(DataToPrint));
@@ -170,16 +205,15 @@ void init_list(DataList *list) {
 void print_all_chunks(Node* nodes, int num_nodes) {
     for (int i = 0; i < num_nodes; i++) {
         if (nodes[i].chunks->head != NULL) {
-            printf("Node ID: %d\n", nodes[i].id);
+            printf("Node %d: ", nodes[i].id);
             Chunk* current_chunk = nodes[i].chunks->head;
             while (current_chunk != NULL) {
-                printf("Chunk ID: %d / Size: %f / ", current_chunk->chunk_id, current_chunk->chunk_size);
-                printf("Number of Nodes Used: %d / ", current_chunk->num_of_nodes_used);
-                printf("Nodes Holding This Chunk: ");
+                printf("Chunk %d %f ", current_chunk->chunk_id, current_chunk->chunk_size);
+                printf("%d nodes used ( ", current_chunk->num_of_nodes_used);
                 for (int j = 0; j < current_chunk->num_of_nodes_used; j++) {
                     printf("%d ", current_chunk->nodes_used[j]);
                 }
-                printf("\n");
+                printf(") // ");
                 current_chunk = current_chunk->next;
             }
             printf("\n");  // Separate nodes by a newline
@@ -835,7 +869,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             }
             
             // Adding the chunks in the chosen nodes ids
-            add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes);
+            add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes, size);
             
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             *total_upload_time += total_upload_time_to_print;
@@ -935,7 +969,7 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
             }
             
             // Adding the chunks in the chosen nodes
-            add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes);
+            add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes, size);
 
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
             *total_upload_time += total_upload_time_to_print;
@@ -1122,6 +1156,7 @@ void print_nodes(Node *nodes, int num_nodes) {
 
 int main(int argc, char *argv[]) {
     int i = 0;
+    int j = 0;
     if (argc < 11) {
         fprintf(stderr, "Usage: %s <input_node> <input_data> <data_duration_on_system> <reliability_threshold> <number_of_repetition> <algorithm> <input_supplementary_node> <remove_node_pattern> <fixed_random_seed> <max_N>\n", argv[0]);
         return EXIT_FAILURE;
@@ -1305,7 +1340,7 @@ int main(int argc, char *argv[]) {
     #ifdef PRINT
     for (i = 0; i < total_combinations; i++) {
         printf("Combination %d: ", i + 1);
-        for (int j = 0; j < combinations[i]->num_elements; j++) {
+        for (j = 0; j < combinations[i]->num_elements; j++) {
             printf("%d ", combinations[i]->nodes[j]->id);
             printf("(%d) - ", combinations[i]->write_bandwidth[j]);
         }
@@ -1376,6 +1411,12 @@ int main(int argc, char *argv[]) {
     
     printf("total_storage_size = %f\n", total_storage_size);
     int removed_node_id = -1;
+    //~ double* data_to_replicate = NULL;
+    int number_of_data_to_replicate_after_loss = 0;
+    int total_number_of_data_to_replicate_after_loss = 0;
+    double data_to_store = 0;
+    int data_to_store_id = 0;
+    double* data_to_replicate = NULL;
     
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
@@ -1405,7 +1446,8 @@ int main(int argc, char *argv[]) {
                 printf("New max node size %f\n", max_node_size_supplementary_nodes[next_node_to_add_index]);
             }
             qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
-
+            total_remaining_size = get_total_remaining_size(nodes, current_number_of_nodes);
+            
             if (next_node_to_add_index < number_of_supplementary_nodes - 1) {
                 next_node_to_add_index += 1;
             }
@@ -1426,34 +1468,45 @@ int main(int argc, char *argv[]) {
                 removed_node_index = remove_random_node(current_number_of_nodes, nodes, &removed_node_id);
                 
                 total_storage_size -= initial_node_sizes[removed_node_id];
-                printf("total_storage_size = %f\n", total_storage_size);
+                //~ printf("total_storage_size = %f\n", total_storage_size);
                 
-                reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &total_remaining_size); // TODO
+                data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss);
+                total_number_of_data_to_replicate_after_loss += number_of_data_to_replicate_after_loss;
                 current_number_of_nodes -=1;
-                
+                                
                 if (max_N == 0) { // max_N is just the number of nodes if we don't use it
                     max_N = current_number_of_nodes;
                 }
     
                 qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+                total_remaining_size = get_total_remaining_size(nodes, current_number_of_nodes);
             }
             if (remove_node_pattern == 2) {
                 removed_node_index = remove_node_following_failure_rate(current_number_of_nodes, nodes, &removed_node_id);
                 if (removed_node_index != -1) {
                     
                     total_storage_size -= initial_node_sizes[removed_node_id];
-                    printf("total_storage_size = %f\n", total_storage_size);
+                    //~ printf("total_storage_size = %f\n", total_storage_size);
                 
                     print_all_chunks(nodes, current_number_of_nodes);
-                    reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &total_remaining_size); // TODO
+                    
+                    data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss);
+                    total_number_of_data_to_replicate_after_loss += number_of_data_to_replicate_after_loss;
+                    if (data_to_replicate != NULL) {
+                        printf("need to re replicate data of size %f\n", data_to_replicate[0]);
+                    }
+                    
                     current_number_of_nodes -=1;
                     
                     if (max_N == 0) { // max_N is just the number of nodes if we don't use it
                         max_N = current_number_of_nodes;
                     }
                     
-                    qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition); // This is messing with the chunks for some reason idk why Maybe we need to just put the ids then and manually add them and remove them. So like we did before and just go though the node at the removal and individually remove the chunks
-                    
+                    qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+                    total_remaining_size = get_total_remaining_size(nodes, current_number_of_nodes);
+                    printf("total_remaining_size after removal: %f\n", total_remaining_size);
+            printf("total_storage_size = %f\n", total_storage_size);
+
                     printf("current_number_of_nodes after removal = %d\n", current_number_of_nodes);
                     print_all_chunks(nodes, current_number_of_nodes);
                 }
@@ -1486,6 +1539,54 @@ int main(int argc, char *argv[]) {
             free_combinations(combinations, total_combinations);
             combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
         }
+        
+        // First reschedule if I have to
+        if (number_of_data_to_replicate_after_loss != 0) {
+            for (j = 0; j < number_of_data_to_replicate_after_loss; j++) {
+                data_to_store = data_to_replicate[j];
+                data_to_store_id = count + total_number_of_data_to_replicate_after_loss - number_of_data_to_replicate_after_loss + j;
+                printf("count is %d new id is %d size is %f\n", count, data_to_store_id, data_to_store);
+                
+                // paste all code from find to print chunks
+                find_closest(data_to_store, &nearest_size, &closest_index);
+                
+                if (algorithm == 0) {
+                    random_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, data_to_store_id, max_N);
+                }
+                else if (algorithm == 1) {
+                    min_storage(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, data_to_store_id, max_N);
+                }
+                else if (algorithm == 3) {
+                    hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, data_to_store_id, max_N);
+                }
+                else if (algorithm == 6) {
+                    hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, data_to_store_id, RS1, RS2);
+                }
+                else if (algorithm == 7) {
+                    glusterfs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, nearest_size, &list, data_to_store_id, RS1, RS2);
+                }
+                
+                else if (algorithm == 2) {
+                    algorithm2(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, nearest_size, &list, i, max_N);
+                }
+                else if (algorithm == 4) {
+                    algorithm4(current_number_of_nodes, nodes, reliability_threshold, data_to_store, max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, nearest_size, &list, data_to_store_id, max_N);
+                }
+                else if (algorithm == 5) {
+                    balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, &total_remaining_size, closest_index, models, nearest_size, &list, data_to_store_id, max_N);
+                }
+                else {
+                    printf("Algorithm %d not valid\n", algorithm);
+                }
+                printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
+                if (N > max_N) { printf("error N > max_N\n"); exit(1); }
+                print_all_chunks(nodes, current_number_of_nodes);
+                input_data_sum_of_size_already_stored += data_to_store;
+            }
+            free(data_to_replicate); // TODO yeah do that ? Or set it to null ?
+            number_of_data_to_replicate_after_loss = 0;
+        }
+        // Then schedule the desired data I was suppose to do
         
         find_closest(sizes[i], &nearest_size, &closest_index);
         

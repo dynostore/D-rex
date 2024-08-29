@@ -5,7 +5,7 @@ truncate -s 0 output_drex_only.csv
 make
 #~ ./alg4 drex/inputs/nodes/10_most_reliable_nodes.csv drex/inputs/data/test.csv 365.0 0.99 2 4
 #~ ./alg4 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/test.csv 365.0 0.99 118 4 drex/inputs/nodes/add_node_pattern_1.csv 0 0
-./alg4 drex/inputs/nodes/test.csv drex/inputs/data/test.csv 365.0 0.99 1 4 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 6
+./alg4 drex/inputs/nodes/test.csv drex/inputs/data/test.csv 365.0 0.99 1 4 drex/inputs/nodes/no_supplementary_nodes.csv 2 0 0
 
 #~ ./alg4 drex/inputs/nodes/test.csv drex/inputs/data/test.csv 365.0 0.99 2 6 drex/inputs/nodes/add_node_pattern_1.csv 0 0 3 2
 #~ ./alg4 drex/inputs/nodes/test.csv drex/inputs/data/test.csv 365.0 0.99 2 6 drex/inputs/nodes/add_node_pattern_1.csv 0 0 6 3

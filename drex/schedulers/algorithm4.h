@@ -25,6 +25,7 @@ struct chunk {
     double chunk_size;
     int num_of_nodes_used;  // Number of nodes used to store this chunk
     int* nodes_used;        // Array of node IDs holding this chunk
+    double original_data_size;
     struct chunk* next;     // Pointer to the next chunk in the list
 };
 
@@ -88,12 +89,13 @@ int compare_nodes_by_storage_desc_with_condition(const void *a, const void *b);
 void add_node_to_print(DataList *list, int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K);
 void print_nodes(Node *nodes, int num_nodes);
 int reliability_threshold_met_accurate(int N, int K, double reliability_threshold, double *reliability_of_nodes);
-void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, double chunk_size, Node* nodes, int number_of_nodes);
+void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, double chunk_size, Node* nodes, int number_of_nodes, double original_data_size);
 int compare_nodes_by_bandwidth_desc_with_condition(const void *a, const void *b);
 int get_max_K_from_reliability_threshold_and_nodes_chosen(int number_of_nodes, float reliability_threshold, double sum_reliability, double variance_reliability, double* reliability_of_nodes);
-void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores, Node* nodes, int number_of_nodes);
-void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes, int number_of_nodes);
+void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores, Node* nodes, int number_of_nodes, double original_data_size);
+//~ void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes, int number_of_nodes);
 void print_all_chunks(Node* nodes, int num_nodes);
+void remove_chunk_from_node(int* index_node_used, int index_count, int chunk_id, Node* nodes, int number_of_nodes);
 
 #endif
 

@@ -317,7 +317,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
         }
         
         // Adding the chunks in the chosen nodes
-        add_shared_chunks_to_nodes_3_replication(used_combinations, *N, data_id, size_to_stores, nodes, number_of_nodes);
+        add_shared_chunks_to_nodes_3_replication(used_combinations, *N, data_id, size_to_stores, nodes, number_of_nodes, size);
         
         *total_parralelized_upload_time += worst_transfer;
         
@@ -469,7 +469,7 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
                 }
                 
                 // Adding the chunks in the chosen nodes
-                add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes);
+                add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes, size);
 
                 *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
                 
