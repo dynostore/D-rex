@@ -17,7 +17,6 @@ void reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_nodes
                 printf("%d ", current_chunk->nodes_used[i]);
             }
             printf("\n");
-            //~ exit(1);
             
             // Find node to remove from
             for (i = 0; i < current_chunk->num_of_nodes_used; i++) {
@@ -33,10 +32,12 @@ void reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_nodes
             
             printf("total_remaining_size = %f\n", *total_remaining_size);
             
-            exit(1);
             // Remove chunks
-            remove_shared_chunk_from_nodes(current_chunk->nodes_used, current_chunk->num_of_nodes_used, current_chunk->chunk_id, nodes);
-                        
+            remove_shared_chunk_from_nodes(current_chunk->nodes_used, current_chunk->num_of_nodes_used, current_chunk->chunk_id, nodes, number_of_nodes);
+                    
+            print_all_chunks(nodes, number_of_nodes);
+            exit(1);        
+            
             // Remove actually all chunks of these data and update all storage, even on nodes that did not lost the chunks because you'll need to recreate the cunks from scratch. So need to remove from all nodes all chunks lost and reschedule from 0 this data
                         
             current_chunk = current_chunk->next;

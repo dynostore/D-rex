@@ -28,11 +28,6 @@ struct chunk {
     struct chunk* next;     // Pointer to the next chunk in the list
 };
 
-//~ // Struct representing the linked list of chunks
-//~ typedef struct {
-    //~ Chunk* head;  // Pointer to the first chunk in the list
-//~ } ChunkList;
-
 typedef struct {
     double *probabilities;
     int n;
@@ -97,7 +92,8 @@ void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chun
 int compare_nodes_by_bandwidth_desc_with_condition(const void *a, const void *b);
 int get_max_K_from_reliability_threshold_and_nodes_chosen(int number_of_nodes, float reliability_threshold, double sum_reliability, double variance_reliability, double* reliability_of_nodes);
 void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_used, int chunk_id, double* size_to_stores, Node* nodes, int number_of_nodes);
-void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes);
+void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes, int number_of_nodes);
+void print_all_chunks(Node* nodes, int num_nodes);
 
 #endif
 

@@ -93,21 +93,32 @@ void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_
     }
 }
 
-void remove_chunk_from_node(int index_node_used, int chunk_id, Node* nodes) {
-    if (nodes[index_node_used].chunks == NULL || nodes[index_node_used].chunks->head == NULL) {
+void remove_chunk_from_node(int index_node_used, int chunk_id, Node* nodes, int number_of_nodes) {
+    int j = 0;
+    
+    // Find node to remove from
+    for (j = 0; j < number_of_nodes; j++) {
+        if (nodes[j].id == index_node_used) {
+            break;
+        }
+    }
+
+    if (nodes[j].chunks == NULL || nodes[j].chunks->head == NULL) {
+        printf("No chunks to remove\n");
         return; // No chunks to remove
     }
 
-    Chunk* current = nodes[index_node_used].chunks->head;
+    Chunk* current = nodes[j].chunks->head;
     Chunk* prev = NULL;
 
     // Traverse the list to find the chunk with the given chunk_id
     while (current != NULL) {
         if (current->chunk_id == chunk_id) {
+            printf("Remove %d in remove_chunk\n", chunk_id);
             // Found the chunk, remove it from the list
             if (prev == NULL) {
                 // The chunk is the first in the list
-                nodes[index_node_used].chunks->head = current->next;
+                nodes[j].chunks->head = current->next;
             } else {
                 // The chunk is in the middle or at the end of the list
                 prev->next = current->next;
@@ -125,11 +136,11 @@ void remove_chunk_from_node(int index_node_used, int chunk_id, Node* nodes) {
     }
 }
 
-void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes) {
+void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes, int number_of_nodes) {
     // Remove the chunk from each node
     for (int i = 0; i < num_of_nodes_used; i++) {
         printf("Remove chunk %d from node %d\n", chunk_id, nodes_used[i]);
-        remove_chunk_from_node(nodes_used[i], chunk_id, nodes);
+        remove_chunk_from_node(nodes_used[i], chunk_id, nodes, number_of_nodes);
     }
 }
 
