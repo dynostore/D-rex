@@ -36,17 +36,6 @@ typedef struct {
 
 extern int global_current_data_value;
 
-//~ typedef struct {
-    //~ int id;
-    //~ double storage_size;
-    //~ int write_bandwidth;
-    //~ int read_bandwidth;
-    //~ double probability_failure;
-    //~ double daily_failure_rate;
-    //~ int add_after_x_jobs;   // Number of jobs after which the node becomes available
-    //~ ChunkList *chunks;       // Linked list of chunks stored in this node
-//~ } Node;
-
 typedef struct data_to_print {
     int id;
     double size;
@@ -55,6 +44,8 @@ typedef struct data_to_print {
     double chunking_time;
     int N;
     int K;
+    double total_read_time;
+    double read_time_parralelized;
     struct data_to_print *next;
 } DataToPrint;
 
@@ -72,6 +63,7 @@ typedef struct {
     int* write_bandwidth; // Array of bandwidths
     //~ double min_remaining_size; // Smallest node's remaining memory in the combination. Used to quickly skip an unvalid combination
     int min_write_bandwidth; // Smallest node's write bandwidth in the combination
+    int min_read_bandwidth; // Smallest node's read bandwidth in the combination
     
     // Sub values for pareto front
     double transfer_time_parralelized;

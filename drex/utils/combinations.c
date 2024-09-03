@@ -59,6 +59,7 @@ void create_combinations(Node *nodes, int n, int r, Combination **combinations, 
         combinations[*combination_count]->write_bandwidth = malloc(r * sizeof(int));
         //~ combinations[*combination_count]->min_remaining_size = DBL_MAX;
         combinations[*combination_count]->min_write_bandwidth = INT_MAX;
+        combinations[*combination_count]->min_read_bandwidth = INT_MAX;
 
         for (int i = 0; i < r; i++) {
             combinations[*combination_count]->nodes[i] = &nodes[indices[i]];
@@ -72,6 +73,9 @@ void create_combinations(Node *nodes, int n, int r, Combination **combinations, 
             //~ }
             if (nodes[indices[i]].write_bandwidth < combinations[*combination_count]->min_write_bandwidth) {
                 combinations[*combination_count]->min_write_bandwidth = nodes[indices[i]].write_bandwidth;
+            }
+            if (nodes[indices[i]].read_bandwidth < combinations[*combination_count]->min_read_bandwidth) {
+                combinations[*combination_count]->min_read_bandwidth = nodes[indices[i]].read_bandwidth;
             }
         }
         (*combination_count)++;
@@ -119,6 +123,7 @@ void create_combinations_with_limit(Node *nodes, int n, int r, Combination **com
         combinations[*combination_count]->write_bandwidth = malloc(r * sizeof(int));
         //~ combinations[*combination_count]->min_remaining_size = DBL_MAX;
         combinations[*combination_count]->min_write_bandwidth = INT_MAX;
+        combinations[*combination_count]->min_read_bandwidth = INT_MAX;
 
         for (int i = 0; i < r; i++) {
             combinations[*combination_count]->nodes[i] = &nodes[indices[i]];
@@ -131,6 +136,9 @@ void create_combinations_with_limit(Node *nodes, int n, int r, Combination **com
             //~ }
             if (nodes[indices[i]].write_bandwidth < combinations[*combination_count]->min_write_bandwidth) {
                 combinations[*combination_count]->min_write_bandwidth = nodes[indices[i]].write_bandwidth;
+            }
+            if (nodes[indices[i]].read_bandwidth < combinations[*combination_count]->min_read_bandwidth) {
+                combinations[*combination_count]->min_read_bandwidth = nodes[indices[i]].read_bandwidth;
             }
         }
         (*combination_count)++;

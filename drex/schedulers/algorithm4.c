@@ -179,7 +179,7 @@ void remove_chunk_from_node(int* index_node_used, int index_count, int chunk_id,
     //~ }
 //~ }
 
-DataToPrint* create_node(int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K) {
+DataToPrint* create_node(int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K, double total_read_time, double read_time_parralelized) {
     DataToPrint *new_node = (DataToPrint*)malloc(sizeof(DataToPrint));
     if (!new_node) {
         perror("Failed to allocate memory for new node");
@@ -192,6 +192,8 @@ DataToPrint* create_node(int id, double size, double total_transfer_time, double
     new_node->chunking_time = chunking_time;
     new_node->N = N;
     new_node->K = K;
+    new_node->total_read_time = total_read_time;
+    new_node->read_time_parralelized = read_time_parralelized;
     new_node->next = NULL;
     return new_node;
 }
@@ -221,9 +223,8 @@ void print_all_chunks(Node* nodes, int num_nodes) {
     }
 }
 
-void add_node_to_print(DataList *list, int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K) {
-    //~ printf("New node with %d %d\n", N, K); fflush(stdout);
-    DataToPrint *new_node = create_node(id, size, total_transfer_time, transfer_time_parralelized, chunking_time, N, K);
+void add_node_to_print(DataList *list, int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K, double total_read_time, double read_time_parralelized) {
+    DataToPrint *new_node = create_node(id, size, total_transfer_time, transfer_time_parralelized, chunking_time, N, K, total_read_time, read_time_parralelized);
     if (list->tail) {
         list->tail->next = new_node;
     } else {
@@ -232,6 +233,9 @@ void add_node_to_print(DataList *list, int id, double size, double total_transfe
     list->tail = new_node;
 }
 
+/**
+ * Write in a file the details of the execution
+ **/
 void write_linked_list_to_file(DataList *list, const char *filename, double* total_chunking_time) {
     FILE *file = fopen(filename, "w");
     if (!file) {
@@ -843,6 +847,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         gettimeofday(&end, NULL);
         
         double total_upload_time_to_print = 0;
+        double total_read_time_to_print = 0;
         
         // Writing down the results
         if (*N != -1 && *K != -1) {
@@ -852,6 +857,10 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             *total_storage_used += chunk_size*(*N);
             *total_remaining_size -= chunk_size*(*N);
             *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
+            
+            *total_read_time
+            *total_read_time_parralelized
+            
             int* used_combinations = malloc(*N * sizeof(int));
             
             for (i = 0; i < combinations[best_index]->num_elements; i++) {
@@ -871,8 +880,11 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             // Adding the chunks in the chosen nodes ids
             add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes, size);
             
-            add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K);
+            add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K, , );
+            
             *total_upload_time += total_upload_time_to_print;
+            *total_read_time += total_read_time_to_print;
+            
             free(used_combinations);
         }
     }
