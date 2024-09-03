@@ -194,23 +194,30 @@ def assemble_bytes(fragments, output_filename=None):
         building_basis.append(idx)
         fragments_matrix.append(fragment)
         
-    size = sys.getsizeof(building_basis)
+    #size = sys.getsizeof(building_basis)
 
     #print(f"Size of my_variable: {size} bytes")
     
-    size = sys.getsizeof(fragments_matrix)
+    #size = sys.getsizeof(fragments_matrix)
 
     #print(f"Size of my_variable: {size} bytes")
 
-    inverse_building_matrix=vandermonde_inverse(building_basis, p)
+    inverse_building_matrix=np.array(vandermonde_inverse(building_basis, p)).astype(np.uint8)
+    #print(inverse_building_matrix)
+    
+    #print(type(inverse_building_matrix))
 
     #output_matrix=matrix_product(
     #    inverse_building_matrix, fragments_matrix, p)
     
     #print(output_matrix)
     
+    
+    
     output_matrix=matrix_product2(
         inverse_building_matrix, fragments_matrix, p)
+    
+    #print(type(output_matrix[0][0]))
     
     #print(output_matrix)
 
