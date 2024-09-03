@@ -17,7 +17,7 @@ int in_array(int* array, int size, int value) {
     return 0;  // Value not found
 }
 
-void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id, int RS1, int RS2) {
+void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int RS1, int RS2, double* total_read_time_parrallelized, double* total_read_time) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -122,21 +122,18 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
         loop++;
     }
     
-    // Update
-    
-    //~ for (int i = 0; i < *N; i++) {
-        //~ printf("%d ", nodes[set_of_nodes_chosen_temp[i]].id);
-    //~ }
-    //~ printf("\n");
-    
-    //~ if (found) {
-                //~ *N = temp_N;
                 
                 double min_write_bandwidth = DBL_MAX;
+                double min_read_bandwidth = DBL_MAX;
                 
                 // Writing down the results
                 double total_upload_time_to_print = 0;
-                //~ chunk_size = size/(*K);
+                
+                /** Read **/
+                double total_read_time_to_print = 0;
+                double total_read_time_parralelized_to_print = 0;
+                double reconstruct_time = 0;
+
                 *number_of_data_stored += 1;
                 *total_N += *N;
                 *total_storage_used += chunk_size*(*N);
@@ -145,10 +142,17 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
                 
                 for (int j = 0; j < *N; j++) {
                     total_upload_time_to_print += chunk_size/nodes[set_of_nodes_chosen_temp[j]].write_bandwidth;
+                    
+                    /** Read **/
+                    total_read_time_to_print += chunk_size/nodes[set_of_nodes_chosen_temp[j]].read_bandwidth;
+                    
                     nodes[set_of_nodes_chosen_temp[j]].storage_size -= chunk_size;
                     //~ printf("Removing %f from node %d\n", chunk_size, nodes[set_of_nodes_chosen_temp[j]].id);
                     if (min_write_bandwidth > nodes[set_of_nodes_chosen_temp[j]].write_bandwidth) {
                         min_write_bandwidth = nodes[set_of_nodes_chosen_temp[j]].write_bandwidth;
+                    }
+                    if (min_read_bandwidth > nodes[set_of_nodes_chosen_temp[j]].read_bandwidth) {
+                        min_read_bandwidth = nodes[set_of_nodes_chosen_temp[j]].read_bandwidth;
                     }
                     
                     // To track the chunks I a fill a temp struct with nodes
@@ -160,10 +164,18 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
 
                 *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
                 
+                /** Read **/
+                total_read_time_parralelized_to_print = chunk_size/min_read_bandwidth;
+                reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], *N, *K, nearest_size, size);
+        
                 // TODO: remove this 3 lines under to reduce complexity if we don't need the trace per data
                 double chunking_time = predict(models[closest_index], *N, *K, nearest_size, size);
                 double transfer_time_parralelized = calculate_transfer_time(chunk_size, min_write_bandwidth);
-                add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K);
+                add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
+                
+                /** Read **/
+            *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+            *total_read_time += total_read_time_to_print;
 
                 *total_upload_time += total_upload_time_to_print;
                 

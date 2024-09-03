@@ -101,13 +101,11 @@ int get_random_excluding_exclusions(int number_of_nodes, int* already_looked_at,
 
 // Function to return a pair N and K that matches the reliability threshold
 //~ void random_schedule(int number_of_nodes, double* reliability_of_nodes, double reliability_threshold, double* node_sizes, double file_size, int** set_of_nodes_chosen, int* N, int* K, double* updated_node_sizes) {
-void random_schedule(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id, int max_N) {
+void random_schedule(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
-    //~ int i;
     srand(time(NULL));  // Seed the random number generator
-    //~ printf("Data %d\n", data_id + 1);
     int* already_looked_at = (int*)malloc(number_of_nodes * sizeof(int));
     int already_looked_at_count = 0;
     int solution_found = 0;
@@ -119,7 +117,6 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
     
     while (!solution_found) {
-        //~ *N = get_random_excluding_exclusions(number_of_nodes, already_looked_at, already_looked_at_count);
         *N = get_random_excluding_exclusions(max_N, already_looked_at, already_looked_at_count);
         if (*N == -1) {
             free(set_of_nodes_chosen);
@@ -140,26 +137,6 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
         reliability_of_nodes_chosen = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen, *N);
 
         //~ printf("Selected nodes: ");
-        //~ for (i = 0; i < *N; i++) {
-            //~ printf("%d ", set_of_nodes_chosen[i]);
-            //~ printf("%f ", reliability_of_nodes_chosen[i]);
-        //~ }
-        //~ printf("\n");
-        //~ exit(1);
-        // Sort nodes (using a simple sort, or implement a better sorting algorithm)
-        //~ qsort(*set_of_nodes_chosen, *N, sizeof(int), (int(*)(const void*, const void*)) strcmp);
-
-        //~ double* reliability_of_nodes = extract_first_X_reliabilities(nodes, number_of_nodes, *N);
-        //~ return reliability_threshold_met_accurate(D + P, D, reliability_threshold, reliability_of_nodes);
-    
-        //~ if (reliability_of_nodes_chosen == NULL) {
-            //~ perror("Failed to allocate memory for reliability_of_nodes_chosen");
-            //~ free(already_looked_at);
-            //~ free(*set_of_nodes_chosen);
-            //~ return;
-        //~ }
-
-        //~ for (int i = 0; i < *N; i++) {
             //~ reliability_of_nodes_chosen[i] = reliability_of_nodes[(*set_of_nodes_chosen)[i]];
         //~ }
         int decrease_K = 0;
@@ -182,9 +159,16 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
     // Updates
     if (*N != -1) { // We have a valid solution        
         double min_write_bandwidth = DBL_MAX;
+        double min_read_bandwidth = DBL_MAX;
         
         // Writing down the results
         double total_upload_time_to_print = 0;
+        
+        /** Read **/
+        double total_read_time_to_print = 0;
+        double total_read_time_parralelized_to_print = 0;
+        double reconstruct_time = 0;
+        
         double chunk_size = size/(*K);
         *number_of_data_stored += 1;
         *total_N += *N;
@@ -194,9 +178,16 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
         
         for (int j = 0; j < *N; j++) {
             total_upload_time_to_print += chunk_size/nodes[j].write_bandwidth;
+            
+            /** Read **/
+            total_read_time_to_print += chunk_size/nodes[j].read_bandwidth;
+            
             nodes[j].storage_size -= chunk_size;
             if (min_write_bandwidth > nodes[j].write_bandwidth) {
                 min_write_bandwidth = nodes[j].write_bandwidth;
+            }
+            if (min_read_bandwidth > nodes[j].read_bandwidth) {
+                min_read_bandwidth = nodes[j].read_bandwidth;
             }
             // To track the chunks I a fill a temp struct with nodes
             used_combinations[j] = nodes[j].id;
@@ -206,11 +197,18 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
         add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes, size);
         *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
         
+        /** Read **/
+        total_read_time_parralelized_to_print = chunk_size/min_read_bandwidth;
+        reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], *N, *K, nearest_size, size);
+        
         // TODO: remove this 3 lines under to reduce complexity if we don't need the trace per data
         double chunking_time = predict(models[closest_index], *N, *K, nearest_size, size);
         double transfer_time_parralelized = calculate_transfer_time(chunk_size, min_write_bandwidth);
-        add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K);
+        add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
         *total_upload_time += total_upload_time_to_print;
+        /** Read **/
+            *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+            *total_read_time += total_read_time_to_print;
         free(used_combinations);
     }
     
