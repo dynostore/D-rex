@@ -117,9 +117,7 @@ def fragment_reader_bytes(fragments):
             m = fragment.m
             over255 = fragment.over255
             
-            
-            
-            
+        
             if idx in indices: 
                 continue
             else: 
@@ -131,8 +129,8 @@ def fragment_reader_bytes(fragments):
             
             # ~ print(over255)
             # ~ print(fragment.content[over255])
-            fragment.content = fragment.content.astype(np.uint16)
-            fragment.content[over255] = 256
+            #fragment.content = fragment.content.astype(np.uint16)
+            #fragment.content[over255] = 256
             # ~ print(fragment.content[over255])
             data_fragments.append((idx+1,fragment.content))
             count+=1

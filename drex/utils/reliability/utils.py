@@ -47,6 +47,23 @@ def inner_product(a, b, p):
     #print(sum((i*j) for i,j in zip(a,b)), p, sum((i*j) for i,j in zip(a,b))%p)
     return sum((i*j) for i,j in zip(a,b))%p
     
+def matrix_product2(A, B, p):
+    '''
+    Inputs: 
+    A, B : matrices (as NumPy arrays) of dimensions that are compatible for matrix multiplication
+    p: an integer
+    Output: 
+    a matrix resulted from multiplication of A and B, where all computations are done modulo p
+    '''
+    
+    # Perform matrix multiplication
+    product = np.dot(A, B)
+    
+    # Apply modulo operation
+    result = np.mod(product, p)
+    
+    return result
+    
 def matrix_product(A,B, p): 
     '''
     Inputs: 

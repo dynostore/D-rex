@@ -29,4 +29,10 @@ disp_result = ida.split_bytes(data, n, m)
 
 end = time.time_ns()/1e+6
 
-print(n,m,end - start)
+print("s",n,m,end - start)
+
+start = time.time_ns()/1e+6
+ida.assemble_bytes(disp_result)
+end = time.time_ns()/1e+6
+
+print("m",n,m,end - start)

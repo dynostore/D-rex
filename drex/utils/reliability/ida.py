@@ -77,6 +77,7 @@ def split_bytes(data, n, m):
         
         #fragment_arr = fragment_arr.astype(np.uint8)
         #print(fragment_arr[over256])
+        #print(fragment_arr)
         frag=Fragment(i, fragment_arr, p, n, m, None)
         fragments.append(frag)
 
@@ -189,28 +190,50 @@ def assemble_bytes(fragments, output_filename=None):
     building_basis=[]
     fragments_matrix=[]
     for (idx, fragment) in fragments:
+        #print(idx, fragment, type(fragment[0]))
         building_basis.append(idx)
         fragments_matrix.append(fragment)
+        
+    size = sys.getsizeof(building_basis)
+
+    #print(f"Size of my_variable: {size} bytes")
+    
+    size = sys.getsizeof(fragments_matrix)
+
+    #print(f"Size of my_variable: {size} bytes")
 
     inverse_building_matrix=vandermonde_inverse(building_basis, p)
 
-    output_matrix=matrix_product(
+    #output_matrix=matrix_product(
+    #    inverse_building_matrix, fragments_matrix, p)
+    
+    #print(output_matrix)
+    
+    output_matrix=matrix_product2(
         inverse_building_matrix, fragments_matrix, p)
+    
+    #print(output_matrix)
 
     # each column of output matrix is a chunk of the original matrix
-    original_segments=[]
-    ncol=len(output_matrix[0])
-    nrow=len(output_matrix)
-    for c in range(ncol):
-        col=[output_matrix[r][c] for r in range(nrow)]
-        original_segments.append(col)
-        
+    # original_segments=[]
+    # ncol=len(output_matrix[0])
+    # nrow=len(output_matrix)
+    # for c in range(ncol):
+    #     col=[output_matrix[r][c] for r in range(nrow)]
+    #     original_segments.append(col)
+    
+    #print(original_segments)
+    
+    # Transpose the matrix and convert it to a list of columns
+    original_segments = [output_matrix[:, c].tolist() for c in range(output_matrix.shape[1])]
+    
+    #print(original_segments)
 
     # remove tailing zeros of the last segment
     last_segment=original_segments[-1]
-    
-    while last_segment[-1] == 0:
-    #for x in range(len(last_segment)):
+    #print(last_segment)
+    #while last_segment[-1] == 0:
+    for x in range(len(last_segment)):
         last_segment.pop()
 
     # combine the original_segment into original_file
