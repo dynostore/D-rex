@@ -61,6 +61,14 @@ double predict(LinearModel models, int n, int k, double nearest_size, double fil
     return Y_pred;
 }
 
+double predict_reconstruct(LinearModel models_reconstruct, int n, int k, double nearest_size, double file_size) {    
+    double Y_pred = models_reconstruct.intercept + models_reconstruct.slope_n * n + models_reconstruct.slope_k * k;
+    Y_pred = Y_pred * (file_size / nearest_size);
+    Y_pred /= 1000;  // Convert to seconds
+    
+    return Y_pred;
+}
+
 double calculate_transfer_time(double chunk_size, double bandwidth) {
     return chunk_size / bandwidth;
 }

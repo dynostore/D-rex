@@ -39,7 +39,7 @@ void remove_last_node(int** set_of_nodes_chosen, int* num_nodes_chosen) {
     }
 }
 
-void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id, int max_N) {
+void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -84,7 +84,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
     //~ printf("\n");
     
     while (!reliability_threshold_met_accurate(3, 1, reliability_threshold, reliability_of_nodes_chosen)) {
-        //~ printf("Reliability not met with initial set\n"); fflush(stdout);
+        //~ printf("Reliability not met with initial set\n"); fflush(stdout);c
         if (loop > number_of_nodes - 3) {
             //~ printf("Loop reached return\n");
             free(reliability_of_nodes_chosen);
@@ -294,9 +294,15 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
     // Updates
     if (*N != -1) { // We have a valid solution 
         double worst_transfer = -1;
+        double worst_transfer_read = -1;
         
         // Writing down the results
         double total_upload_time_to_print = 0;
+        
+        /** Read **/
+        double total_read_time_to_print = 0;
+        double total_read_time_parralelized_to_print = 0;
+        double reconstruct_time = 0;
 
         *number_of_data_stored += 1;
         *total_N += *N;
@@ -305,11 +311,18 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
         
         for (int j = 0; j < *N; j++) {
             total_upload_time_to_print += size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth;
+            
+            /** Read **/
+            total_read_time_to_print += size_to_stores[j]/nodes[set_of_nodes_chosen[j]].read_bandwidth;
+                    
             nodes[set_of_nodes_chosen[j]].storage_size -= size_to_stores[j];
             //~ printf("Removed %f from node %d\n", size_to_stores[j], nodes[set_of_nodes_chosen[j]].id); 
             
             if (worst_transfer < size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth) {
                 worst_transfer = size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth;
+            }
+            if (worst_transfer_read < size_to_stores[j]/nodes[set_of_nodes_chosen[j]].read_bandwidth) {
+                worst_transfer_read = size_to_stores[j]/nodes[set_of_nodes_chosen[j]].read_bandwidth;
             }
             
             // To track the chunks I a fill a temp struct with nodes
@@ -321,10 +334,18 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
         
         *total_parralelized_upload_time += worst_transfer;
         
+        /** Read **/
+        total_read_time_parralelized_to_print = worst_transfer_read;
+        reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], *N, *K, nearest_size, size);
+        
         // TODO: remove this 3 lines under to reduce complexity if we don't need the trace per data
         double chunking_time = predict(models[closest_index], *N, *K, nearest_size, size);
         double transfer_time_parralelized = worst_transfer;
-        add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K);
+        add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
+        
+        /** Read **/
+            *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+            *total_read_time += total_read_time_to_print;
         *total_upload_time += total_upload_time_to_print;
         
         free(used_combinations);
@@ -340,7 +361,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
     *total_scheduling_time += seconds + useconds/1000000.0;
 }
 
-void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, int nearest_size, DataList* list, int data_id, int RS1, int RS2) {
+void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int RS1, int RS2, double* total_read_time_parrallelized, double* total_read_time) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -397,7 +418,6 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
     double* reliability_of_nodes_chosen = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen_temp, *N);
     // Check if the reliability threshold is met
     int loop = 0;
-    //~ while (!reliability_threshold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen)) {
     while (!reliability_threshold_met_accurate(*N, *K, reliability_threshold, reliability_of_nodes_chosen)) {
         if (loop > number_of_nodes - *N) {
             free(set_of_nodes_chosen_temp);
@@ -439,29 +459,37 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
         loop++;
     }
     
-    // Update
     
-    //~ for (int i = 0; i < *N; i++) {
-        //~ printf("%d ", nodes[set_of_nodes_chosen_temp[i]].id);
-    //~ }
-    //~ printf("\n");
                 double min_write_bandwidth = DBL_MAX;
+                double min_read_bandwidth = DBL_MAX;
                 
                 // Writing down the results
                 double total_upload_time_to_print = 0;
-                //~ chunk_size = size/(*K);
+
+                /** Read **/
+                double total_read_time_to_print = 0;
+                double total_read_time_parralelized_to_print = 0;
+                double reconstruct_time = 0;
+        
                 *number_of_data_stored += 1;
                 *total_N += *N;
                 *total_storage_used += chunk_size*(*N);
-                
+
                 int* used_combinations = malloc(*N * sizeof(int));
                 
                 for (int j = 0; j < *N; j++) {
                     total_upload_time_to_print += chunk_size/nodes[set_of_nodes_chosen_temp[j]].write_bandwidth;
+                    
+                    /** Read **/
+                    total_read_time_to_print += chunk_size/nodes[set_of_nodes_chosen_temp[j]].read_bandwidth;
+                    
                     nodes[set_of_nodes_chosen_temp[j]].storage_size -= chunk_size;
                     //~ printf("Removing %f from node %d\n", chunk_size, nodes[set_of_nodes_chosen_temp[j]].id);
                     if (min_write_bandwidth > nodes[set_of_nodes_chosen_temp[j]].write_bandwidth) {
                         min_write_bandwidth = nodes[set_of_nodes_chosen_temp[j]].write_bandwidth;
+                    }
+                    if (min_read_bandwidth > nodes[set_of_nodes_chosen_temp[j]].read_bandwidth) {
+                        min_read_bandwidth = nodes[set_of_nodes_chosen_temp[j]].read_bandwidth;
                     }
                     
                     // To track the chunks I a fill a temp struct with nodes
@@ -473,12 +501,19 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
 
                 *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
                 
+                /** Read **/
+                total_read_time_parralelized_to_print = chunk_size/min_read_bandwidth;
+                reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], *N, *K, nearest_size, size);
+        
                 // TODO: remove this 3 lines under to reduce complexity if we don't need the trace per data
                 double chunking_time = predict(models[closest_index], *N, *K, nearest_size, size);
                 double transfer_time_parralelized = calculate_transfer_time(chunk_size, min_write_bandwidth);
-                add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K);
+                add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
 
                 *total_upload_time += total_upload_time_to_print;
+                /** Read **/
+            *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+            *total_read_time += total_read_time_to_print;
                 
                 free(set_of_nodes_chosen_temp);
                 free(used_combinations);
