@@ -1,5 +1,5 @@
 from drex.utils.reliability.utils import *
-from drex.utils.reliability.fragment_handler import fragment_writer, fragment_reader, fragment_reader_bytes
+from drex.utils.reliability.fragment_handler import fragment_writer, fragment_reader, fragment_reader_bytes, numpy_pop
 import pickle
 import numpy as np
 import time
@@ -193,27 +193,10 @@ def assemble_bytes(fragments, output_filename=None):
         #print(idx, fragment, type(fragment[0]))
         building_basis.append(idx)
         fragments_matrix.append(fragment)
-        
-    #size = sys.getsizeof(building_basis)
-
-    #print(f"Size of my_variable: {size} bytes")
-    
-    #size = sys.getsizeof(fragments_matrix)
-
-    #print(f"Size of my_variable: {size} bytes")
+   
 
     inverse_building_matrix=np.array(vandermonde_inverse(building_basis, p)).astype(np.uint8)
-    #print(inverse_building_matrix)
-    
-    #print(type(inverse_building_matrix))
 
-    #output_matrix=matrix_product(
-    #    inverse_building_matrix, fragments_matrix, p)
-    
-    #print(output_matrix)
-    
-    
-    
     output_matrix=matrix_product2(
         inverse_building_matrix, fragments_matrix, p)
     
@@ -222,34 +205,37 @@ def assemble_bytes(fragments, output_filename=None):
     #print(output_matrix)
 
     # each column of output matrix is a chunk of the original matrix
-    original_segments=[]
-    ncol=len(output_matrix[0])
-    nrow=len(output_matrix)
-    for c in range(ncol):
-        col=[output_matrix[r][c] for r in range(nrow)]
-        original_segments.append(col)
+    # original_segments=[]
+    # ncol=len(output_matrix[0])
+    # nrow=len(output_matrix)
+    # for c in range(ncol):
+    #     col=[output_matrix[r][c] for r in range(nrow)]
+    #     original_segments.append(col)
     
-    #print(original_segments)
+    # print(original_segments)
+    
+    original_segments = output_matrix.T#.tolist()
     
     # Transpose the matrix and convert it to a list of columns
     #original_segments = [output_matrix[:, c].tolist() for c in range(output_matrix.shape[1])]
     
-    #print(type(original_segments[0][0]))
-    
-    #print(original_segments)
 
     # remove tailing zeros of the last segment
     last_segment=original_segments[-1]
-    #print(last_segment)
-    #while last_segment[-1] == 0:
-    for x in range(len(last_segment)):
-        last_segment.pop()
-
+    while len(last_segment) > 0 and last_segment[-1] == 0:
+    #for x in range(len(last_segment)):
+        #last_segment.pop()
+        popped_element, last_segment = numpy_pop(last_segment, len(last_segment)-1)
+    
     # combine the original_segment into original_file
     original_file=[]
     for segment in original_segments:
-        #print(segment)
-        original_file.extend(segment)
+       #print(segment)
+       original_file.extend(segment)
+    
+    original_file = np.concatenate(original_segments)
+    
+    #print(type(original_file[0]))
 
     # convert original_file to its content
     original_file_content=bytes(original_file)

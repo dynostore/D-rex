@@ -141,3 +141,12 @@ def fragment_reader_bytes(fragments):
         raise ValueError("There are duplicate fragments. The total number of different fragments are insufficient to assemble the file.")
     
     return (m_, n_, p_, data_fragments, )
+
+def numpy_pop(arr, index=-1):
+    # Get the element to be "popped"
+    popped_element = arr[index]
+    
+    # Remove the element from the array
+    arr = np.delete(arr, index)
+    
+    return popped_element, arr
