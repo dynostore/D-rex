@@ -222,17 +222,19 @@ def assemble_bytes(fragments, output_filename=None):
     #print(output_matrix)
 
     # each column of output matrix is a chunk of the original matrix
-    # original_segments=[]
-    # ncol=len(output_matrix[0])
-    # nrow=len(output_matrix)
-    # for c in range(ncol):
-    #     col=[output_matrix[r][c] for r in range(nrow)]
-    #     original_segments.append(col)
+    original_segments=[]
+    ncol=len(output_matrix[0])
+    nrow=len(output_matrix)
+    for c in range(ncol):
+        col=[output_matrix[r][c] for r in range(nrow)]
+        original_segments.append(col)
     
     #print(original_segments)
     
     # Transpose the matrix and convert it to a list of columns
-    original_segments = [output_matrix[:, c].tolist() for c in range(output_matrix.shape[1])]
+    #original_segments = [output_matrix[:, c].tolist() for c in range(output_matrix.shape[1])]
+    
+    #print(type(original_segments[0][0]))
     
     #print(original_segments)
 
