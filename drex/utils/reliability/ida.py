@@ -233,7 +233,7 @@ def assemble_bytes(fragments, output_filename=None):
        #print(segment)
        original_file.extend(segment)
     
-    original_file = np.concatenate(original_segments)
+    #original_file = np.concatenate(original_segments)
     
     #print(type(original_file[0]))
 
