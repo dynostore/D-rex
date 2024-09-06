@@ -264,7 +264,7 @@ plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig(folder_path + '/total_chunking_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
-# Plotting mean chunking time
+# Plotting mean chunking time + paralel
 plt.figure(figsize=(10, 6))
 plt.bar(df1['algorithm'], df1['mean_chunking_time'] + df1['mean_parralelized_upload_time'], color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
@@ -274,7 +274,17 @@ plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig(folder_path + '/mean_chunking_and_parallel_upload_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
-# Plotting mean chunking time + paralel
+# Plotting mean read time + mean reconstruct
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['mean_read_time_parrallelized'] + df1['mean_reconstruct_time'], color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Mean Read + Reconstruct Time')
+plt.title('Mean Read + Reconstruct Time (s)')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/mean_reconstruct_and_parallel_read_time' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# Plotting mean chunking time
 plt.figure(figsize=(10, 6))
 plt.bar(df1['algorithm'], df1['mean_chunking_time'], color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
@@ -303,6 +313,26 @@ plt.title('Total Upload Time (s or ms for mininet)')
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig(folder_path + '/total_upload_time_non_parallelized_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# Unparalelized read time
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['total_read_time'], color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Total Read Time')
+plt.title('Total Read Time (s or ms for mininet)')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/total_read_time_non_parallelized_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# parallel read time
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['total_read_time_parrallelized'], color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Total Read Time parrallelized')
+plt.title('Total Read Time parrallelized (s or ms for mininet)')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/total_read_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
 # Plotting total_parralelized_upload_time
 plt.figure(figsize=(10, 6))

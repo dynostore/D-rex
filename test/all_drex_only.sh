@@ -5,7 +5,7 @@
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/all_nodes_backblaze.csv 3000 100000
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/most_used_node_x10.csv 1500 100000
 
-#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/test.csv 1
+#~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/test.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0
 
 #~ bash test/run_experiments_drex_only.sh 365 0.9 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 20 drex/inputs/nodes/no_supplementary_nodes.csv
 #~ bash test/run_experiments_drex_only.sh 365 0.99 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/test.csv 20 drex/inputs/nodes/no_supplementary_nodes.csv

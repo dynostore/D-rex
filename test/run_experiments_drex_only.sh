@@ -48,7 +48,7 @@ python3 -m venv venv
 
 # Truncate current output files and add header
 truncate -s 0 output_drex_only.csv
-echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored,total_N,mean_storage_used,mean_upload_time,mean_N,initial_node_sizes,final_node_sizes,total_chunking_time,mean_chunking_time,mean_parralelized_upload_time" > output_drex_only.csv
+echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored,total_N,mean_storage_used,mean_upload_time,mean_N,initial_node_sizes,final_node_sizes,total_chunking_time,mean_chunking_time,mean_parralelized_upload_time,total_read_time,mean_read_time,total_read_time_parrallelized,mean_read_time_parrallelized,total_reconstruct_time,mean_reconstruct_time" > output_drex_only.csv
 
 # Inputs
 data_duration_on_system=$1

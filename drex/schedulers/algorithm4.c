@@ -23,7 +23,7 @@ int global_current_data_value;
 double get_total_remaining_size(Node* nodes, int current_number_of_nodes) {
     double new_total_remaining_size = 0;
     for (int i = 0; i < current_number_of_nodes; i++) {
-        printf("Adding %f from node %d\n", nodes[i].storage_size, nodes[i].id);
+        //~ printf("Adding %f from node %d\n", nodes[i].storage_size, nodes[i].id);
         new_total_remaining_size += nodes[i].storage_size;
     }
     return new_total_remaining_size;
@@ -83,7 +83,7 @@ void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chun
                 break;
             }
         }
-        printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
+        //~ printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
         add_chunk_to_node(&nodes[j], chunk_id, chunk_size, num_of_nodes_used, nodes_used, original_data_size);
     }
 }
@@ -99,7 +99,7 @@ void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_
                 break;
             }
         }
-        printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
+        //~ printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
         add_chunk_to_node(&nodes[j], chunk_id, size_to_stores[i], num_of_nodes_used, nodes_used, original_data_size);
     }
 }
@@ -145,7 +145,7 @@ void remove_chunk_from_node(int* index_node_used, int index_count, int chunk_id,
         // Traverse the list to find the chunk with the given chunk_id
         while (current != NULL) {
             if (current->chunk_id == chunk_id) {
-                printf("Remove chunk %d from node %d in remove_chunk\n", chunk_id, current_node_index);
+                //~ printf("Remove chunk %d from node %d in remove_chunk\n", chunk_id, current_node_index);
                 // Found the chunk, remove it from the list
                 if (prev == NULL) {
                     // The chunk is the first in the list
@@ -409,7 +409,7 @@ void read_supplementary_node(const char *filename, int number_of_nodes, Node *no
 }
 
 // Function to read data from file and populate the sizes array
-void read_data(const char *filename, double *sizes, int number_of_repetition) {
+void read_data(const char *filename, double *sizes, int *submit_times, int number_of_repetition) {
     #ifdef PRINT
     printf("Iteration 1\n");
     #endif
@@ -430,15 +430,17 @@ void read_data(const char *filename, double *sizes, int number_of_repetition) {
 
     // Read the file line by line and populate sizes array
     float temp_size;
+    float temp_submit_time;
     int temp_access_type;
     char line[256];
     int size_count = 0;
 
     while (fgets(line, sizeof(line), file)) {
         // Parse the line
-        if (sscanf(line, "%*d,%f,%*f,%*f,%d", &temp_size, &temp_access_type) == 2) {
+        if (sscanf(line, "%*d,%f,%f,%*f,%d", &temp_size, &temp_submit_time, &temp_access_type) == 3) {
             if (temp_access_type == 2) {
                 sizes[size_count] = temp_size;
+                submit_times[size_count] = (int)roundf(temp_submit_time);
                 size_count++;
             }
         } else {
@@ -683,7 +685,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     // 1. Get system saturation
     double system_saturation = get_system_saturation(number_of_nodes, min_data_size, total_storage_size, *total_remaining_size);    
     #ifdef PRINT
-    //~ printf("System saturation = %f\n", system_saturation);
+    printf("System saturation = %f\n", system_saturation);
     printf("Data size = %f\n", size);
     #endif
     //~ printf("0 max_N %d.\n", max_N); fflush(stdout);
@@ -883,7 +885,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
 
                 combinations[best_index]->nodes[i]->storage_size -= chunk_size;
                 
-                printf("Alg4 chose node %d\n", combinations[best_index]->nodes[i]->id);
+                //~ printf("Alg4 chose node %d\n", combinations[best_index]->nodes[i]->id);
                 used_combinations[i] = combinations[best_index]->nodes[i]->id;
             }
             
@@ -1244,7 +1246,8 @@ int main(int argc, char *argv[]) {
     
     // Step 2: Allocate memory
     double *sizes = (double*)malloc(count * sizeof(double));
-    if (sizes == NULL) {
+    int *submit_times = (int*)malloc(count * sizeof(int));
+    if (sizes == NULL || submit_times == NULL) {
         perror("Error allocating memory");
         return EXIT_FAILURE;
     }
@@ -1255,7 +1258,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Step 3: Read data into the arrays
-    read_data(input_data, sizes, number_of_repetition);
+    read_data(input_data, sizes, submit_times, number_of_repetition);
     double total_storage_size = 0;
     double max_node_size = 0;
     double *initial_node_sizes = (double*)malloc(number_of_nodes * sizeof(double));
@@ -1271,7 +1274,7 @@ int main(int argc, char *argv[]) {
     #ifdef PRINT
     printf("There are %d data in W mode:\n", count);
     for (i = 0; i < count; i++) {
-        printf("%.2f\n", sizes[i]);
+        printf("%.2f %d\n", sizes[i], submit_times[i]);
     }
     #endif
     
@@ -1427,14 +1430,14 @@ int main(int argc, char *argv[]) {
     }
 
     // Print the data to verify (example for the first file)
-    //~ #ifdef PRINT
+    #ifdef PRINT
     for (i = 0; i < 171; i++) {
         printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames[0], i, records_array[0].n[i], records_array[0].k[i], records_array[0].avg_time[i]);
     }
     for (i = 0; i < 171; i++) {
         printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames_reconstruct[0], i, records_array_reconstruct[0].n[i], records_array_reconstruct[0].k[i], records_array_reconstruct[0].avg_time[i]);
     }
-    //~ #endif
+    #endif
 
     LinearModel *models = (LinearModel *)malloc(num_files * sizeof(LinearModel));
     LinearModel *models_reconstruct = (LinearModel *)malloc(num_files * sizeof(LinearModel));
@@ -1482,7 +1485,7 @@ int main(int argc, char *argv[]) {
         max_N = current_number_of_nodes;
     }
     
-    printf("total_storage_size = %f\n", total_storage_size);
+    //~ printf("total_storage_size = %f\n", total_storage_size);
     int removed_node_id = -1;
     //~ double* data_to_replicate = NULL;
     int number_of_data_to_replicate_after_loss = 0;
@@ -1490,6 +1493,8 @@ int main(int argc, char *argv[]) {
     double data_to_store = 0;
     int data_to_store_id = 0;
     double* data_to_replicate = NULL;
+    
+    int last_submit_time_used = 0; // Indicate the time ofthe last submitted task in order to update the random node removal using time and not number of jobs submissions
     
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
@@ -1532,10 +1537,9 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        printf("total_remaining_size = %f\n", total_remaining_size);
         /** Removing a node **/
         if (remove_node_pattern != 0) {
-            printf("Node removal\n");
+            number_of_data_to_replicate_after_loss = 0;
             global_current_data_value = i;
             if (remove_node_pattern == 1 && i == 10000) { // Remove a node at job 10000 randomly
                 removed_node_index = remove_random_node(current_number_of_nodes, nodes, &removed_node_id);
@@ -1555,70 +1559,120 @@ int main(int argc, char *argv[]) {
                 total_remaining_size = get_total_remaining_size(nodes, current_number_of_nodes);
             }
             if (remove_node_pattern == 2) {
-                removed_node_index = remove_node_following_failure_rate(current_number_of_nodes, nodes, &removed_node_id);
-                if (removed_node_index != -1) {
+                //~ printf("submit_times[i] = %d\n", submit_times[i]);
+                for (j = last_submit_time_used; j < submit_times[i]; j++) {
+                    //~ printf("Test failure for time %d\n", j);
+                    number_of_data_to_replicate_after_loss = 0;
+                    removed_node_index = remove_node_following_failure_rate(current_number_of_nodes, nodes, &removed_node_id);
+                    if (removed_node_index != -1) {
+                        
+                        total_storage_size -= initial_node_sizes[removed_node_id];
+                        //~ printf("Node at index %d failed\n", removed_node_index);
                     
-                    total_storage_size -= initial_node_sizes[removed_node_id];
-                    //~ printf("total_storage_size = %f\n", total_storage_size);
-                
-                    print_all_chunks(nodes, current_number_of_nodes);
-                    
-                    data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss);
-                    total_number_of_data_to_replicate_after_loss += number_of_data_to_replicate_after_loss;
-                    if (data_to_replicate != NULL) {
-                        printf("need to re replicate data of size %f\n", data_to_replicate[0]);
+                        //~ print_all_chunks(nodes, current_number_of_nodes);
+                        
+                        data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss);
+                        total_number_of_data_to_replicate_after_loss += number_of_data_to_replicate_after_loss;
+                        
+                        //~ if (data_to_replicate != NULL) {
+                            //~ printf("need to re replicate data of size %f\n", data_to_replicate[0]);
+                        //~ }
+                        
+                        current_number_of_nodes -=1;
+                        
+                        if (max_N == 0) { // max_N is just the number of nodes if we don't use it
+                            max_N = current_number_of_nodes;
+                        }
+                        
+                        qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+                        total_remaining_size = get_total_remaining_size(nodes, current_number_of_nodes);
+                        //~ printf("total_remaining_size after removal: %f\n", total_remaining_size);
+                        //~ printf("total_storage_size = %f\n", total_storage_size);
+                        //~ printf("current_number_of_nodes after removal = %d\n", current_number_of_nodes);
+                        //~ print_all_chunks(nodes, current_number_of_nodes);
                     }
                     
-                    current_number_of_nodes -=1;
+                               if ((algorithm == 4 || algorithm == 2) && removed_node_index != -1) {
+                free_combinations(combinations, total_combinations);
+                combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
+            }
+            
+            // Reschedule if I have to
+            if (number_of_data_to_replicate_after_loss != 0) {
+                //~ printf("number_of_data_to_replicate_after_loss = %d\n", number_of_data_to_replicate_after_loss);
+                for (j = 0; j < number_of_data_to_replicate_after_loss; j++) {
+                    data_to_store = data_to_replicate[j];
+                    data_to_store_id = count + total_number_of_data_to_replicate_after_loss - number_of_data_to_replicate_after_loss + j;
+                    //~ printf("RESCHEDULE new id to reschedule is %d size is %f\n", data_to_store_id, data_to_store);
                     
-                    if (max_N == 0) { // max_N is just the number of nodes if we don't use it
-                        max_N = current_number_of_nodes;
+                    // paste all code from find to print chunks
+                    find_closest(data_to_store, &nearest_size, &closest_index);
+                    
+                    if (algorithm == 0) {
+                        random_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
+                    }
+                    else if (algorithm == 1) {
+                        min_storage(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
+                    }
+                    else if (algorithm == 3) {
+                        hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
+                    }
+                    else if (algorithm == 6) {
+                        hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time);
+                    }
+                    else if (algorithm == 7) {
+                        glusterfs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time);
                     }
                     
-                    qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
-                    total_remaining_size = get_total_remaining_size(nodes, current_number_of_nodes);
-                    printf("total_remaining_size after removal: %f\n", total_remaining_size);
-            printf("total_storage_size = %f\n", total_storage_size);
-
-                    printf("current_number_of_nodes after removal = %d\n", current_number_of_nodes);
-                    print_all_chunks(nodes, current_number_of_nodes);
+                    else if (algorithm == 2) {
+                        algorithm2(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
+                    }
+                    else if (algorithm == 4) {
+                        algorithm4(current_number_of_nodes, nodes, reliability_threshold, data_to_store, max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
+                    }
+                    else if (algorithm == 5) {
+                        balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, &total_remaining_size, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
+                    }
+                    else {
+                        printf("Algorithm %d not valid\n", algorithm);
+                    }
+                    //~ printf("RESCHEDULE Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
+                    if (N > max_N) { printf("error N > max_N\n"); exit(1); }
+                    //~ print_all_chunks(nodes, current_number_of_nodes);
+                    input_data_sum_of_size_already_stored += data_to_store;
                 }
+                free(data_to_replicate); // TODO yeah do that ? Or set it to null ?
+                number_of_data_to_replicate_after_loss = 0;
+            }
+                    //~ last_submit_time_used = submit_times[i];
+                }
+                last_submit_time_used = submit_times[i];
             }
             else {
                 printf("ERROR: remove_node_pattern = %d not supported\n", remove_node_pattern);
                 exit(1);
             }
             
-            if ((algorithm == 4 || algorithm == 2) && removed_node_index != -1) {
-                free_combinations(combinations, total_combinations);
-                combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
-                
-                /*
-                for (int m = 0; m < total_combinations; m++) {
-                    printf("Combination %d: ", m + 1);
-                    for (int n = 0; n < combinations[m]->num_elements; n++) {
-                        printf("%d ", combinations[m]->nodes[n]->id);
-                        printf("(%d) - ", combinations[m]->write_bandwidth[n]);
-                    }
-                    printf("\n");
-                } */
-            }
+            //~ if ((algorithm == 4 || algorithm == 2) && removed_node_index != -1) {
+                //~ free_combinations(combinations, total_combinations);
+                //~ combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
+            //~ }
         }
         
         /** Resorting the nodes and combinations after every 100 GB of data stored **/
         // TODO: sort more often ?
         if (input_data_sum_of_size_already_stored > 100000 && reduced_complexity_situation == true && algorithm == 4) {
-            printf("Reset\n");
+            //~ printf("Reset\n");
             free_combinations(combinations, total_combinations);
             combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
         }
         
         // First reschedule if I have to
-        if (number_of_data_to_replicate_after_loss != 0) {
+        if (remove_node_pattern == 1 && number_of_data_to_replicate_after_loss != 0) {
+            //~ printf("number_of_data_to_replicate_after_loss for replicate 1 = %d\n", number_of_data_to_replicate_after_loss);
             for (j = 0; j < number_of_data_to_replicate_after_loss; j++) {
                 data_to_store = data_to_replicate[j];
                 data_to_store_id = count + total_number_of_data_to_replicate_after_loss - number_of_data_to_replicate_after_loss + j;
-                printf("count is %d new id is %d size is %f\n", count, data_to_store_id, data_to_store);
                 
                 // paste all code from find to print chunks
                 find_closest(data_to_store, &nearest_size, &closest_index);
@@ -1651,7 +1705,6 @@ int main(int argc, char *argv[]) {
                 else {
                     printf("Algorithm %d not valid\n", algorithm);
                 }
-                printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
                 if (N > max_N) { printf("error N > max_N\n"); exit(1); }
                 print_all_chunks(nodes, current_number_of_nodes);
                 input_data_sum_of_size_already_stored += data_to_store;
@@ -1692,9 +1745,9 @@ int main(int argc, char *argv[]) {
             printf("Algorithm %d not valid\n", algorithm);
         }
         
-        //~ #ifdef PRINT
+        #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        //~ #endif
+        #endif
         
         if (N > max_N) { printf("error N > max_N\n"); exit(1); }
         
@@ -1712,9 +1765,9 @@ int main(int argc, char *argv[]) {
     
     char file_to_print[70];
     strcpy(file_to_print, "output");
-    strcpy(file_to_print, "_");
-    strcpy(file_to_print, alg_to_print);
-    strcpy(file_to_print, "_stats.csv");
+    strcat(file_to_print, "_");
+    strcat(file_to_print, alg_to_print);
+    strcat(file_to_print, "_stats.csv");
     write_linked_list_to_file(&list, file_to_print, &total_chunking_time, &total_reconstruct_time);
    
     /** Writting the general outputs **/
