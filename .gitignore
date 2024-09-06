@@ -20,6 +20,11 @@ drex/inputs/data/MEVA_merged.csv
 drex/inputs/get_stats_input_data
 alg4
 _stats.csv
+output_alg1_c_stats.csv
+output_glusterfs_6_4_c_stats.csv
+output_hdfs_3_replication_c_stats.csv
+output_hdfs_rs_4_2_c_stats.csv
+output_random_c_stats.csv
 drex/schedulers/algorithm1.o
 drex/schedulers/glusterfs.o
 drex/schedulers/hdfs.o
