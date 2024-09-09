@@ -1219,17 +1219,17 @@ int main(int argc, char *argv[]) {
     int remove_node_pattern = atoi(argv[8]); // 0 for no removal, 1 for removal randomly, 2 for following failure rate
     unsigned int seed = atoi(argv[9]);  // We fix the seed so all algorithm have the same one
     srand(seed); // Set the seed up
-    int max_N = atoi(argv[10]); // 0 if no max_N, otherwise if we set up a max_N
+    int max_N_arg = atoi(argv[10]); // 0 if no max_N, otherwise if we set up a max_N
     
     // For certain algorithms there are additional args
     int RS1;
     int RS2;
-    if (algorithm == 6 || algorithm == 7) {
+    if (algorithm == 6 || algorithm == 7 || algorithm == 8) {
         RS1 = atoi(argv[11]);
         RS2 = atoi(argv[12]);
     }
     
-    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d. Seed is %d. Max_N is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern, seed, max_N);
+    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d. Seed is %d. Max_N is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern, seed, max_N_arg);
     
     DataList list;
     init_list(&list);
@@ -1294,6 +1294,7 @@ int main(int argc, char *argv[]) {
     int N;
     int K;
     const char *output_filename = "output_drex_only.csv";
+    bool is_daos = false;
     
     char alg_to_print[50];
     if (algorithm == 4) {
@@ -1319,6 +1320,10 @@ int main(int argc, char *argv[]) {
     }
     else if (algorithm == 7) {
         sprintf(alg_to_print, "glusterfs_%d_%d_c", RS1, RS2);
+    }
+    else if (algorithm == 8) {
+        sprintf(alg_to_print, "daos_%d_%d_c", RS1, RS2);
+        is_daos = true;
     }
     double total_scheduling_time = 0;
     double total_storage_used = 0;
@@ -1481,7 +1486,8 @@ int main(int argc, char *argv[]) {
     double input_data_sum_of_size_already_stored = 0;
     int next_node_to_add_index = 0;
     
-    if (max_N == 0) { // max_N is just the number of nodes if we don't use it
+    int max_N = 0;
+    if (max_N_arg == 0) { // max_N is just the number of nodes if we don't use it
         max_N = current_number_of_nodes;
     }
     
@@ -1513,7 +1519,7 @@ int main(int argc, char *argv[]) {
             printf("Adding node %d\n", nodes[number_of_initial_nodes + next_node_to_add_index].id);
             current_number_of_nodes += 1;
             
-            if (max_N == 0) { // max_N is just the number of nodes if we don't use it
+            if (max_N_arg == 0) { // max_N is just the number of nodes if we don't use it
                 max_N = current_number_of_nodes;
             }
             
@@ -1551,7 +1557,7 @@ int main(int argc, char *argv[]) {
                 total_number_of_data_to_replicate_after_loss += number_of_data_to_replicate_after_loss;
                 current_number_of_nodes -=1;
                                 
-                if (max_N == 0) { // max_N is just the number of nodes if we don't use it
+                if (max_N_arg == 0) { // max_N is just the number of nodes if we don't use it
                     max_N = current_number_of_nodes;
                 }
     
@@ -1580,7 +1586,7 @@ int main(int argc, char *argv[]) {
                         
                         current_number_of_nodes -=1;
                         
-                        if (max_N == 0) { // max_N is just the number of nodes if we don't use it
+                        if (max_N_arg == 0) { // max_N is just the number of nodes if we don't use it
                             max_N = current_number_of_nodes;
                         }
                         
@@ -1592,7 +1598,7 @@ int main(int argc, char *argv[]) {
                         //~ print_all_chunks(nodes, current_number_of_nodes);
                     }
                     
-                               if ((algorithm == 4 || algorithm == 2) && removed_node_index != -1) {
+                        if ((algorithm == 4 || algorithm == 2) && removed_node_index != -1) {
                 free_combinations(combinations, total_combinations);
                 combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
             }
@@ -1618,12 +1624,14 @@ int main(int argc, char *argv[]) {
                         hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
                     }
                     else if (algorithm == 6) {
-                        hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time);
+                        hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time, max_N);
                     }
                     else if (algorithm == 7) {
-                        glusterfs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time);
+                        glusterfs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time, is_daos, max_N);
                     }
-                    
+                    else if (algorithm == 8) {
+                        glusterfs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time, is_daos, max_N);
+                    }
                     else if (algorithm == 2) {
                         algorithm2(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
                     }
@@ -1687,12 +1695,14 @@ int main(int argc, char *argv[]) {
                     hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
                 }
                 else if (algorithm == 6) {
-                    hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time);
+                    hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time, max_N);
                 }
                 else if (algorithm == 7) {
-                    glusterfs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time);
+                    glusterfs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time, is_daos, max_N);
                 }
-                
+                else if (algorithm == 8) {
+                    glusterfs(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, RS1, RS2, &total_read_time_parrallelized, &total_read_time, is_daos, max_N);
+                }
                 else if (algorithm == 2) {
                     algorithm2(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
                 }
@@ -1726,12 +1736,14 @@ int main(int argc, char *argv[]) {
             hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
         }
         else if (algorithm == 6) {
-            hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, RS1, RS2, &total_read_time_parrallelized, &total_read_time);
+            hdfs_rs(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, RS1, RS2, &total_read_time_parrallelized, &total_read_time, max_N);
         }
         else if (algorithm == 7) {
-            glusterfs(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, RS1, RS2, &total_read_time_parrallelized, &total_read_time);
+            glusterfs(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, RS1, RS2, &total_read_time_parrallelized, &total_read_time, is_daos, max_N);
         }
-        
+        else if (algorithm == 8) {
+            glusterfs(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, RS1, RS2, &total_read_time_parrallelized, &total_read_time, is_daos, max_N);
+        }
         else if (algorithm == 2) {
             algorithm2(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
         }
@@ -1745,9 +1757,9 @@ int main(int argc, char *argv[]) {
             printf("Algorithm %d not valid\n", algorithm);
         }
         
-        #ifdef PRINT
+        //~ #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        #endif
+        //~ #endif
         
         if (N > max_N) { printf("error N > max_N\n"); exit(1); }
         

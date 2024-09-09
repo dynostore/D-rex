@@ -361,13 +361,41 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
     *total_scheduling_time += seconds + useconds/1000000.0;
 }
 
-void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int RS1, int RS2, double* total_read_time_parrallelized, double* total_read_time) {
+void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int RS1, int RS2, double* total_read_time_parrallelized, double* total_read_time, int max_N) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
 
     *K = RS1;
     *N = RS1 + RS2;
+    
+    if (RS1 == 0) { // Let hdfs_rs adapt to number of nodes pairs="3 2 6 3 10 4"
+        printf("number_of_nodes %d max N %d\n", number_of_nodes, max_N);
+        if (number_of_nodes >= 14 && max_N > 9) {
+            *K = 10;
+            *N = 10 + 4;
+        }
+        else if (number_of_nodes >= 9 && max_N > 5) {
+            *K = 6;
+            *N = 6 + 3;
+        }
+        else {
+            *K = 3;
+            *N = 3 + 2;
+        }
+    }
+
+    
+    if (*N > max_N) {
+                    *K = -1;
+                    *N = -1;
+                    gettimeofday(&end, NULL);
+                    seconds  = end.tv_sec  - start.tv_sec;
+                    useconds = end.tv_usec - start.tv_usec;
+                    *total_scheduling_time += seconds + useconds/1000000.0;
+                    return;
+                }
+    
     //~ printf("%d %d\n", *N, *K);
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_bandwidth_desc_with_condition);
     //~ print_nodes(nodes, number_of_nodes);

@@ -17,15 +17,85 @@ int in_array(int* array, int size, int value) {
     return 0;  // Value not found
 }
 
-void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int RS1, int RS2, double* total_read_time_parrallelized, double* total_read_time) {
+void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int RS1, int RS2, double* total_read_time_parrallelized, double* total_read_time, bool is_daos, int max_N) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
     
     *N = RS1;
     *K = RS2;
-    //~ printf("Gluster fs %d %d\n", *N, *K);
-    //~ qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
+    
+    /** Daos adapt it's replication values depending on if it has more or less that 10 nodes 
+     *  When RS1 == 1 we do: 
+     *  RF:1
+     *  domain_nr >= 10 : OC_EC_8P1GX
+     *  domain_nr >= 6 : OC_EC_4P1GX
+     *  When RS1 == 2 we do:
+     *  RF:2
+     *  domain_nr >= 10 : OC_EC_8P2GX
+     *  domain_nr >= 6 : OC_EC_4P2GX
+     **/
+    if (is_daos == true) {
+        printf("is daos true %d nodes\n", number_of_nodes);
+        if (number_of_nodes >= 10 && max_N > 6) {
+            if (RS1 == 1) {
+                *N = 9;
+                *K = 8;
+            }
+            else if (RS1 == 2) {
+                *N = 10;
+                *K = 8;
+            }
+            else { printf("Wrong RS1 value for DAOS\n"); exit(1); }
+        }
+        else if (number_of_nodes >= 6) {
+        printf("number_of_nodes sup 6\n");
+           if (RS1 == 1) {
+                *N = 5;
+                *K = 4;
+            }
+            else if (RS1 == 2) {
+                *N = 6;
+                *K = 4;
+            }
+            else { printf("Wrong RS1 value for DAOS\n"); exit(1); } 
+        }
+        else {
+            *N= -1;
+            *K = -1;
+            gettimeofday(&end, NULL);
+            seconds  = end.tv_sec  - start.tv_sec;
+            useconds = end.tv_usec - start.tv_usec;
+            *total_scheduling_time += seconds + useconds/1000000.0;
+            return;
+        }
+    }
+    else if (RS1 == 0) { // Let glusterfs adapt to number of nodes pairs="6 4 11 8 12 8"
+        if (number_of_nodes >= 12 && max_N > 11) {
+            *N = 12;
+            *K = 8;
+        }
+        else if (number_of_nodes >= 11 && max_N > 6) {
+            *N = 11;
+            *K = 8;
+        }
+        else {
+            *N = 6;
+            *K = 4;
+        }
+    }
+    
+    
+    if (*N > max_N) {
+        *K = -1;
+        *N = -1;
+                    gettimeofday(&end, NULL);
+                    seconds  = end.tv_sec  - start.tv_sec;
+                    useconds = end.tv_usec - start.tv_usec;
+                    *total_scheduling_time += seconds + useconds/1000000.0;
+        return;
+    }
+    
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_bandwidth_desc_with_condition);
     //~ print_nodes(nodes, number_of_nodes);
     double chunk_size = size / *K;
