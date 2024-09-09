@@ -89,8 +89,8 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
     if (*N > max_N) {
         *K = -1;
         *N = -1;
-                    gettimeofday(&end, NULL);
-                    seconds  = end.tv_sec  - start.tv_sec;
+        gettimeofday(&end, NULL);
+        seconds  = end.tv_sec  - start.tv_sec;
                     useconds = end.tv_usec - start.tv_usec;
                     *total_scheduling_time += seconds + useconds/1000000.0;
         return;

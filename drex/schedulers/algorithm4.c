@@ -16,6 +16,7 @@
 #include "random.h"
 #include "hdfs.h"
 #include "glusterfs.h"
+#include "optimal_schedule.h"
 #include <sys/time.h>
 
 int global_current_data_value;
@@ -666,7 +667,7 @@ void find_min_max_pareto(Combination** combinations, int* pareto_indices, int pa
     }
 }
 
-void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time) {
+void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time, int decision_value_alg4) {
     int i = 0;
     int j = 0;
     double chunk_size = 0;
@@ -796,6 +797,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         #endif
         double time_score = 0;
         double space_score = 0;
+        double sat_score = 0;
         double total_score = 0;
         double max_score = -DBL_MAX;
         int idx = 0;
@@ -807,20 +809,35 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             idx = pareto_indices[i];
             if (total_progress_replication_and_write_time > 0) {  // In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
                 time_score = 100 - ((combinations[idx]->replication_and_write_time - min_replication_and_write_time)*100)/total_progress_replication_and_write_time;
+                //~ printf("time_score %f", time_score);
             }
             
             if (total_progress_storage_overhead > 0) {
                 space_score = 100 - ((combinations[idx]->storage_overhead - min_storage_overhead)*100)/total_progress_storage_overhead;
+                //~ printf(" / space_score 1 %f", space_score);
             }
             if (total_progress_size_score > 0) {
-                space_score += 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
+                sat_score = 100 - ((combinations[idx]->size_score - min_size_score)*100)/total_progress_size_score;
+                //~ printf(" / sat_score %f", sat_score);
             }
 
-            // first idea
-            total_score = time_score + (space_score/2.0)*system_saturation;
-            
-            // alternative idea
-            // total_score = (1 - system_saturation)*time_score + space_score/2.0;
+            if (decision_value_alg4 == 0) {
+                // first idea
+                total_score = time_score + ((space_score+sat_score)/2.0)*system_saturation;
+            }
+            else if (decision_value_alg4 == 1) {
+                // alternative idea
+                total_score = (1 - system_saturation)*time_score + (space_score + sat_score)/2.0;
+            }
+            else if (decision_value_alg4 == 2) {
+                // alternative idea
+                total_score = (time_score + space_score)/2 + sat_score;
+            }
+            else if (decision_value_alg4 == 3) {
+                // alternative idea
+                total_score = (time_score + space_score)/2 + sat_score*system_saturation;
+            }
+            //~ printf(" = total_score %f\n", total_score);
             
             if (max_score < total_score) { // Higher score the better
                 max_score = total_score;
@@ -828,23 +845,25 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             }
         }
         
-        //~ // Getting combination with best score using 3D pareto knee bend angle max
-        //~ // TODO if we keep this ne need to compute system saturation
-        //~ double knee_point[3];
-        //~ #ifdef PRINT
-        //~ printf("max_time_index %d, max_saturation_index %d pareto_count %d\n", max_time_index, max_saturation_index, pareto_count);
-        //~ #endif
-        //~ if (pareto_count == 1) {
-            //~ best_index = pareto_indices[0];
-        //~ }
-        //~ else {
-            //~ best_index = pareto_indices[find_knee_point_3d(pareto_front, pareto_count, knee_point, max_time_index, max_saturation_index)];
-        //~ }
-        //~ #ifdef PRINT
-        //~ printf("Knee Point: %d (%.2f, %.2f, %.2f)\n", best_index, knee_point[0], knee_point[1], knee_point[2]);
-        //~ printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
-        //~ printf("..\n");
-        //~ #endif
+        if (decision_value_alg4 == 4) {
+            // Getting combination with best score using 3D pareto knee bend angle max
+            // TODO if we keep this no need to compute system saturation
+            double knee_point[3];
+            #ifdef PRINT
+            printf("max_time_index %d, max_saturation_index %d pareto_count %d\n", max_time_index, max_saturation_index, pareto_count);
+            #endif
+            if (pareto_count == 1) {
+                best_index = pareto_indices[0];
+            }
+            else {
+                best_index = pareto_indices[find_knee_point_3d(pareto_front, pareto_count, knee_point, max_time_index, max_saturation_index)];
+            }
+            #ifdef PRINT
+            printf("Knee Point: %d (%.2f, %.2f, %.2f)\n", best_index, knee_point[0], knee_point[1], knee_point[2]);
+            printf("Best index is %d with N%d K%d\n", best_index, combinations[best_index]->num_elements, combinations[best_index]->K);
+            printf("..\n");
+            #endif
+        }
 
         *N = combinations[best_index]->num_elements;
         *K = combinations[best_index]->K;
@@ -1162,6 +1181,35 @@ int compare_nodes_by_storage_desc_with_condition(const void *a, const void *b) {
     return 0;
 }
 
+/** Comparison function for sorting nodes by remaining storage size in descending order
+ * Nodes with add_after_x_jobs > current_data_value or add_after_x_jobs == -1 are sorted to the end **/
+int compare_nodes_by_reliability_desc_with_condition(const void *a, const void *b) {
+    Node *nodeA = (Node *)a;
+    Node *nodeB = (Node *)b;
+
+    // Handle nodes with add_after_x_jobs == -1 first
+    if (nodeA->add_after_x_jobs == -1 && nodeB->add_after_x_jobs != -1) {
+        return 1; // Move nodeA to the end
+    }
+    if (nodeA->add_after_x_jobs != -1 && nodeB->add_after_x_jobs == -1) {
+        return -1; // Move nodeB to the end
+    }
+    
+    // Check if the nodes should be moved to the end
+    if (nodeA->add_after_x_jobs > global_current_data_value && nodeB->add_after_x_jobs <= global_current_data_value) {
+        return 1; // Move nodeA to the end
+    }
+    if (nodeA->add_after_x_jobs <= global_current_data_value && nodeB->add_after_x_jobs > global_current_data_value) {
+        return -1; // Move nodeB to the end
+    }
+
+    // If both nodes are in the same category (both above or below the threshold)
+    if (nodeA->probability_failure > nodeB->probability_failure) return 1;
+    if (nodeA->probability_failure < nodeB->probability_failure) return -1;
+
+    return 0;
+}
+
 /** Comparison function for sorting nodes by bandwidth in descending order
  * Nodes with add_after_x_jobs > current_data_value or add_after_x_jobs == -1 are sorted to the end **/
 int compare_nodes_by_bandwidth_desc_with_condition(const void *a, const void *b) {
@@ -1187,6 +1235,67 @@ int compare_nodes_by_bandwidth_desc_with_condition(const void *a, const void *b)
     // If both nodes are in the same category (both above or below the threshold)
     if (nodeA->write_bandwidth < nodeB->write_bandwidth) return 1;
     if (nodeA->write_bandwidth > nodeB->write_bandwidth) return -1;
+
+    return 0;
+}
+
+/** Comparison function for sorting nodes by bandwidth in descending order
+ * Nodes with add_after_x_jobs > current_data_value or add_after_x_jobs == -1 are sorted to the end **/
+int compare_nodes_by_read_bandwidth_desc_with_condition(const void *a, const void *b) {
+    Node *nodeA = (Node *)a;
+    Node *nodeB = (Node *)b;
+
+    // Handle nodes with add_after_x_jobs == -1 first
+    if (nodeA->add_after_x_jobs == -1 && nodeB->add_after_x_jobs != -1) {
+        return 1; // Move nodeA to the end
+    }
+    if (nodeA->add_after_x_jobs != -1 && nodeB->add_after_x_jobs == -1) {
+        return -1; // Move nodeB to the end
+    }
+    
+    // Check if the nodes should be moved to the end
+    if (nodeA->add_after_x_jobs > global_current_data_value && nodeB->add_after_x_jobs <= global_current_data_value) {
+        return 1; // Move nodeA to the end
+    }
+    if (nodeA->add_after_x_jobs <= global_current_data_value && nodeB->add_after_x_jobs > global_current_data_value) {
+        return -1; // Move nodeB to the end
+    }
+
+    // If both nodes are in the same category (both above or below the threshold)
+    if (nodeA->read_bandwidth < nodeB->read_bandwidth) return 1;
+    if (nodeA->read_bandwidth > nodeB->read_bandwidth) return -1;
+
+    return 0;
+}
+
+/** Comparison function for sorting nodes by (write_bandwidth + read_bandwidth) in descending order
+ * Nodes with add_after_x_jobs > current_data_value or add_after_x_jobs == -1 are sorted to the end **/
+int compare_nodes_by_bandwidth_read_and_write_desc_with_condition(const void *a, const void *b) {
+    Node *nodeA = (Node *)a;
+    Node *nodeB = (Node *)b;
+
+    // Handle nodes with add_after_x_jobs == -1 first
+    if (nodeA->add_after_x_jobs == -1 && nodeB->add_after_x_jobs != -1) {
+        return 1; // Move nodeA to the end
+    }
+    if (nodeA->add_after_x_jobs != -1 && nodeB->add_after_x_jobs == -1) {
+        return -1; // Move nodeB to the end
+    }
+    
+    // Check if the nodes should be moved to the end
+    if (nodeA->add_after_x_jobs > global_current_data_value && nodeB->add_after_x_jobs <= global_current_data_value) {
+        return 1; // Move nodeA to the end
+    }
+    if (nodeA->add_after_x_jobs <= global_current_data_value && nodeB->add_after_x_jobs > global_current_data_value) {
+        return -1; // Move nodeB to the end
+    }
+
+    // Compare by the sum of write_bandwidth and read_bandwidth
+    int bandwidthA = nodeA->write_bandwidth + nodeA->read_bandwidth;
+    int bandwidthB = nodeB->write_bandwidth + nodeB->read_bandwidth;
+
+    if (bandwidthA < bandwidthB) return 1;
+    if (bandwidthA > bandwidthB) return -1;
 
     return 0;
 }
@@ -1228,6 +1337,10 @@ int main(int argc, char *argv[]) {
         RS1 = atoi(argv[11]);
         RS2 = atoi(argv[12]);
     }
+    int decision_value_alg4 = 0;
+    if (algorithm == 4) {
+        decision_value_alg4 = atoi(argv[11]);
+    }
     
     printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d. Seed is %d. Max_N is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern, seed, max_N_arg);
     
@@ -1240,9 +1353,9 @@ int main(int argc, char *argv[]) {
     int number_of_initial_nodes = count_nodes(input_node);
     int number_of_supplementary_nodes = count_nodes(input_supplementary_node);
     int number_of_nodes = number_of_initial_nodes + number_of_supplementary_nodes;
-    printf("number_of_initial_nodes: %d\n", number_of_initial_nodes);
-    printf("number_of_supplementary_nodes: %d\n", number_of_supplementary_nodes);
-    printf("number_of_nodes: %d\n", number_of_nodes);
+    printf("number_of_initial_nodes: %d", number_of_initial_nodes);
+    printf(" / number_of_supplementary_nodes: %d", number_of_supplementary_nodes);
+    printf(" / number_of_nodes: %d\n", number_of_nodes);
     
     // Step 2: Allocate memory
     double *sizes = (double*)malloc(count * sizeof(double));
@@ -1298,7 +1411,7 @@ int main(int argc, char *argv[]) {
     
     char alg_to_print[50];
     if (algorithm == 4) {
-        strcpy(alg_to_print, "alg4");
+        sprintf(alg_to_print, "alg4_%d", decision_value_alg4);
     }
     else if (algorithm == 2) {
         strcpy(alg_to_print, "alg2");
@@ -1308,6 +1421,9 @@ int main(int argc, char *argv[]) {
     }
     else if (algorithm == 1) {
         strcpy(alg_to_print, "alg1_c");
+    }
+    else if (algorithm == 9) {
+        strcpy(alg_to_print, "optimal_schedule");
     }
     else if (algorithm == 0) {
         strcpy(alg_to_print, "random_c");
@@ -1491,6 +1607,9 @@ int main(int argc, char *argv[]) {
         max_N = current_number_of_nodes;
     }
     
+    double best_upload_time_to_print = 0;
+    double best_read_time_to_print = 0;
+    
     //~ printf("total_storage_size = %f\n", total_storage_size);
     int removed_node_id = -1;
     //~ double* data_to_replicate = NULL;
@@ -1504,7 +1623,7 @@ int main(int argc, char *argv[]) {
     
     /** Simulation main loop **/
     for (i = 0; i < count; i++) {
-        if (i%22000 == 0) {
+        if (i%250000 == 0) {
             printf("Data %d/%d of size %f\n", i, count, sizes[i]);
         }
         
@@ -1524,10 +1643,10 @@ int main(int argc, char *argv[]) {
             }
             
             total_storage_size += total_storage_supplementary_nodes[next_node_to_add_index];
-            printf("total_storage_size = %f\n", total_storage_size);
+            //~ printf("total_storage_size = %f\n", total_storage_size);
             if (max_node_size < max_node_size_supplementary_nodes[next_node_to_add_index]) {
                 max_node_size = max_node_size_supplementary_nodes[next_node_to_add_index];
-                printf("New max node size %f\n", max_node_size_supplementary_nodes[next_node_to_add_index]);
+                //~ printf("New max node size %f\n", max_node_size_supplementary_nodes[next_node_to_add_index]);
             }
             qsort(nodes, number_of_supplementary_nodes + number_of_initial_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
             total_remaining_size = get_total_remaining_size(nodes, current_number_of_nodes);
@@ -1620,6 +1739,9 @@ int main(int argc, char *argv[]) {
                     else if (algorithm == 1) {
                         min_storage(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
                     }
+                    else if (algorithm == 9) {
+                        optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print);
+                    }
                     else if (algorithm == 3) {
                         hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
                     }
@@ -1636,7 +1758,7 @@ int main(int argc, char *argv[]) {
                         algorithm2(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
                     }
                     else if (algorithm == 4) {
-                        algorithm4(current_number_of_nodes, nodes, reliability_threshold, data_to_store, max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
+                        algorithm4(current_number_of_nodes, nodes, reliability_threshold, data_to_store, max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, decision_value_alg4);
                     }
                     else if (algorithm == 5) {
                         balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, &total_remaining_size, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
@@ -1691,6 +1813,9 @@ int main(int argc, char *argv[]) {
                 else if (algorithm == 1) {
                     min_storage(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
                 }
+                                    else if (algorithm == 9) {
+                        optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print);
+                    }
                 else if (algorithm == 3) {
                     hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
                 }
@@ -1707,7 +1832,7 @@ int main(int argc, char *argv[]) {
                     algorithm2(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
                 }
                 else if (algorithm == 4) {
-                    algorithm4(current_number_of_nodes, nodes, reliability_threshold, data_to_store, max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
+                    algorithm4(current_number_of_nodes, nodes, reliability_threshold, data_to_store, max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, decision_value_alg4);
                 }
                 else if (algorithm == 5) {
                     balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, &total_remaining_size, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
@@ -1732,6 +1857,9 @@ int main(int argc, char *argv[]) {
         else if (algorithm == 1) {
             min_storage(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
         }
+                            else if (algorithm == 9) {
+                        optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print);
+                    }
         else if (algorithm == 3) {
             hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
         }
@@ -1748,7 +1876,7 @@ int main(int argc, char *argv[]) {
             algorithm2(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
         }
         else if (algorithm == 4) {
-            algorithm4(current_number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
+            algorithm4(current_number_of_nodes, nodes, reliability_threshold, sizes[i], max_node_size, min_data_size, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, combinations, total_combinations, &total_remaining_size, total_storage_size, closest_index, records_array, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time, decision_value_alg4);
         }
         else if (algorithm == 5) {
             balance_penalty_algorithm(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, &total_remaining_size, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
@@ -1757,9 +1885,9 @@ int main(int argc, char *argv[]) {
             printf("Algorithm %d not valid\n", algorithm);
         }
         
-        //~ #ifdef PRINT
+        #ifdef PRINT
         printf("Algorithm %d chose N = %d and K = %d\n", algorithm, N, K);
-        //~ #endif
+        #endif
         
         if (N > max_N) { printf("error N > max_N\n"); exit(1); }
         
@@ -1775,39 +1903,49 @@ int main(int argc, char *argv[]) {
     double total_chunking_time = 0;
     double total_reconstruct_time = 0;
     
-    char file_to_print[70];
-    strcpy(file_to_print, "output");
-    strcat(file_to_print, "_");
-    strcat(file_to_print, alg_to_print);
-    strcat(file_to_print, "_stats.csv");
-    write_linked_list_to_file(&list, file_to_print, &total_chunking_time, &total_reconstruct_time);
-   
-    /** Writting the general outputs **/
-    FILE *file = fopen(output_filename, "a");
-    if (file == NULL) {
-        perror("Error opening file");
-        return EXIT_FAILURE;
-    }
-    int id_to_print_because_nodes_are_sorted = 0;
-    fprintf(file, "%s, %f, %f, %f, %f, %d, %d, %f, %f, %f, \"[", alg_to_print, total_scheduling_time, total_storage_used, total_upload_time, total_parralelized_upload_time, number_of_data_stored, total_N, total_storage_used / number_of_data_stored, total_upload_time / number_of_data_stored, (double)total_N / number_of_data_stored);
-    for (i = 0; i < number_of_nodes - 1; i++) {
-        fprintf(file, "%f, ", initial_node_sizes[i]);
-    }
-    fprintf(file, "%f]\", \"[", initial_node_sizes[i]);
-    for (i = 0; i < number_of_nodes - 1; i++) {
+    if (algorithm != 9) {
+        char file_to_print[70];
+        strcpy(file_to_print, "output");
+        strcat(file_to_print, "_");
+        strcat(file_to_print, alg_to_print);
+        strcat(file_to_print, "_stats.csv");
+        write_linked_list_to_file(&list, file_to_print, &total_chunking_time, &total_reconstruct_time);
+       
+        /** Writting the general outputs **/
+        FILE *file = fopen(output_filename, "a");
+        if (file == NULL) {
+            perror("Error opening file");
+            return EXIT_FAILURE;
+        }
+        int id_to_print_because_nodes_are_sorted = 0;
+        fprintf(file, "%s, %f, %f, %f, %f, %d, %d, %f, %f, %f, \"[", alg_to_print, total_scheduling_time, total_storage_used, total_upload_time, total_parralelized_upload_time, number_of_data_stored, total_N, total_storage_used / number_of_data_stored, total_upload_time / number_of_data_stored, (double)total_N / number_of_data_stored);
+        for (i = 0; i < number_of_nodes - 1; i++) {
+            fprintf(file, "%f, ", initial_node_sizes[i]);
+        }
+        fprintf(file, "%f]\", \"[", initial_node_sizes[i]);
+        for (i = 0; i < number_of_nodes - 1; i++) {
+            id_to_print_because_nodes_are_sorted = 0;
+            while (nodes[id_to_print_because_nodes_are_sorted].id != i) {
+                id_to_print_because_nodes_are_sorted++;
+            }
+            fprintf(file, "%f, ", nodes[id_to_print_because_nodes_are_sorted].storage_size);
+        }
         id_to_print_because_nodes_are_sorted = 0;
         while (nodes[id_to_print_because_nodes_are_sorted].id != i) {
             id_to_print_because_nodes_are_sorted++;
         }
-        fprintf(file, "%f, ", nodes[id_to_print_because_nodes_are_sorted].storage_size);
+        fprintf(file, "%f]\"", nodes[id_to_print_because_nodes_are_sorted].storage_size);
+        fprintf(file, ", %f, %f, %f, %f, %f, %f, %f, %f, %f\n", total_chunking_time, total_chunking_time / number_of_data_stored, total_parralelized_upload_time / number_of_data_stored, total_read_time, total_read_time / number_of_data_stored, total_read_time_parrallelized, total_read_time_parrallelized / number_of_data_stored, total_reconstruct_time, total_reconstruct_time / number_of_data_stored);
+        fclose(file);
     }
-    id_to_print_because_nodes_are_sorted = 0;
-    while (nodes[id_to_print_because_nodes_are_sorted].id != i) {
-        id_to_print_because_nodes_are_sorted++;
+    else {
+        const char *output_filename_optimal_schedule = "output_optimal_schedule.csv";
+        FILE *file = fopen(output_filename_optimal_schedule, "w");
+        printf("%d %f %f %f\n", number_of_data_stored, total_storage_used, best_upload_time_to_print, best_read_time_to_print);
+        fprintf(file, "number_of_data_stored,total_storage_used,best_upload_time,best_read_time\n");
+        fprintf(file, "%d,%f,%f,%f\n", number_of_data_stored, total_storage_used, best_upload_time_to_print, best_read_time_to_print);
+        fclose(file);
     }
-    fprintf(file, "%f]\"", nodes[id_to_print_because_nodes_are_sorted].storage_size);
-    fprintf(file, ", %f, %f, %f, %f, %f, %f, %f, %f, %f\n", total_chunking_time, total_chunking_time / number_of_data_stored, total_parralelized_upload_time / number_of_data_stored, total_read_time, total_read_time / number_of_data_stored, total_read_time_parrallelized, total_read_time_parrallelized / number_of_data_stored, total_reconstruct_time, total_reconstruct_time / number_of_data_stored);
-    fclose(file);
     
     // Free allocated memory
     free(sizes);
