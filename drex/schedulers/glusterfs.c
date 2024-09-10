@@ -61,7 +61,7 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
             else { printf("Wrong RS1 value for DAOS\n"); exit(1); } 
         }
         else {
-            *N= -1;
+            *N = -1;
             *K = -1;
             gettimeofday(&end, NULL);
             seconds  = end.tv_sec  - start.tv_sec;
@@ -69,6 +69,7 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
             *total_scheduling_time += seconds + useconds/1000000.0;
             return;
         }
+        //~ printf("N and K %d %d\n", *N, *K);
     }
     else if (RS1 == 0) { // Let glusterfs adapt to number of nodes pairs="6 4 11 8 12 8"
         if (number_of_nodes >= 12 && max_N > 11) {

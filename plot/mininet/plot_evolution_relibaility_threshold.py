@@ -1,11 +1,13 @@
 # python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_used_nodes_MEVA_merged_365_ _20
 # python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_unreliable_nodes_MEVA_merged_365_ _250
 # python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_used_nodes_MEVA_merged_365_ _250
+# python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_used_nodes_MEVA_merged_365_ _2_max0
 # python3 plot/mininet/plot_evolution_relibaility_threshold.py 10_most_used_nodes_MEVA_merged_365_ _25_max6
 
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import csv
 import re
 import sys
 import numpy as np
@@ -33,16 +35,16 @@ def count_decimal_places(value):
 folder_prefix = sys.argv[1]
 folder_suffix = sys.argv[2]
 
+print(folder_prefix)
 print(folder_suffix)
 # Base directory where your folders are located
 base_dir = 'plot/drex_only'
-# ~ base_dir = 'plot/drex_only/with_old_strat_26_08'
 # Regular expression to extract reliability threshold from folder name
 # ~ threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix))
 threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix) + r'$')
 # List of metrics to plot
-metrics_to_plot = ['total_chunking_time', 'total_storage_used', 'total_parralelized_upload_time', 'mean_storage_used', 'total_upload_time', 'number_of_data_stored', 'combined_mean_upload_chunk', 'combined_total_upload_chunk']
-markers = ['o', 's', 'D', '^', 'v', '>', '<', 'p', 'h', '*']
+metrics_to_plot = ['total_chunking_time', 'total_storage_used', 'total_parralelized_upload_time', 'mean_storage_used', 'total_upload_time', 'number_of_data_stored', 'combined_mean_upload_chunk', 'combined_total_upload_chunk', 'combined_mean_reconstruct_read', 'best_fit', 'efficiency']
+markers = ['o', 's', 'D', '^', 'v', '>', '<', 'p', 'h', '*', 'x', '+', '|', '_', '.', ',', '1', '2', '3', '4']
 
 for metric in metrics_to_plot:
     plt.figure(figsize=(10, 6))
@@ -53,20 +55,30 @@ for metric in metrics_to_plot:
     # Traverse through each folder
     for folder in os.listdir(base_dir):
         folder_path = os.path.join(base_dir, folder)
-        # ~ print(folder_path)
         if os.path.isdir(folder_path):
-            # ~ print(folder_path)
             # Extract reliability threshold from the folder name
             match = threshold_regex.search(folder)
             if match:
-                # ~ print(folder_path)
+                print(folder_path)
                 reliability_threshold = float(match.group(1))
                 index = count_decimal_places(reliability_threshold)
-
+                
+                
+                # Get optimal data
+                with open(folder_path + "/output_optimal_schedule.csv", mode='r') as file:
+                    csv_reader = csv.reader(file)
+                    next(csv_reader)
+                    for row in csv_reader:
+                        number_of_data_stored_optimal = int(row[0])
+                        total_storage_used_optimal = float(row[1])
+                        best_upload_time_optimal = float(row[2])
+                        best_read_time_optimal = float(row[3])
+                        
+        
                 # Read all CSV files in the folder
                 for file in os.listdir(folder_path):
-                    # ~ print("read", file);
-                    if file.endswith('.csv'):
+                    if file.endswith('.csv') and file.startswith('output_drex_only'):
+                        print("Read", file);
                         file_path = os.path.join(folder_path, file)
                         df = pd.read_csv(file_path, quotechar='"', doublequote=True, skipinitialspace=True)
                         
@@ -75,21 +87,26 @@ for metric in metrics_to_plot:
                             df['combined_mean_upload_chunk'] = df['mean_parralelized_upload_time'] + df['mean_chunking_time']
                         if metric == 'combined_total_upload_chunk':
                             df['combined_total_upload_chunk'] = df['total_parralelized_upload_time'] + df['total_chunking_time']
+                        if metric == 'combined_mean_reconstruct_read':
+                            df['combined_mean_reconstruct_read'] = df['mean_read_time_parrallelized'] + df['mean_reconstruct_time']
+                        
+                        if metric == 'best_fit':
+                            df['best_fit'] = best_upload_time_optimal/(df['total_parralelized_upload_time'] + df['total_chunking_time']) + best_read_time_optimal/(df['total_read_time_parrallelized'] + df['total_reconstruct_time']) + df['number_of_data_stored']/number_of_data_stored_optimal
+                        if metric == 'efficiency':
+                            df['efficiency'] = df['total_storage_used']/(df['total_parralelized_upload_time'] + df['total_chunking_time'] + df['total_read_time_parrallelized'] + df['total_reconstruct_time'])
                         
                         # Fetch the algorithm names and corresponding mean_chunking_time
                         for i, algorithm in enumerate(df['algorithm']):
+                            print(i, algorithm)
                             value = df[metric].iloc[i]
-                            # ~ data.append((reliability_threshold, algorithm, mean_chunking_time))
                             data.append((index, algorithm, value))
 
     # Convert the data into a DataFrame
     df_data = pd.DataFrame(data, columns=['Reliability Threshold', 'Algorithm', metric])
 
     # Rename algorithms
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('_reduced_complexity', '_rc')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1', 'Min_Storage')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4', 'D-rex')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_three_replications', '3_replications')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-rex')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', 'hdfs_3_replications')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'HDFS_RS(3,2)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'HDFS_RS(6,3)')
@@ -97,11 +114,15 @@ for metric in metrics_to_plot:
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('Min_Storage_c', 'Min_Storage')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg_bogdan', 'Greedy_Load_Balancing')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4_c', 'GlusterFS')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_0_0_c', 'GlusterFS_ADAPTATIVE')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS_RS(3,2)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS_RS(6,3)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS_RS(4,2)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_RS_ADAPTATIVE')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS_1R')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
 
     # Sort the DataFrame by Reliability Threshold in increasing order
     df_data = df_data.sort_values(by='Reliability Threshold')

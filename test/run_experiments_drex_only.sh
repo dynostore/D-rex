@@ -87,17 +87,17 @@ fi
 
 make
 
-# Optimal algorithm
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 9 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+# Alg 4
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 1
 
 # Alg 1
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 1 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
 
-# Alg 4
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 1
-
 # Random
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 0 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+
+# Optimal algorithm
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 9 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
 
 # Alg Bogdan
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 5 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
@@ -118,6 +118,7 @@ make
 # Daos
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 1 0
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 2 0
+
 
 # Plotting results
 if [[ "$4" == *.csv ]]; then

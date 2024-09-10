@@ -370,7 +370,6 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
     *N = RS1 + RS2;
     
     if (RS1 == 0) { // Let hdfs_rs adapt to number of nodes pairs="3 2 6 3 10 4"
-        printf("number_of_nodes %d max N %d\n", number_of_nodes, max_N);
         if (number_of_nodes >= 14 && max_N > 9) {
             *K = 10;
             *N = 10 + 4;

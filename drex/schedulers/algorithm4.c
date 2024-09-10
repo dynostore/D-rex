@@ -1941,7 +1941,6 @@ int main(int argc, char *argv[]) {
     else {
         const char *output_filename_optimal_schedule = "output_optimal_schedule.csv";
         FILE *file = fopen(output_filename_optimal_schedule, "w");
-        //~ printf("%d %f %f %f\n", number_of_data_stored, total_storage_used, best_upload_time_to_print, best_read_time_to_print);
         fprintf(file, "number_of_data_stored,total_storage_used,best_upload_time,best_read_time\n");
         fprintf(file, "%d,%f,%f,%f\n", number_of_data_stored, total_storage_used, best_upload_time_to_print, best_read_time_to_print);
         fclose(file);

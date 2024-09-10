@@ -88,13 +88,21 @@ else:
     # Copy csv file
     shutil.copy("output_drex_only.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(number_of_loops) + ".csv")
     
-    # ~ shutil.copy("output_alg1_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/alg1.csv")
-    # ~ shutil.copy("output_alg4_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/drex.csv")
-    # ~ shutil.copy("output_glusterfs_6_4_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/glusterfs_6_4.csv")
-    # ~ shutil.copy("output_hdfsrs_3_2_stats.csv", folder_path + "output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/hdfsrs_3_2.csv")
-    # ~ shutil.copy("output_hdfsrs_6_3_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/hdfsrs_6_3.csv")
-    # ~ shutil.copy("output_hdfs_three_replications_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/hdfs_three_replications.csv")
-    # ~ shutil.copy("output_random_stats.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "/random.csv")
+    shutil.move("output_alg1_c_stats.csv",  folder_path + "/alg1_c.csv")
+    shutil.move("output_alg4_1_stats.csv",  folder_path + "/alg4_1.csv")
+    shutil.move("output_alg_bogdan_stats.csv",  folder_path + "/alg_bogdan.csv")
+    shutil.move("output_daos_1_0_c_stats.csv",  folder_path + "/daos_1_0_c.csv")
+    shutil.move("output_daos_2_0_c_stats.csv",  folder_path + "/daos_2_0_c.csv")
+    shutil.move("output_glusterfs_0_0_c_stats.csv",  folder_path + "/glusterfs_0_0_c.csv")
+    shutil.move("output_glusterfs_6_4_c_stats.csv",  folder_path + "/gluster_fs_6_4_c.csv")
+    shutil.move("output_hdfs_3_replication_c_stats.csv",  folder_path + "/hdfs_3_replication_c.csv")
+    shutil.move("output_hdfs_rs_0_0_c_stats.csv",  folder_path + "/hdfs_rs_0_0_c.csv")
+    shutil.move("output_hdfs_rs_3_2_c_stats.csv",  folder_path + "/hdfs_rs_3_2_c.csv")
+    shutil.move("output_hdfs_rs_4_2_c_stats.csv",  folder_path + "/hdfs_rs_4_2_c.csv")
+    shutil.move("output_hdfs_rs_6_3_c_stats.csv",  folder_path + "/hdfs_rs_6_3_c.csv")
+    shutil.move("output_optimal_schedule.csv",  folder_path + "/output_optimal_schedule.csv")
+    shutil.move("output_optimal_schedule_stats.csv",  folder_path + "/optimal_schedule.csv")
+    shutil.move("output_random_c_stats.csv",  folder_path + "/random_c.csv")
     
     # Load the data from the CSV file
     file_path1 = folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(number_of_loops) + ".csv"
@@ -104,7 +112,7 @@ df1 = pd.read_csv(file_path1, quotechar='"', doublequote=True, skipinitialspace=
 # Rename algorithms
 df1['algorithm'] = df1['algorithm'].str.replace('_reduced_complexity', '_rc')
 df1['algorithm'] = df1['algorithm'].str.replace('alg1', 'Min_Storage')
-df1['algorithm'] = df1['algorithm'].str.replace('alg4', 'D-rex')
+df1['algorithm'] = df1['algorithm'].str.replace('D-rex_1', 'D-rex')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_three_replications', '3_replications')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_3_replication_c', 'hdfs_3_replications')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'HDFS_RS(3,2)')
@@ -113,11 +121,15 @@ df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
 df1['algorithm'] = df1['algorithm'].str.replace('Min_Storage_c', 'Min_Storage')
 df1['algorithm'] = df1['algorithm'].str.replace('alg_bogdan', 'Greedy_Load_Balancing')
 df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4_c', 'GlusterFS')
+df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_0_0_c', 'GlusterFS_ADAPTATIVE')
 df1['algorithm'] = df1['algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS_RS(3,2)')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS_RS(6,3)')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS_RS(4,2)')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_RS_ADAPTATIVE')
 df1['algorithm'] = df1['algorithm'].str.replace('random_c', 'Random')
+df1['algorithm'] = df1['algorithm'].str.replace('daos_1_0_c', 'DAOS_1R')
+df1['algorithm'] = df1['algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
 
 # Define colors
 colors = {
@@ -407,22 +419,16 @@ merged_df = dfs[0]
 print(len(dfs))
 # Merge all DataFrames based on 'Category'
 for i in range(1, len(dfs)):
-    print("i =", i)
     merged_df = merged_df.merge(dfs[i], left_on='Category', right_on='Category', suffixes=[f'_{i-1}', f'_{i}'])
-    # ~ print(dfs[i])
-
+    
 merged_df.rename(columns={
     'Value1': f'Value1_{number_of_algorithms-1}',
     'Value2': f'Value2_{number_of_algorithms-1}',
     'Algorithm': f'Algorithm_{number_of_algorithms-1}'
 }, inplace=True)
 
-# ~ print(merged_df)
 # Change font of plot to Times
 plt.rcParams.update({
-    # ~ "text.usetex": True,
-    # ~ "font.family": 'Times New Roman',
-    # ~ "font.family": 'times',
     "xtick.color": 'grey',
     "ytick.color": 'grey'
 })
@@ -511,3 +517,51 @@ else:
         plt.legend()
         print(str(df1['algorithm'][a]))
         plt.savefig(folder_path + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(df1['algorithm'][a]) + ".pdf")
+
+
+# Plot relative to optimal
+# Initialize variables to store the data
+number_of_data_stored_optimal = 0
+total_storage_used_optimal = 0
+best_upload_time_optimal = 0
+best_read_time_optimal = 0
+
+# Read the CSV file
+with open(folder_path + "/output_optimal_schedule.csv", mode='r') as file:
+    csv_reader = csv.reader(file)
+    
+    # Skip the header
+    next(csv_reader)
+    
+    # Read the single row of values
+    for row in csv_reader:
+        number_of_data_stored_optimal = int(row[0])
+        total_storage_used_optimal = float(row[1])
+        best_upload_time_optimal = float(row[2])
+        best_read_time_optimal = float(row[3])
+
+# Print the values (optional)
+# ~ print(f"Number of data stored: {number_of_data_stored_optimal}")
+# ~ print(f"Total storage used: {total_storage_used_optimal}")
+# ~ print(f"Best upload time: {best_upload_time_optimal}")
+# ~ print(f"Best read time: {best_read_time_optimal}")
+
+# Best fit score
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], best_upload_time_optimal/(df1['total_parralelized_upload_time'] + df1['total_chunking_time']) + best_read_time_optimal/(df1['total_read_time_parrallelized'] + df1['total_reconstruct_time']) + df1['number_of_data_stored']/number_of_data_stored_optimal, color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Best Fit')
+plt.title('Best Fit')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/best_fit_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# Efficiency
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['total_storage_used']/(df1['total_parralelized_upload_time'] + df1['total_chunking_time'] + df1['total_read_time_parrallelized'] + df1['total_reconstruct_time']), color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('Efficiency')
+plt.title('Efficiency')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/efficiency_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")

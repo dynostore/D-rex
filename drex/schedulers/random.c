@@ -34,7 +34,7 @@ double* extract_reliabilities_of_chosen_nodes(Node* nodes, int total_nodes, int*
         }
         else {
             // Handle out-of-bounds index (optional)
-            perror("Node index out of bounds");
+            printf("Node index %d out of bounds", node_index);
             free(reliabilities);
             exit(EXIT_FAILURE);
         }
@@ -115,7 +115,6 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
     *K = -1;
     
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
-    
     while (!solution_found) {
         *N = get_random_excluding_exclusions(max_N, already_looked_at, already_looked_at_count);
         if (*N == -1) {
@@ -132,30 +131,40 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
 
         *K = rand() % (*N - 1) + 1;
         set_of_nodes_chosen = malloc(*N * sizeof(int));
-        //~ printf("N %d K %d\n", *N, *K);  
         get_random_sample(set_of_nodes_chosen, max_N, *N);
+        reliability_of_nodes_chosen = (double*)malloc(*N*sizeof(double));
         reliability_of_nodes_chosen = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen, *N);
-
-        //~ printf("Selected nodes: ");
-            //~ reliability_of_nodes_chosen[i] = reliability_of_nodes[(*set_of_nodes_chosen)[i]];
-        //~ }
+        //~ printf("2.\n"); fflush(stdout);
         int decrease_K = 0;
         while (!reliability_threshold_met_accurate(*N, *K, reliability_threshold, reliability_of_nodes_chosen)) {
-            if (decrease_K == max_N - 1) { break; } // TODO fix this
+            //~ printf("2.1.\n"); fflush(stdout);
+            //~ if (decrease_K == max_N - 1) { break; } // TODO fix this
+            //~ printf("2.2.\n"); fflush(stdout);
             *N = rand() % (max_N - 1) + 2;
-            *K = rand() % (*N - 1 - decrease_K) + 1;
+            //~ printf("2.2.1. %d\n", *N - decrease_K); fflush(stdout);
+            if (*N - decrease_K == 0) { *N = -1; break; } // TODO fix this
+            *K = rand() % (*N - decrease_K);
+            //~ printf("2.2.2.\n"); fflush(stdout);
             free(reliability_of_nodes_chosen);
+            //~ printf("2.3 N%d\n", *N); fflush(stdout);
             free(set_of_nodes_chosen);
+            //~ printf("2.4.\n"); fflush(stdout);
+            set_of_nodes_chosen = malloc(*N * sizeof(int));
             get_random_sample(set_of_nodes_chosen, max_N, *N);
+            //~ printf("2.5.\n"); fflush(stdout);
+            //~ reliability_of_nodes_chosen = NULL;
+            reliability_of_nodes_chosen = (double*)malloc(*N*sizeof(double));
             reliability_of_nodes_chosen = extract_reliabilities_of_chosen_nodes(nodes, number_of_nodes, set_of_nodes_chosen, *N);
+            //~ printf("2.6.\n"); fflush(stdout);
             decrease_K++;
+            //~ printf("2.7.\n"); fflush(stdout);
         }
+        //~ printf("3.\n"); fflush(stdout);
         
         if (nodes_can_fit_new_data(set_of_nodes_chosen, *N, size / *K, nodes)) {
             solution_found = 1;
         }
     }
-    
     // Updates
     if (*N != -1) { // We have a valid solution        
         double min_write_bandwidth = DBL_MAX;
@@ -207,8 +216,8 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
         add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
         *total_upload_time += total_upload_time_to_print;
         /** Read **/
-            *total_read_time_parrallelized += total_read_time_parralelized_to_print;
-            *total_read_time += total_read_time_to_print;
+        *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+        *total_read_time += total_read_time_to_print;
         free(used_combinations);
     }
     
