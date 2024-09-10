@@ -5,7 +5,7 @@ CFLAGS = -Idrex/utils -I/usr/local/include -Wall
 LDFLAGS = -L/usr/local/lib -lgsl -lgslcblas -lm
 
 # List of object files
-OBJS = drex/utils/prediction.o drex/utils/pareto_knee.o drex/utils/k_means_clustering.o drex/utils/combinations.o drex/utils/remove_node.o drex/schedulers/algorithm4.o drex/schedulers/bogdan_balance_penalty.o drex/schedulers/algorithm1.o drex/schedulers/random.o drex/schedulers/hdfs.o drex/schedulers/glusterfs.o
+OBJS = drex/utils/prediction.o drex/utils/pareto_knee.o drex/utils/k_means_clustering.o drex/utils/combinations.o drex/utils/remove_node.o drex/schedulers/algorithm4.o drex/schedulers/bogdan_balance_penalty.o drex/schedulers/algorithm1.o drex/schedulers/random.o drex/schedulers/hdfs.o drex/schedulers/glusterfs.o drex/schedulers/optimal_schedule.o
 
 # Target executable
 TARGET = alg4
@@ -50,9 +50,11 @@ drex/schedulers/hdfs.o: drex/schedulers/hdfs.c drex/schedulers/hdfs.h
 	$(CC) $(CFLAGS) -c drex/schedulers/hdfs.c -o drex/schedulers/hdfs.o
 drex/schedulers/glusterfs.o: drex/schedulers/glusterfs.c drex/schedulers/glusterfs.h
 	$(CC) $(CFLAGS) -c drex/schedulers/glusterfs.c -o drex/schedulers/glusterfs.o
-
+drex/schedulers/optimal_schedule.o: drex/schedulers/optimal_schedule.c drex/schedulers/optimal_schedule.h
+	$(CC) $(CFLAGS) -c drex/schedulers/optimal_schedule.c -o drex/schedulers/optimal_schedule.o
+	
 # Compile algorithm4.c
-drex/schedulers/algorithm4.o: drex/schedulers/algorithm4.c drex/utils/prediction.h drex/utils/pareto_knee.h drex/utils/k_means_clustering.h drex/utils/combinations.h drex/schedulers/bogdan_balance_penalty.h drex/utils/remove_node.h drex/schedulers/algorithm1.h drex/schedulers/random.h drex/schedulers/hdfs.h drex/schedulers/glusterfs.h
+drex/schedulers/algorithm4.o: drex/schedulers/algorithm4.c drex/utils/prediction.h drex/utils/pareto_knee.h drex/utils/k_means_clustering.h drex/utils/combinations.h drex/schedulers/bogdan_balance_penalty.h drex/utils/remove_node.h drex/schedulers/algorithm1.h drex/schedulers/random.h drex/schedulers/hdfs.h drex/schedulers/glusterfs.h drex/schedulers/optimal_schedule.h
 	$(CC) $(CFLAGS) -c drex/schedulers/algorithm4.c -o drex/schedulers/algorithm4.o
 
 # Clean up object files and the executable

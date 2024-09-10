@@ -36,7 +36,7 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
      *  domain_nr >= 6 : OC_EC_4P2GX
      **/
     if (is_daos == true) {
-        printf("is daos true %d nodes\n", number_of_nodes);
+        //~ printf("is daos true %d nodes\n", number_of_nodes);
         if (number_of_nodes >= 10 && max_N > 6) {
             if (RS1 == 1) {
                 *N = 9;
@@ -49,7 +49,7 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
             else { printf("Wrong RS1 value for DAOS\n"); exit(1); }
         }
         else if (number_of_nodes >= 6) {
-        printf("number_of_nodes sup 6\n");
+        //~ printf("number_of_nodes sup 6\n");
            if (RS1 == 1) {
                 *N = 5;
                 *K = 4;

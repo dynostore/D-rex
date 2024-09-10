@@ -86,68 +86,44 @@ else
 fi
 
 make
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 1 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
-# ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 2 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 5 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 3 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 7 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 6 4
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 7 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 0 0
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 1 0
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 2 0
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 3 2
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 6 3
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 4 2
+
+# Optimal algorithm
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 9 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+
+# Alg 1
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 1 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+
+# Alg 4
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 1
+
+# Random
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 0 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+
+# Alg Bogdan
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 5 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+
+# HDFS 3 rep
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 3 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
+
+# HDFS RS
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 3 2
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 6 3
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 4 2
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 6 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 0 0
-#~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 0 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N))
 
-#~ # for alg in alg1 alg2 ${alg4} random hdfs_three_replications; do
-#~ # for alg in alg1 ${alg4} random hdfs_three_replications; do
-#~ for alg in hdfs_three_replications; do
-#~ for alg in alg1; do
-    #~ if [[ "$4" == *.csv ]]; then
-        #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "real_data" ${input_data} $((number_of_repetition)) ${add_data_pattern}
-    #~ else
-        #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} ${input_nodes} "fixed_data" $((number_of_data)) $((data_size)) ${add_data_pattern}
-    #~ fi
-#~ done
+# Gluster FS
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 7 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 6 4
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 7 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 0 0
 
-#~ pairs="3 2 6 3"
-#~ # pairs="3 2 6 3 10 4"
-#~ pairs_array=($pairs)
-#~ for alg in hdfsrs; do
-#~ # for alg in hdfsrs vandermonders; do
-    #~ for ((i=0; i<${#pairs_array[@]}; i+=2)); do
-        #~ RS1=${pairs_array[i]}
-        #~ RS2=${pairs_array[i+1]}
-        #~ if [[ "$4" == *.csv ]]; then
-            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((RS1)) $((RS2)) ${input_nodes} "real_data" ${input_data} $((number_of_repetition)) ${add_data_pattern}
-        #~ else
-            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((RS1)) $((RS2)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size)) ${add_data_pattern}
-        #~ fi
-    #~ done
-#~ done
-
-#~ pairs="6 4"
-#~ # pairs="6 4 11 8 12 8" # Commented cause I dont test with more than 10 nodes for now so it would not work
-#~ pairs_array=($pairs)
-#~ for alg in glusterfs; do
-    #~ for ((i=0; i<${#pairs_array[@]}; i+=2)); do
-        #~ N=${pairs_array[i]}
-        #~ K=${pairs_array[i+1]}
-        #~ if [[ "$4" == *.csv ]]; then
-            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "real_data" ${input_data} $((number_of_repetition)) ${add_data_pattern}
-        #~ else
-            #~ python3 test/test-1-algorithm.py ${alg} ${data_duration_on_system} ${reliability_threshold} $((N)) $((K)) ${input_nodes} "fixed_data" $((number_of_data)) $((data_size)) ${add_data_pattern}
-        #~ fi
-    #~ done
-#~ done
+# Daos
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 1 0
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) 2 0
 
 # Plotting results
 if [[ "$4" == *.csv ]]; then
     python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N))
-    #~ python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
+    # python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
 else
-    #~ python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))
+    # python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))
     python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))
 fi
