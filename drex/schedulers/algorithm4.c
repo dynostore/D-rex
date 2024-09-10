@@ -1791,7 +1791,7 @@ int main(int argc, char *argv[]) {
         
         /** Resorting the nodes and combinations after every 100 GB of data stored **/
         // TODO: sort more often ?
-        if (input_data_sum_of_size_already_stored > 100000 && reduced_complexity_situation == true && algorithm == 4) {
+        if (input_data_sum_of_size_already_stored > 10000 && reduced_complexity_situation == true && algorithm == 4) {
             //~ printf("Reset\n");
             free_combinations(combinations, total_combinations);
             combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
@@ -1813,9 +1813,9 @@ int main(int argc, char *argv[]) {
                 else if (algorithm == 1) {
                     min_storage(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
                 }
-                                    else if (algorithm == 9) {
-                        optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print);
-                    }
+                else if (algorithm == 9) {
+                    optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print);
+                }
                 else if (algorithm == 3) {
                     hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time);
                 }
@@ -1857,9 +1857,9 @@ int main(int argc, char *argv[]) {
         else if (algorithm == 1) {
             min_storage(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
         }
-                            else if (algorithm == 9) {
-                        optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print);
-                    }
+        else if (algorithm == 9) {
+            optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print);
+        }
         else if (algorithm == 3) {
             hdfs_3_replications(current_number_of_nodes, nodes, reliability_threshold, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time);
         }
@@ -1903,14 +1903,14 @@ int main(int argc, char *argv[]) {
     double total_chunking_time = 0;
     double total_reconstruct_time = 0;
     
+    char file_to_print[70];
+    strcpy(file_to_print, "output");
+    strcat(file_to_print, "_");
+    strcat(file_to_print, alg_to_print);
+    strcat(file_to_print, "_stats.csv");
+    write_linked_list_to_file(&list, file_to_print, &total_chunking_time, &total_reconstruct_time);
+    
     if (algorithm != 9) {
-        char file_to_print[70];
-        strcpy(file_to_print, "output");
-        strcat(file_to_print, "_");
-        strcat(file_to_print, alg_to_print);
-        strcat(file_to_print, "_stats.csv");
-        write_linked_list_to_file(&list, file_to_print, &total_chunking_time, &total_reconstruct_time);
-       
         /** Writting the general outputs **/
         FILE *file = fopen(output_filename, "a");
         if (file == NULL) {
