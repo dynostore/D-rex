@@ -101,7 +101,7 @@ int get_random_excluding_exclusions(int number_of_nodes, int* already_looked_at,
 
 // Function to return a pair N and K that matches the reliability threshold
 //~ void random_schedule(int number_of_nodes, double* reliability_of_nodes, double reliability_threshold, double* node_sizes, double file_size, int** set_of_nodes_chosen, int* N, int* K, double* updated_node_sizes) {
-void random_schedule(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time) {
+void random_schedule(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time, double* size_stored) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -182,6 +182,7 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
         *number_of_data_stored += 1;
         *total_N += *N;
         *total_storage_used += chunk_size*(*N);
+        *size_stored += size;
         
         int* used_combinations = malloc(*N * sizeof(int));
         

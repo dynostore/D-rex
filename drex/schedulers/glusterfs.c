@@ -17,7 +17,7 @@ int in_array(int* array, int size, int value) {
     return 0;  // Value not found
 }
 
-void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int RS1, int RS2, double* total_read_time_parrallelized, double* total_read_time, bool is_daos, int max_N) {
+void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int RS1, int RS2, double* total_read_time_parrallelized, double* total_read_time, bool is_daos, int max_N, double* size_stored) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -208,6 +208,7 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
                 *number_of_data_stored += 1;
                 *total_N += *N;
                 *total_storage_used += chunk_size*(*N);
+                *size_stored += size;
                 
                 int* used_combinations = malloc(*N * sizeof(int));
                 

@@ -31,14 +31,6 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
         int** chunk_nodes_used = malloc(number_of_lost_chunks*sizeof(int*));
         int* num_of_nodes_used = malloc(number_of_lost_chunks*sizeof(int));
         
-        //~ if (*data_to_replicate == NULL) {
-            //~ *data_to_replicate = (double*)malloc(number_of_lost_chunks * sizeof(double));
-        //~ }
-        //~ else {
-            //~ printf("realloc\n");
-            //~ double* temp = (double*)realloc(*data_to_replicate, number_of_lost_chunks * sizeof(double));
-            //~ if (temp == NULL) {
-                //~ printf("Memory reallocation failed\n");
                 //~ return;
             //~ }
             //~ *data_to_replicate = temp;
@@ -83,7 +75,7 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
                     }
                 }
             }
-            //~ printf("total_remaining_size after = %f\n", *total_remaining_size);
+            //~ printf("total_remaining_size after = %f\n", 10.0);
                 
             remove_chunk_from_node(chunk_nodes_used[i], num_of_nodes_used[i], chunk_ids[i], nodes, number_of_nodes);
                 
@@ -94,7 +86,6 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
 
         free(chunk_sizes);
         free(chunk_ids);
-        //~ free(original_data_sizes);
         free(num_of_nodes_used);
         for (i = 0; i < number_of_lost_chunks; i++) {
             if (chunk_nodes_used[i] != NULL) {
@@ -121,11 +112,10 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
 int check_if_node_failed(Node *node) {
     // Generate a random number between 0 and 1
     double random_value = (double)rand() / RAND_MAX;
-    
-    //~ printf("random_value in check if node failed %f daily failure rate of current node is %f\n", random_value, node->daily_failure_rate);
-    
+        
     // Check if the random value indicates a failure
     if (random_value <= node->daily_failure_rate) {
+        //~ printf("random_value %f <= node->daily_failure_rate %f\n", random_value, node->daily_failure_rate); 
         return 1;  // Node failed
     } else {
         return 0;  // Node did not fail
@@ -140,10 +130,10 @@ int remove_random_node (int number_of_nodes, Node* node, int* removed_node_id) {
     return random_number;
 }
 
-int remove_node_following_failure_rate (int number_of_nodes, Node* nodes, int* removed_node_id) {
+int remove_node_following_failure_rate (int number_of_nodes, Node* nodes, int* removed_node_id, int time) {
     for (int i = 0; i < number_of_nodes; i++) {
         if (check_if_node_failed(&nodes[i])) {
-            printf("Node %d failed\n", nodes[i].id);
+            printf("Node %d failed at time %d\n", nodes[i].id, time);
             nodes[i].add_after_x_jobs = -1;
             *removed_node_id = nodes[i].id;
             return i;

@@ -6,7 +6,7 @@
 #include <../schedulers/algorithm4.h>
 #include "../utils/prediction.h"
  
-void optimal_schedule(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time, Combination **combinations, int total_combinations, double* best_upload_time_to_print, double* best_read_time_to_print) {
+void optimal_schedule(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time, Combination **combinations, int total_combinations, double* best_upload_time_to_print, double* best_read_time_to_print, double* size_stored) {
     *N = -1;
     *K = -1;
     
@@ -138,12 +138,9 @@ void optimal_schedule(int number_of_nodes, Node* nodes, float reliability_thresh
             best_K_for_read = *K;
         }
     }
-    //~ free(reliability_of_nodes_chosen);
-    //~ free(set_of_nodes_chosen_temp);
 
     // Get max reliability to min storage
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_reliability_desc_with_condition);
-    //~ print_nodes(nodes, number_of_nodes);
     
     for (temp_N = max_N; temp_N > 2; temp_N--) {
         int* set_of_nodes_chosen_temp = (int*)malloc(temp_N * sizeof(int));
@@ -177,15 +174,19 @@ void optimal_schedule(int number_of_nodes, Node* nodes, float reliability_thresh
         }
     }
     
+    //~ printf("%d %d %d\n", max_K_that_matches_reliability,best_K_for_upload,best_K_for_read);
     if (max_K_that_matches_reliability != -1 && best_K_for_upload != -1 && best_K_for_read != -1) {
         add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, max_N_that_matches_reliability, max_K_that_matches_reliability, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
 
         chunk_size = size/(max_K_that_matches_reliability);
         *number_of_data_stored += 1;
         *total_storage_used += chunk_size*(max_N_that_matches_reliability);
+        *size_stored += size;
         //~ printf("%d %d\n", max_N_that_matches_reliability, max_K_that_matches_reliability);
         *best_upload_time_to_print += best_upload_time;
         
         *best_read_time_to_print += best_read_time;
+        *K = max_K_that_matches_reliability;
+        *N = max_N_that_matches_reliability;
     }
 }

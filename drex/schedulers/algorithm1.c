@@ -6,7 +6,7 @@
 #include <../schedulers/algorithm4.h>
 #include "../utils/prediction.h"
 
-void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time) {
+void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, double size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time, double* size_stored) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -51,7 +51,6 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                 int node = set_of_nodes_chosen_temp[i];
                 if (nodes[node].storage_size - (size / *K) < 0) {
                     found = 0;
-                    //~ printf("break %f inf to %f\n", nodes[node].storage_size, (size / *K));
                     break;
                 }
             }
@@ -75,6 +74,7 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                 *number_of_data_stored += 1;
                 *total_N += *N;
                 *total_storage_used += chunk_size*(*N);
+                *size_stored += size;
                 
                 int* used_combinations = malloc(*N * sizeof(int));
                 
@@ -104,15 +104,15 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                 /** Read **/
                 total_read_time_parralelized_to_print = chunk_size/min_read_bandwidth;
                 reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], *N, *K, nearest_size, size);
-
+                
                 // TODO: remove this 3 lines under to reduce complexity if we don't need the trace per data
                 double chunking_time = predict(models[closest_index], *N, *K, nearest_size, size);
                 double transfer_time_parralelized = calculate_transfer_time(chunk_size, min_write_bandwidth);
                 add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
                 
                 /** Read **/
-            *total_read_time_parrallelized += total_read_time_parralelized_to_print;
-            *total_read_time += total_read_time_to_print;
+                *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+                *total_read_time += total_read_time_to_print;
 
                 *total_upload_time += total_upload_time_to_print;
                 

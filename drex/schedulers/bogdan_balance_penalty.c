@@ -77,7 +77,7 @@ for (i = 0; i < K; i++) {
  * Idea that you have a penalty for nodes that need to store a chunk and a penalty for nodes that don't and you need to add all of them up to obtain the overall penalty
  **/
 //~ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliability_threshold, double size, double max_node_size, double min_data_size, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, Combination **combinations, int total_combinations, double* total_remaining_size, double total_storage_size, int closest_index, RealRecords* records_array, LinearModel* models, int nearest_size, DataList* list, int data_id) {
-void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliability_threshold, double S, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, double* total_remaining_size, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time) {
+void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliability_threshold, double S, int *N, int *K, double* total_storage_used, double* total_upload_time, double* total_parralelized_upload_time, int* number_of_data_stored, double* total_scheduling_time, int* total_N, double* total_remaining_size, int closest_index, LinearModel* models, LinearModel* models_reconstruct, int nearest_size, DataList* list, int data_id, int max_N, double* total_read_time_parrallelized, double* total_read_time, double* size_stored) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     long seconds, useconds;
@@ -171,6 +171,7 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         *total_N += *N;
         *total_storage_used += chunk_size*(*N);
         *total_remaining_size -= chunk_size*(*N);
+        *size_stored += S;
         
         int* used_combinations = malloc(*N * sizeof(int));
         
@@ -207,8 +208,8 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         add_node_to_print(list, data_id, S, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
         
         /** Read **/
-            *total_read_time_parrallelized += total_read_time_parralelized_to_print;
-            *total_read_time += total_read_time_to_print;
+        *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+        *total_read_time += total_read_time_to_print;
 
         *total_upload_time += total_upload_time_to_print;
         

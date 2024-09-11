@@ -58,6 +58,7 @@ double predict(LinearModel models, int n, int k, double nearest_size, double fil
     Y_pred = Y_pred * (file_size / nearest_size);
     Y_pred /= 1000;  // Convert to seconds
     
+    if (Y_pred < 0) { printf("predict < 0\n"); }
     return Y_pred;
 }
 
@@ -66,6 +67,7 @@ double predict_reconstruct(LinearModel models_reconstruct, int n, int k, double 
     Y_pred = Y_pred * (file_size / nearest_size);
     Y_pred /= 1000;  // Convert to seconds
     
+    if (Y_pred < 0) { printf("predict_reconstruct < 0\n"); }
     return Y_pred;
 }
 
