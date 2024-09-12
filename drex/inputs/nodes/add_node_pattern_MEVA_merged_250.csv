@@ -1,0 +1,5 @@
+id,storage_size,write_bandwidth,read_bandwidth,annual_failure_rate,add_after_x_jobs
+0, 14000000, 208, 202, 0.97, 2
+1, 14000000, 208, 202, 0.97, 3
+2, 14000000, 208, 202, 0.97, 4
+3, 14000000, 208, 202, 0.97, 5

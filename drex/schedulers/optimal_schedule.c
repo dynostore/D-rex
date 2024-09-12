@@ -183,9 +183,11 @@ void optimal_schedule(int number_of_nodes, Node* nodes, float reliability_thresh
         *total_storage_used += chunk_size*(max_N_that_matches_reliability);
         *size_stored += size;
         //~ printf("%d %d\n", max_N_that_matches_reliability, max_K_that_matches_reliability);
-        *best_upload_time_to_print += best_upload_time;
+        //~ *best_upload_time_to_print += best_upload_time;
+        *best_upload_time_to_print += fmax(size/out_going_bandwidth, best_upload_time);
         
-        *best_read_time_to_print += best_read_time;
+        //~ *best_read_time_to_print += best_read_time;
+        *best_read_time_to_print += fmax(size/out_going_bandwidth, best_read_time);
         *K = max_K_that_matches_reliability;
         *N = max_N_that_matches_reliability;
     }

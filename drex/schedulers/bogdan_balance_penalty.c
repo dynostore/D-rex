@@ -196,10 +196,12 @@ void balance_penalty_algorithm (int number_of_nodes, Node* nodes, float reliabil
         // Adding the chunks in the chosen nodes
         add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes, S);
 
-        *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
+        //~ *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
+        *total_parralelized_upload_time += fmax(S/out_going_bandwidth, chunk_size/min_write_bandwidth);
         
         /** Read **/
-        total_read_time_parralelized_to_print = chunk_size/min_read_bandwidth;
+        //~ total_read_time_parralelized_to_print = chunk_size/min_read_bandwidth;
+        total_read_time_parralelized_to_print = fmax(S/out_going_bandwidth, chunk_size/min_read_bandwidth);
         reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], *N, *K, nearest_size, S);
 
         // TODO: remove this 3 lines under to reduce complexity if we don't need the trace per data

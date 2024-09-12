@@ -208,7 +208,8 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
         *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
         
         /** Read **/
-        total_read_time_parralelized_to_print = chunk_size/min_read_bandwidth;
+        //~ total_read_time_parralelized_to_print = chunk_size/min_read_bandwidth;
+        total_read_time_parralelized_to_print = fmax(size/out_going_bandwidth, chunk_size/min_read_bandwidth);
         reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], *N, *K, nearest_size, size);
         
         // TODO: remove this 3 lines under to reduce complexity if we don't need the trace per data
@@ -217,7 +218,8 @@ void random_schedule(int number_of_nodes, Node* nodes, float reliability_thresho
         add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
         *total_upload_time += total_upload_time_to_print;
         /** Read **/
-        *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+        //~ *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+        *total_read_time_parrallelized += fmax(size/out_going_bandwidth, total_read_time_parralelized_to_print);
         *total_read_time += total_read_time_to_print;
         free(used_combinations);
     }

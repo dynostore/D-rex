@@ -1,6 +1,10 @@
 #ifndef ALG4_H
 #define ALG4_H
 
+#include<math.h>
+
+#define out_going_bandwidth 3125
+
 typedef struct chunk Chunk;  // Forward declaration of Chunk
 
 // Struct representing the linked list of chunks

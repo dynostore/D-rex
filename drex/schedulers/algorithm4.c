@@ -803,7 +803,8 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
                 combinations[i]->size_score = combinations[i]->size_score/combinations[i]->num_elements;
                 //~ printf("Total sat: %f\n", combinations[i]->size_score);
                 combinations[i]->chunking_time = predict(models[closest_index], combinations[i]->num_elements, *K, nearest_size, size);
-                combinations[i]->transfer_time_parralelized = calculate_transfer_time(chunk_size, combinations[i]->min_write_bandwidth);
+                //~ combinations[i]->transfer_time_parralelized = calculate_transfer_time(chunk_size, combinations[i]->min_write_bandwidth);
+                combinations[i]->transfer_time_parralelized = fmax(size/out_going_bandwidth, chunk_size/combinations[i]->min_write_bandwidth);
                 combinations[i]->replication_and_write_time = combinations[i]->chunking_time + combinations[i]->transfer_time_parralelized;
                 combinations[i]->storage_overhead = chunk_size*combinations[i]->num_elements;
                 #ifdef PRINT
@@ -944,11 +945,13 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             *total_N += *N;
             *total_storage_used += chunk_size*(*N);
             *total_remaining_size -= chunk_size*(*N);
-            *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
+            //~ *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
+            *total_parralelized_upload_time += fmax(size/out_going_bandwidth, chunk_size/combinations[best_index]->min_write_bandwidth);
             *size_stored += size;
             
             /** Read **/
-            total_read_time_parralelized_to_print = chunk_size/combinations[best_index]->min_read_bandwidth;
+            //~ total_read_time_parralelized_to_print = chunk_size/combinations[best_index]->min_read_bandwidth;
+            total_read_time_parralelized_to_print = fmax(chunk_size/combinations[best_index]->min_read_bandwidth, size/out_going_bandwidth);
             reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], *N, *K, nearest_size, size);
             
             int* used_combinations = malloc(*N * sizeof(int));
@@ -1076,7 +1079,8 @@ void algorithm2(int number_of_nodes, Node* nodes, float reliability_threshold, d
             *number_of_data_stored += 1;
             *total_N += *N;
             *total_storage_used += chunk_size*(*N);
-            *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
+            //~ *total_parralelized_upload_time += chunk_size/combinations[best_index]->min_write_bandwidth;
+            *total_parralelized_upload_time += fmax(size/out_going_bandwidth, chunk_size/combinations[best_index]->min_write_bandwidth);
             *size_stored += size;
             
             int* used_combinations = malloc(*N * sizeof(int));
