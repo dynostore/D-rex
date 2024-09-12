@@ -20,7 +20,7 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
         }
     }
     
-    //~ printf("number_of_lost_chunks = %d\n", number_of_lost_chunks);
+    printf("number_of_lost_chunks = %d\n", number_of_lost_chunks);
     *number_of_data_to_replicate_after_loss += number_of_lost_chunks;
 
     if (number_of_lost_chunks != 0) {
@@ -32,9 +32,6 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
         int* num_of_nodes_used = malloc(number_of_lost_chunks*sizeof(int));
         
                 //~ return;
-            //~ }
-            //~ *data_to_replicate = temp;
-        //~ }
                 
         for (i = 0; i < number_of_lost_chunks; i++) {
             chunk_sizes[i] = current_chunk->chunk_size;
@@ -59,29 +56,20 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
                     //~ printf("%f\n", chunk_sizes[0]);
 
         }
-        
-        //~ printf("%f\n", chunk_sizes[0]);
-        
+                
         for (i = 0; i < number_of_lost_chunks; i++) {                
             // Add space
-            //~ printf("i = %d chunk_sizes[i] %f\n", i, chunk_sizes[i]);
+            if (i%10000 == 0) {
+            printf("i = %d/%d chunk_sizes[i] %f num_of_nodes_used[i] %d number_of_nodes %d\n", i, number_of_lost_chunks, chunk_sizes[i], num_of_nodes_used[i], number_of_nodes); }
             //~ printf("total_remaining_size before = %f\n", *total_remaining_size);
             for (j = 0; j < num_of_nodes_used[i]; j++) {
                 for (k = 0; k < number_of_nodes; k++) {
                     if (nodes[k].id == chunk_nodes_used[i][j]) {
                         nodes[k].storage_size += chunk_sizes[i];
-                        //~ *total_remaining_size += chunk_sizes[i];
-                        //~ printf("Adding %f to node %d\n", chunk_sizes[i], nodes[k].id);
                     }
                 }
             }
-            //~ printf("total_remaining_size after = %f\n", 10.0);
-                
             remove_chunk_from_node(chunk_nodes_used[i], num_of_nodes_used[i], chunk_ids[i], nodes, number_of_nodes);
-                
-            //~ print_all_chunks(nodes, number_of_nodes);
-                
-            //~ printf("Need to reschedule data %d of orginal size %f\n", chunk_ids[i], data_to_replicate[i]);
         }
 
         free(chunk_sizes);
@@ -93,17 +81,10 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
             }
         }
         free(chunk_nodes_used);
-        //~ return original_data_sizes;
-        //~ double* chunk_sizes = malloc(number_of_lost_chunks*sizeof(double));
-        //~ double* chunk_ids = malloc(number_of_lost_chunks*sizeof(int));
-        //~ double* original_data_sizes = malloc(number_of_lost_chunks*sizeof(int));
-        //~ int** chunk_nodes_used = malloc(number_of_lost_chunks*sizeof(int*));
-        //~ int* num_of_nodes_used = malloc(number_of_lost_chunks*sizeof(int));
         
         return data_to_replicate;
     }
     else {
-        //~ free(*data_to_replicate); 
         //~ *data_to_replicate = NULL;
         return NULL;
     }
