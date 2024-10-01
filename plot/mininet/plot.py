@@ -18,6 +18,12 @@ import csv
 import seaborn as sns
 import numpy as np
 
+def move_file_if_exists(src, dest):
+    if os.path.exists(src):
+        shutil.move(src, dest)
+    else:
+        raise FileNotFoundError(f"File {src} does not exist.")
+        
 def create_folder(folder_path):
     try:
         # Create the folder if it does not exist
@@ -25,6 +31,16 @@ def create_folder(folder_path):
         print(f"Folder '{folder_path}' is ready.")
     except Exception as e:
         print(f"An error occurred: {e}")
+
+# Function to calculate slowdowns for a given scheduler
+def calculate_slowdown(scheduler_df, optimal_df):
+    scheduler_df['slowdown_transfer'] = (scheduler_df['Transfer_Time_Parralelized'] + scheduler_df['Chunking_Time']) / \
+                                        (optimal_df['Transfer_Time_Parralelized'] + optimal_df['Chunking_Time'])
+    
+    scheduler_df['slowdown_read'] = (scheduler_df['Read_Time_Parralelized'] + scheduler_df['Reconstruct_Time']) / \
+                                    (optimal_df['Read_Time_Parralelized'] + optimal_df['Reconstruct_Time'])
+    
+    return scheduler_df
 
 def is_int(value):
     try:
@@ -51,6 +67,7 @@ else:
     input_data = sys.argv[6]
     number_of_loops = int(sys.argv[7])
     max_N = int(sys.argv[8])
+    node_removal = int(sys.argv[9])
     input_data_to_print = input_data.split('/')[-1]
     input_data_to_print = input_data_to_print.rsplit('.', 1)[0]
     # ~ number_input_data = count_lines_minus_one(input_data)
@@ -67,11 +84,32 @@ print(number_input_data, "input data")
 input_nodes_to_print = input_nodes.split('/')[-1]
 input_nodes_to_print = input_nodes_to_print.rsplit('.', 1)[0]
 
-folder_path = "plot/" + mode + "/" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(number_of_loops) + "_max" + str(max_N)
+if node_removal != 0:
+    folder_path = "plot/" + mode + "/" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(number_of_loops) + "_max" + str(max_N) + "_node_removal"
+else:
+    folder_path = "plot/" + mode + "/" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(number_of_loops) + "_max" + str(max_N)
 create_folder(folder_path)
 
 if mode != "mininet" and mode != "drex_only":
     print("mode must be drex_only or mininet")
+
+files_to_move = [
+    ("output_alg1_c_stats.csv", folder_path + "/alg1_c.csv"),
+    ("output_alg4_1_stats.csv", folder_path + "/alg4_1.csv"),
+    ("output_alg_bogdan_stats.csv", folder_path + "/alg_bogdan.csv"),
+    ("output_daos_1_0_c_stats.csv", folder_path + "/daos_1_0_c.csv"),
+    ("output_daos_2_0_c_stats.csv", folder_path + "/daos_2_0_c.csv"),
+    ("output_glusterfs_0_0_c_stats.csv", folder_path + "/glusterfs_0_0_c.csv"),
+    ("output_glusterfs_6_4_c_stats.csv", folder_path + "/gluster_fs_6_4_c.csv"),
+    ("output_hdfs_3_replication_c_stats.csv", folder_path + "/hdfs_3_replication_c.csv"),
+    ("output_hdfs_rs_0_0_c_stats.csv", folder_path + "/hdfs_rs_0_0_c.csv"),
+    ("output_hdfs_rs_3_2_c_stats.csv", folder_path + "/hdfs_rs_3_2_c.csv"),
+    ("output_hdfs_rs_4_2_c_stats.csv", folder_path + "/hdfs_rs_4_2_c.csv"),
+    ("output_hdfs_rs_6_3_c_stats.csv", folder_path + "/hdfs_rs_6_3_c.csv"),
+    ("output_optimal_schedule.csv", folder_path + "/output_optimal_schedule.csv"),
+    ("output_optimal_schedule_stats.csv", folder_path + "/optimal_schedule.csv"),
+    ("output_random_c_stats.csv", folder_path + "/random_c.csv")
+]
 
 if mode == "mininet":
     # Copy csv files
@@ -88,25 +126,16 @@ else:
     # Copy csv file
     shutil.copy("output_drex_only.csv", folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(number_of_loops) + ".csv")
     
-    shutil.move("output_alg1_c_stats.csv",  folder_path + "/alg1_c.csv")
-    shutil.move("output_alg4_1_stats.csv",  folder_path + "/alg4_1.csv")
-    shutil.move("output_alg_bogdan_stats.csv",  folder_path + "/alg_bogdan.csv")
-    shutil.move("output_daos_1_0_c_stats.csv",  folder_path + "/daos_1_0_c.csv")
-    shutil.move("output_daos_2_0_c_stats.csv",  folder_path + "/daos_2_0_c.csv")
-    shutil.move("output_glusterfs_0_0_c_stats.csv",  folder_path + "/glusterfs_0_0_c.csv")
-    shutil.move("output_glusterfs_6_4_c_stats.csv",  folder_path + "/gluster_fs_6_4_c.csv")
-    shutil.move("output_hdfs_3_replication_c_stats.csv",  folder_path + "/hdfs_3_replication_c.csv")
-    shutil.move("output_hdfs_rs_0_0_c_stats.csv",  folder_path + "/hdfs_rs_0_0_c.csv")
-    shutil.move("output_hdfs_rs_3_2_c_stats.csv",  folder_path + "/hdfs_rs_3_2_c.csv")
-    shutil.move("output_hdfs_rs_4_2_c_stats.csv",  folder_path + "/hdfs_rs_4_2_c.csv")
-    shutil.move("output_hdfs_rs_6_3_c_stats.csv",  folder_path + "/hdfs_rs_6_3_c.csv")
-    shutil.move("output_optimal_schedule.csv",  folder_path + "/output_optimal_schedule.csv")
-    shutil.move("output_optimal_schedule_stats.csv",  folder_path + "/optimal_schedule.csv")
-    shutil.move("output_random_c_stats.csv",  folder_path + "/random_c.csv")
-    
+    for src, dest in files_to_move:
+        try:
+            move_file_if_exists(src, dest)
+        except FileNotFoundError as e:
+            print(e)  # Continue to the next file
+        
     # Load the data from the CSV file
     file_path1 = folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(number_of_loops) + ".csv"
 
+print("Read", file_path1)
 df1 = pd.read_csv(file_path1, quotechar='"', doublequote=True, skipinitialspace=True)
 
 # Rename algorithms
@@ -315,6 +344,16 @@ plt.title('Total Scheduling Time (ms for minient, s for drex_only)')
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig(folder_path + '/total_scheduling_time_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+# Plotting size_stored
+plt.figure(figsize=(10, 6))
+plt.bar(df1['algorithm'], df1['size_stored'], color=get_colors(df1['algorithm']))
+plt.xlabel('Algorithm')
+plt.ylabel('size_stored')
+plt.title('size_stored (MB)')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.savefig(folder_path + '/size_stored_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 
 # Unparalelized upload time
 plt.figure(figsize=(10, 6))
@@ -539,16 +578,20 @@ with open(folder_path + "/output_optimal_schedule.csv", mode='r') as file:
         total_storage_used_optimal = float(row[1])
         best_upload_time_optimal = float(row[2])
         best_read_time_optimal = float(row[3])
+        size_stored_optimal = float(row[4])
 
 # Print the values (optional)
-# ~ print(f"Number of data stored: {number_of_data_stored_optimal}")
-# ~ print(f"Total storage used: {total_storage_used_optimal}")
-# ~ print(f"Best upload time: {best_upload_time_optimal}")
-# ~ print(f"Best read time: {best_read_time_optimal}")
+print(f"Size stored optimal: {size_stored_optimal}")
+print(df1['size_stored'])
+print(f"Total storage used: {total_storage_used_optimal}")
+print(f"Best upload time: {best_upload_time_optimal}")
+print(df1['total_parralelized_upload_time'] + df1['total_chunking_time'])
+print(f"Best read time: {best_read_time_optimal}")
+print(df1['total_read_time_parrallelized'] + df1['total_reconstruct_time'])
 
 # Best fit score
 plt.figure(figsize=(10, 6))
-plt.bar(df1['algorithm'], best_upload_time_optimal/(df1['total_parralelized_upload_time'] + df1['total_chunking_time']) + best_read_time_optimal/(df1['total_read_time_parrallelized'] + df1['total_reconstruct_time']) + df1['number_of_data_stored']/number_of_data_stored_optimal, color=get_colors(df1['algorithm']))
+plt.bar(df1['algorithm'], best_upload_time_optimal/(df1['total_parralelized_upload_time'] + df1['total_chunking_time']) + best_read_time_optimal/(df1['total_read_time_parrallelized'] + df1['total_reconstruct_time']) + df1['size_stored']/size_stored_optimal, color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
 plt.ylabel('Best Fit')
 plt.title('Best Fit')
@@ -558,10 +601,79 @@ plt.savefig(folder_path + '/best_fit_' + input_nodes_to_print + "_" + input_data
 
 # Efficiency
 plt.figure(figsize=(10, 6))
-plt.bar(df1['algorithm'], df1['total_storage_used']/(df1['total_parralelized_upload_time'] + df1['total_chunking_time'] + df1['total_read_time_parrallelized'] + df1['total_reconstruct_time']), color=get_colors(df1['algorithm']))
+plt.bar(df1['algorithm'], df1['size_stored']/(df1['total_parralelized_upload_time'] + df1['total_chunking_time'] + df1['total_read_time_parrallelized'] + df1['total_reconstruct_time']), color=get_colors(df1['algorithm']))
 plt.xlabel('Algorithm')
 plt.ylabel('Efficiency')
 plt.title('Efficiency')
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig(folder_path + '/efficiency_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
+
+
+
+
+
+
+
+## Violin plots
+# Load the optimal schedule if the threshold is -1
+if reliability_threshold == -1:
+    optimal_df = pd.read_csv(folder_path + "/optimal_schedule.csv")
+
+    # List of CSV files to read
+    scheduler_files = [
+        folder_path + "/alg4_1.csv", folder_path + "/alg1_c.csv",
+        folder_path + "/alg_bogdan.csv", folder_path + "/daos_1_0_c.csv",
+        folder_path + "/daos_2_0_c.csv", folder_path + "/gluster_fs_6_4_c.csv",
+        folder_path + "/glusterfs_0_0_c.csv", folder_path + "/hdfs_3_replication_c.csv",
+        folder_path + "/hdfs_rs_0_0_c.csv", folder_path + "/hdfs_rs_3_2_c.csv",
+        folder_path + "/hdfs_rs_4_2_c.csv", folder_path + "/hdfs_rs_6_3_c.csv"
+    ]
+
+    # Dictionary to store data for plotting
+    slowdown_data = {'scheduler': [], 'slowdown_type': [], 'slowdown_value': []}
+
+    # Process each scheduler file from the predefined list
+    for scheduler_file in scheduler_files:
+        scheduler_name = os.path.basename(scheduler_file).split('.')[0]  # Extract scheduler name from filename
+        
+        # Read the CSV file
+        try:
+            scheduler_df = pd.read_csv(scheduler_file)
+        except FileNotFoundError:
+            print(f"File {scheduler_file} not found.")
+            continue
+        
+        # Skip the file if it's empty (only header is present)
+        if scheduler_df.empty:
+            print(f"Skipping {scheduler_file}, no data found.")
+            continue
+        
+        # Calculate the slowdown
+        scheduler_df = calculate_slowdown(scheduler_df, optimal_df)
+        
+        # Append data for Transfer and Chunking slowdown
+        slowdown_data['scheduler'].extend([scheduler_name] * len(scheduler_df) * 2)  # Repeat for both types
+        slowdown_data['slowdown_type'].extend(['Transfer + Chunking'] * len(scheduler_df) + ['Read + Reconstruct'] * len(scheduler_df))
+        slowdown_data['slowdown_value'].extend(scheduler_df['slowdown_transfer'].values)
+        slowdown_data['slowdown_value'].extend(scheduler_df['slowdown_read'].values)
+
+    # Convert slowdown data to a DataFrame
+    slowdown_df = pd.DataFrame(slowdown_data)
+
+    # Create a violin plot with split violins for each scheduler
+    plt.figure(figsize=(20, 8))
+    sns.violinplot(
+        x='scheduler', y='slowdown_value', hue='slowdown_type',
+        data=slowdown_df, split=True, inner="quartile"
+    )
+
+    plt.title('Slowdown Comparison: Transfer + Chunking vs Read + Reconstruct')
+    plt.xlabel('Scheduler')
+    plt.ylabel('Slowdown Value')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.ylim(0, 10)  # Set y-axis limits from 0 to 10
+    
+    # Save the plot
+    plt.savefig(folder_path + '/violin_plot_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")

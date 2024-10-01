@@ -43,7 +43,8 @@ base_dir = 'plot/drex_only'
 # ~ threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix))
 threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix) + r'$')
 # List of metrics to plot
-metrics_to_plot = ['total_chunking_time', 'total_storage_used', 'total_parralelized_upload_time', 'mean_storage_used', 'total_upload_time', 'number_of_data_stored', 'combined_mean_upload_chunk', 'combined_total_upload_chunk', 'combined_mean_reconstruct_read', 'best_fit', 'efficiency']
+metrics_to_plot = ['total_chunking_time', 'total_storage_used', 'total_parralelized_upload_time', 'mean_storage_used', 'total_upload_time', 'number_of_data_stored', 'combined_mean_upload_chunk', 'combined_total_upload_chunk', 'combined_mean_reconstruct_read', 'best_fit', 'efficiency', 'size_stored']
+# ~ metrics_to_plot = ['efficiency']
 markers = ['o', 's', 'D', '^', 'v', '>', '<', 'p', 'h', '*', 'x', '+', '|', '_', '.', ',', '1', '2', '3', '4']
 
 for metric in metrics_to_plot:
@@ -73,6 +74,7 @@ for metric in metrics_to_plot:
                         total_storage_used_optimal = float(row[1])
                         best_upload_time_optimal = float(row[2])
                         best_read_time_optimal = float(row[3])
+                        size_stored_optimal = float(row[4])
                         
         
                 # Read all CSV files in the folder
@@ -90,10 +92,10 @@ for metric in metrics_to_plot:
                         if metric == 'combined_mean_reconstruct_read':
                             df['combined_mean_reconstruct_read'] = df['mean_read_time_parrallelized'] + df['mean_reconstruct_time']
                         
-                        if metric == 'best_fit':
-                            df['best_fit'] = best_upload_time_optimal/(df['total_parralelized_upload_time'] + df['total_chunking_time']) + best_read_time_optimal/(df['total_read_time_parrallelized'] + df['total_reconstruct_time']) + df['number_of_data_stored']/number_of_data_stored_optimal
-                        if metric == 'efficiency':
-                            df['efficiency'] = df['total_storage_used']/(df['total_parralelized_upload_time'] + df['total_chunking_time'] + df['total_read_time_parrallelized'] + df['total_reconstruct_time'])
+                        if metric == 'best_fit': # Goal is to get closer to 1
+                            df['best_fit'] = best_upload_time_optimal/(df['total_parralelized_upload_time'] + df['total_chunking_time']) + best_read_time_optimal/(df['total_read_time_parrallelized'] + df['total_reconstruct_time']) + df['size_stored']/size_stored_optimal
+                        if metric == 'efficiency': # Goal is to maximize
+                            df['efficiency'] = df['size_stored']/(df['total_parralelized_upload_time'] + df['total_chunking_time'] + df['total_read_time_parrallelized'] + df['total_reconstruct_time'])
                         
                         # Fetch the algorithm names and corresponding mean_chunking_time
                         for i, algorithm in enumerate(df['algorithm']):
@@ -103,7 +105,7 @@ for metric in metrics_to_plot:
 
     # Convert the data into a DataFrame
     df_data = pd.DataFrame(data, columns=['Reliability Threshold', 'Algorithm', metric])
-
+        
     # Rename algorithms
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1', 'Min_Storage')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-rex')
@@ -124,12 +126,10 @@ for metric in metrics_to_plot:
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS_1R')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
 
-    # Sort the DataFrame by Reliability Threshold in increasing order
-    df_data = df_data.sort_values(by='Reliability Threshold')
-
     # Filter out rows where the value is 0 in the column you want to plot
     df_data = df_data[df_data[metric] != 0]
     i = 0
+    
     # Iterate over each algorithm and plot its trend
     for algorithm in df_data['Algorithm'].unique():
         subset = df_data[df_data['Algorithm'] == algorithm]
@@ -137,14 +137,13 @@ for metric in metrics_to_plot:
         plt.plot(subset['Reliability Threshold'], subset[metric], marker=markers[i % len(markers)], label=algorithm)
         i += 1
 
-
     # Set custom x-tick labels
-    # ~ new_labels = ['0.9', '0.99', '0.999', '0.9999', '0.99999', '0.999999', '0.9999999', '0.99999999']
-    new_labels = ['0.9', '0.99', '0.999', '0.9999', '0.99999']
+    # ~ new_labels = ['0.9', '0.99', '0.999', '0.9999', '0.99999']
+    new_labels = ['0.9', '0.99', '0.999', '0.9999', '0.99999', '0.999999', '0.9999999', '0.99999999']
 
     # Apply the new labels to the x-ticks
-    # ~ x_values = [1, 2, 3, 4, 5, 6, 7, 8]
-    x_values = [1, 2, 3, 4, 5]
+    # ~ x_values = [1, 2, 3, 4, 5]
+    x_values = [1, 2, 3, 4, 5, 6, 7, 8]
     plt.xticks(ticks=x_values, labels=new_labels)
 
     plt.title('Evolution of ' + metric + ' Depending on Reliability Threshold')
@@ -156,5 +155,3 @@ for metric in metrics_to_plot:
     create_folder(folder_path)
 
     plt.savefig(folder_path + '/' + metric + '.pdf')
-
-
