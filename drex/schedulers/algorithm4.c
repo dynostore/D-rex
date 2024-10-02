@@ -272,10 +272,10 @@ void write_linked_list_to_file(DataList *list, const char *filename, double* tot
         exit(EXIT_FAILURE);
     }
     
-    fprintf(file, "ID, Size, Total Transfer Time, Transfer Time Parralelized, Chunking Time, N, K, Total Read Time, Read Time Parralelized, Reconstruct Time\n");
+    fprintf(file, "ID,Size,Total_Transfer_Time,Transfer_Time_Parralelized,Chunking_Time,N,K,Total_Read_Time,Read_Time_Parralelized,Reconstruct_Time\n");
     DataToPrint *current = list->head;
     while (current) {
-        fprintf(file, "%d, %f, %f, %f, %f, %d, %d, %f, %f, %f\n", current->id, current->size, current->total_transfer_time, current->transfer_time_parralelized, current->chunking_time, current->N, current->K, current->total_read_time, current->read_time_parralelized, current->reconstruct_time);
+        fprintf(file, "%d,%f,%f,%f,%f,%d,%d,%f,%f,%f\n", current->id, current->size, current->total_transfer_time, current->transfer_time_parralelized, current->chunking_time, current->N, current->K, current->total_read_time, current->read_time_parralelized, current->reconstruct_time);
         *total_chunking_time += current->chunking_time;
         *total_reconstruct_time += current->reconstruct_time;
         current = current->next;

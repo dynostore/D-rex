@@ -39,7 +39,6 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
         // Get reliability for the selected nodes
         for (int i = 0; i < temp_N; i++) {
             reliability_of_nodes_chosen[i] = nodes[set_of_nodes_chosen_temp[i]].probability_failure;
-            //~ printf("%f\n", reliability_of_nodes_chosen[i]);
         }
         
         //~ int K = get_max_K_from_reliability_threshold_and_nodes_chosen(N, reliability_threshold, reliability_of_nodes_chosen);
