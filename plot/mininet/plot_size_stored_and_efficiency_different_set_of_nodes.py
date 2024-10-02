@@ -73,7 +73,7 @@ for folder in os.listdir(base_dir):
                         size_stored_value = (df[metric_to_plot_bars].iloc[i] * 100) / total_possible_size_to_store
                         efficiency_value = df[metric_to_plot_efficiency].iloc[i]
                         data.append((set_of_nodes, algorithm, size_stored_value, efficiency_value))
-
+# ~ print(set_of_nodes)
 # Convert the data into a DataFrame
 df_data = pd.DataFrame(data, columns=['Set of Nodes', 'Algorithm', 'size_stored', 'efficiency'])
 
@@ -120,7 +120,7 @@ grouped = filtered_df.groupby('Set of Nodes')
 
 # Get all unique algorithms
 unique_algorithms = filtered_df['Algorithm'].unique()
-
+# ~ print(set_of_nodes)
 # Iterate over each group
 for set_of_nodes, group in grouped:
     # Initialize lists with NaN for each algorithm
@@ -148,31 +148,40 @@ x = np.arange(len(sets_of_nodes)) * (len(unique_algorithms) * bar_width + bar_sp
 
 # Plot total storage as bars
 for i, scheduler in enumerate(unique_algorithms):
-    ax1.bar(x + i * bar_width, [storage_data[set_of_nodes][i] for set_of_nodes in sets_of_nodes], 
+    ax1.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], 
             width=bar_width, alpha=0.6, label=f'Storage Used ({scheduler})', edgecolor='black')
+    # ~ print("Plotting", scheduler, "from", set_of_nodes)
+
+# Create a second y-axis for efficiency (hashed bars)
+ax2 = ax1.twinx()
 
 # Plot efficiency as hashed bars (with different hatches) on the left y-axis
 for i, scheduler in enumerate(unique_algorithms):
-    ax1.bar(x + i * bar_width, [efficiency_data[set_of_nodes][i] for set_of_nodes in sets_of_nodes], 
+    ax2.bar(x + i * bar_width, [efficiency_data[set_of_node][i] for set_of_node in sets_of_nodes], 
             width=bar_width, alpha=0.4, hatch='//', label=f'Efficiency ({scheduler})', edgecolor='black')
 
 # Set labels
 ax1.set_xlabel('Set of Nodes')
-ax1.set_ylabel('Proportion of Data Sizes Stored (%) & Efficiency (hashed bars)')
+ax1.set_ylabel('Proportion of Data Sizes Stored (%) (bar)')
+ax2.set_ylabel('Efficiency (hashed bar)')
 
 # Adding x-ticks
 ax1.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax1.set_xticklabels(sets_of_nodes)
+ax1.set_xticklabels(('10_most_used_nodes', '10_most_reliable_nodes', '10_most_unreliable_nodes', 'most_used_node_x10'))
 
-# Custom legend
-handles = []
-for i, scheduler in enumerate(unique_algorithms):
-    # Create a bar handle for storage
-    bar_handle = plt.Line2D([0], [0], color=f"C{i}", lw=4, label=f'{scheduler}')
-    handles.append(bar_handle)
+# Adding a legend
+handles, labels = ax1.get_legend_handles_labels()
+ax1.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3)
 
-# Combine handles into a single legend
-ax1.legend(handles=handles, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)
+# ~ # Custom legend
+# ~ handles = []
+# ~ for i, scheduler in enumerate(unique_algorithms):
+    # ~ # Create a bar handle for storage
+    # ~ bar_handle = plt.Line2D([0], [0], color=f"C{i}", lw=4, label=f'{scheduler}')
+    # ~ handles.append(bar_handle)
+
+# ~ # Combine handles into a single legend
+# ~ ax1.legend(handles=handles, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)
 
 # Add a grid behind the bars for better readability
 ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)

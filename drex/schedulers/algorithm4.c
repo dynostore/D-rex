@@ -1604,12 +1604,12 @@ int main(int argc, char *argv[]) {
         "data/400MB.csv"
     };
     const char *filenames_reconstruct[] = {
-        "data/reconstruct/1MB.csv", 
-        "data/reconstruct/10MB.csv", 
-        "data/reconstruct/50MB.csv",
-        "data/reconstruct/100MB.csv",
-        "data/reconstruct/200MB.csv",
-        "data/reconstruct/400MB.csv"
+        "data/reconstruct/new_c/1MB.csv", 
+        "data/reconstruct/new_c/10MB.csv", 
+        "data/reconstruct/new_c/50MB.csv",
+        "data/reconstruct/new_c/100MB.csv",
+        "data/reconstruct/new_c/200MB.csv",
+        "data/reconstruct/new_c/400MB.csv"
     };
     // Array to hold RealRecords for each file
     RealRecords *records_array = (RealRecords *)malloc(num_files * sizeof(RealRecords));

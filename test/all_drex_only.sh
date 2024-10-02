@@ -77,8 +77,9 @@
 
 # Test campaign 3: random reliability given by the user
 bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 25 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
-#~ bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 250 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
-#~ bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
+bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 25 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
+bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/most_used_node_x10.csv drex/inputs/data/MEVA_merged.csv 25 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
+bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_reliable_nodes.csv drex/inputs/data/MEVA_merged.csv 25 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
 
 # Test campaign 4: adding nodes dynamically
 #~ bash test/run_experiments_drex_only.sh 365 0.9 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 250 drex/inputs/nodes/add_node_pattern_MEVA_merged_250.csv 0 0 0 drex/
