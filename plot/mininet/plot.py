@@ -34,11 +34,10 @@ def create_folder(folder_path):
 
 # Function to calculate slowdowns for a given scheduler
 def calculate_slowdown(scheduler_df, optimal_df):
-    scheduler_df['slowdown_transfer'] = (scheduler_df['Transfer_Time_Parralelized'] + scheduler_df['Chunking_Time']) / \
-                                        (optimal_df['Transfer_Time_Parralelized'] + optimal_df['Chunking_Time'])
-    
-    scheduler_df['slowdown_read'] = (scheduler_df['Read_Time_Parralelized'] + scheduler_df['Reconstruct_Time']) / \
-                                    (optimal_df['Read_Time_Parralelized'] + optimal_df['Reconstruct_Time'])
+    # ~ scheduler_df['slowdown_transfer'] = (scheduler_df['Transfer_Time_Parralelized'] + scheduler_df['Chunking_Time']) / (optimal_df['Transfer_Time_Parralelized'] + optimal_df['Chunking_Time'])
+    # ~ scheduler_df['slowdown_read'] = (scheduler_df['Read_Time_Parralelized'] + scheduler_df['Reconstruct_Time']) / (optimal_df['Read_Time_Parralelized'] + optimal_df['Reconstruct_Time'])
+    scheduler_df['slowdown_transfer'] = (scheduler_df['Transfer_Time_Parralelized'] + scheduler_df['Chunking_Time'])
+    scheduler_df['slowdown_read'] = (scheduler_df['Read_Time_Parralelized'] + scheduler_df['Reconstruct_Time'])
     
     return scheduler_df
 
