@@ -8,7 +8,7 @@ n = 10
 k = 3
 file_size = 400
 
-pred = Predictor()
+pred = Predictor("data/reconstruct/new_c/")
 data = pred.real_records.data
 
 

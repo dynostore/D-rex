@@ -15,9 +15,9 @@ class Predictor():
     4) Returns the prediction
     """
 
-    def __init__(self) -> None:
+    def __init__(self, dir_data="data/") -> None:
         # Load the real records from data traces
-        self.real_records = RealRecords(dir_data="data/")
+        self.real_records = RealRecords(dir_data=dir_data)
         
         # Object to temporally store the regression models for each file size
         self.models = {}
@@ -53,12 +53,14 @@ class Predictor():
         # The X values to predict are n and k
         Xs_test = np.array([n, k]).reshape(1, -1)
         
+        print(Xs_test)
+        
         # Predict the time to chunk the file
-        Y_pred = self.models[nearest_size].predict(Xs_test)[0] * file_size / nearest_size
+        Y_pred = self.models[nearest_size].predict(Xs_test)[0] #* file_size / nearest_size
         transfer_time = calculate_transfer_time(file_size/k, min(bandwiths)) # Min because we take the slowest bandwidth into account. Also I pass the chunk size and not the full data size
         Y_pred = Y_pred/1000 # divided because we want to take seconds just like the transfer_time that is in seconds
         # ~ print(transfer_time, "+", Y_pred)
-        return Y_pred + transfer_time
+        return Y_pred #+ transfer_time
         
     def predict_only_chunk_time(self, file_size, n, k):
         nearest_size = min(self.real_records.sizes,
