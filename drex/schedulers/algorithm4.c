@@ -462,6 +462,26 @@ void read_supplementary_node(const char *filename, int number_of_nodes, Node *no
     fclose(file);
 }
 
+double generate_reliability() {
+    int nines_count = rand() % 10; // Randomly choose between 0 and 9 (previously 6) nines
+    double base_reliability = 0;
+    // Create the base with the selected number of nines
+    for (int i = 0; i < nines_count; i++) {
+        base_reliability += 0.9/(pow(10.0, i));
+        //~ printf("+= %f\n", 0.9/(pow(10, i)));
+    }
+    //~ if (nines_count == 7) {
+        //~ base_reliability = 0.9999999;
+    //~ }
+    //~ base_reliability+= 0.001;
+    //~ printf("base_reliability = %.9f\n", base_reliability);
+    // Generate a random value between base_reliability and 1.0
+    double random_reliability = base_reliability + ((double)rand() / RAND_MAX) * (1.0 - base_reliability);
+    //~ printf("random_reliability = %.9f\n", random_reliability);
+    if (nines_count == 9) { return base_reliability; }
+    return random_reliability;
+}
+
 // Function to read data from file and populate the sizes array
 void read_data(const char *filename, double *sizes, int *submit_times, int number_of_repetition, double* target_reliability) {
     #ifdef PRINT
@@ -495,8 +515,8 @@ void read_data(const char *filename, double *sizes, int *submit_times, int numbe
             if (temp_access_type == 2) {
                 sizes[size_count] = temp_size;
                 submit_times[size_count] = (int)roundf(temp_submit_time);
-                target_reliability[size_count] = 0.9 + (double)rand() / RAND_MAX * (0.99999 - 0.9);
-
+                target_reliability[size_count] = generate_reliability();
+                //~ printf("target_reliability[size_count] %f\n", target_reliability[size_count]); if (size_count > 30) { exit(1); }
                 if (submit_times[size_count] > 1947483647) { printf("ERROR: Time too big use a long or double for submit times\n"); exit(1); }
                 
                 size_count++;
@@ -516,7 +536,7 @@ void read_data(const char *filename, double *sizes, int *submit_times, int numbe
         for (int j = 0; j < size_count; j++) {
             sizes[i*size_count + j] = sizes[j];
             submit_times[i*size_count + j] = (submit_times[size_count-1]*i) + submit_times[j] + 1;
-            target_reliability[i*size_count + j] = 0.9 + (double)rand() / RAND_MAX * (0.99999 - 0.9);
+            target_reliability[i*size_count + j] = generate_reliability();
             
             if (submit_times[i*size_count + j] > 1947483647) { printf("ERROR: Time too big use a long or double for submit times\n"); exit(1); }
         }
@@ -1219,6 +1239,25 @@ void find_closest(int target, int* nearest_size, int* closest_index) {
     }
 }
 
+//~ void find_closest_reconstruct(int target, int* nearest_size, int* closest_index) {
+    //~ // The array of numbers to compare against
+    //~ int numbers[] = {1, 10, 100, 400};
+    //~ int size = sizeof(numbers) / sizeof(numbers[0]);
+
+    //~ // Initialize the closest number to the first element
+    //~ int min_diff = abs(target - numbers[0]);
+
+    //~ // Iterate over the array to find the closest number
+    //~ for (int i = 1; i < size; i++) {
+        //~ int diff = abs(target - numbers[i]);
+        //~ if (diff < min_diff) {
+            //~ min_diff = diff;
+            //~ *nearest_size = numbers[i];
+            //~ *closest_index = i;
+        //~ }
+    //~ }
+//~ }
+
 /** Comparison function for sorting nodes by remaining storage size in descending order
  * Nodes with add_after_x_jobs > current_data_value or add_after_x_jobs == -1 are sorted to the end **/
 int compare_nodes_by_storage_desc_with_condition(const void *a, const void *b) {
@@ -1412,7 +1451,7 @@ int main(int argc, char *argv[]) {
         decision_value_alg4 = atoi(argv[12]);
     }
     
-    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %f. Number of repetition is %d. Remove node pattern is %d. Seed is %d. Max_N is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern, seed, max_N_arg);
+    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %.9f. Number of repetition is %d. Remove node pattern is %d. Seed is %d. Max_N is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern, seed, max_N_arg);
     
     DataList list;
     init_list(&list);
@@ -1603,6 +1642,8 @@ int main(int argc, char *argv[]) {
         "data/200MB.csv",
         "data/400MB.csv"
     };
+    //~ int num_files_reconstruct = 4;
+    int num_files_reconstruct = 6;
     const char *filenames_reconstruct[] = {
         "data/reconstruct/new_c/1MB.csv", 
         "data/reconstruct/new_c/10MB.csv", 
@@ -1613,7 +1654,7 @@ int main(int argc, char *argv[]) {
     };
     // Array to hold RealRecords for each file
     RealRecords *records_array = (RealRecords *)malloc(num_files * sizeof(RealRecords));
-    RealRecords *records_array_reconstruct = (RealRecords *)malloc(num_files * sizeof(RealRecords));
+    RealRecords *records_array_reconstruct = (RealRecords *)malloc(num_files_reconstruct * sizeof(RealRecords));
     if (records_array == NULL || records_array_reconstruct == NULL) {
         perror("Memory allocation failed for records array");
         exit(EXIT_FAILURE);
@@ -1621,21 +1662,24 @@ int main(int argc, char *argv[]) {
     // Read records from each file
     for (i = 0; i < num_files; i++) {
         read_records(filenames[i], &records_array[i]);
+    }
+    for (i = 0; i < num_files_reconstruct; i++) {
         read_records(filenames_reconstruct[i], &records_array_reconstruct[i]);
     }
 
     // Print the data to verify (example for the first file)
     #ifdef PRINT
-    for (i = 0; i < 171; i++) {
-        printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames[0], i, records_array[0].n[i], records_array[0].k[i], records_array[0].avg_time[i]);
-    }
+    //~ for (i = 0; i < 171; i++) {
+        //~ printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames[0], i, records_array[0].n[i], records_array[0].k[i], records_array[0].avg_time[i]);
+    //~ }
     for (i = 0; i < 171; i++) {
         printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames_reconstruct[0], i, records_array_reconstruct[0].n[i], records_array_reconstruct[0].k[i], records_array_reconstruct[0].avg_time[i]);
+        printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames_reconstruct[3], i, records_array_reconstruct[3].n[i], records_array_reconstruct[3].k[i], records_array_reconstruct[3].avg_time[i]);
     }
     #endif
 
     LinearModel *models = (LinearModel *)malloc(num_files * sizeof(LinearModel));
-    LinearModel *models_reconstruct = (LinearModel *)malloc(num_files * sizeof(LinearModel));
+    LinearModel *models_reconstruct = (LinearModel *)malloc(num_files_reconstruct * sizeof(LinearModel));
     double c0, c1, c2;
     for (i = 0; i < num_files; i++) {
         c0 = 0;
@@ -1651,7 +1695,8 @@ int main(int argc, char *argv[]) {
         models[i].intercept = c0;
         models[i].slope_n = c1;
         models[i].slope_k = c2;
-        
+    }
+    for (i = 0; i < num_files_reconstruct; i++) {
         c0 = 0;
         c1 = 0;
         c2 = 0;
