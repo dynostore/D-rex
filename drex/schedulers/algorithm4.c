@@ -462,8 +462,11 @@ void read_supplementary_node(const char *filename, int number_of_nodes, Node *no
     fclose(file);
 }
 
+/** **/
 double generate_reliability() {
-    int nines_count = rand() % 10; // Randomly choose between 0 and 9 (previously 6) nines
+    //~ int nines_count = rand() % 10; // Randomly choose between 0 and 9 (previously 6) nines
+    //~ int nines_count = rand() % 7; // Randomly choose between 0 and 6 nines
+    int nines_count = rand() % 6; // Randomly choose between 0 and 6 nines
     double base_reliability = 0;
     // Create the base with the selected number of nines
     for (int i = 0; i < nines_count; i++) {
@@ -478,7 +481,8 @@ double generate_reliability() {
     // Generate a random value between base_reliability and 1.0
     double random_reliability = base_reliability + ((double)rand() / RAND_MAX) * (1.0 - base_reliability);
     //~ printf("random_reliability = %.9f\n", random_reliability);
-    if (nines_count == 9) { return base_reliability; }
+    //~ if (nines_count == 9) { return base_reliability; }
+    //~ if (nines_count == 7) { return base_reliability; }
     return random_reliability;
 }
 
@@ -621,7 +625,17 @@ PoiBin *init_poi_bin_accurate(double *probabilities, int n) {
 }
 // Compute the PMF for the Poisson-Binomial distribution
 double pmf_poi_bin_accurate(PoiBin *pb, int k) {
-    double *dp = (double *)calloc(k + 1, sizeof(double));
+    //~ double *dp = (double *)calloc(k + 1, sizeof(double));
+    //~ dp[0] = 1.0;
+    
+    double *dp = (double *)malloc((k + 1) * sizeof(double));
+    if (dp == NULL) {
+        // Handle memory allocation failure
+        return -1;  // Or some other error code
+    }
+    for (int i = 0; i <= k; i++) {
+        dp[i] = 0.0;
+    }
     dp[0] = 1.0;
 
     for (int i = 0; i < pb->n; i++) {
@@ -825,8 +839,19 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
                 combinations[i]->chunking_time = predict(models[closest_index], combinations[i]->num_elements, *K, nearest_size, size);
                 //~ combinations[i]->transfer_time_parralelized = calculate_transfer_time(chunk_size, combinations[i]->min_write_bandwidth);
                 combinations[i]->transfer_time_parralelized = fmax(size/out_going_bandwidth, chunk_size/combinations[i]->min_write_bandwidth);
-                combinations[i]->replication_and_write_time = combinations[i]->chunking_time + combinations[i]->transfer_time_parralelized;
+                
+                // Ajout du read and reconstruct
+                combinations[i]->read_time_parralelized = fmax(size/out_going_bandwidth, chunk_size/combinations[i]->min_read_bandwidth);
+                combinations[i]->reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], combinations[i]->num_elements, *K, nearest_size, size);
+                //~ printf("%f\n", combinations[i]->reconstruct_time); fflush(stdout);
+                //~ combinations[i]->reconstruct_time = 0;
+                
+                //~ combinations[i]->replication_and_write_time = combinations[i]->chunking_time + combinations[i]->transfer_time_parralelized;
+                combinations[i]->replication_and_write_time = combinations[i]->chunking_time + combinations[i]->transfer_time_parralelized + combinations[i]->read_time_parralelized + combinations[i]->reconstruct_time;
+                
+                
                 combinations[i]->storage_overhead = chunk_size*combinations[i]->num_elements;
+                
                 #ifdef PRINT
                 printf("storage_overhead: %f\n", combinations[i]->storage_overhead);
                 printf("replication_and_write_time: %f\n", combinations[i]->replication_and_write_time);
@@ -1675,6 +1700,7 @@ int main(int argc, char *argv[]) {
     for (i = 0; i < 171; i++) {
         printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames_reconstruct[0], i, records_array_reconstruct[0].n[i], records_array_reconstruct[0].k[i], records_array_reconstruct[0].avg_time[i]);
         printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames_reconstruct[3], i, records_array_reconstruct[3].n[i], records_array_reconstruct[3].k[i], records_array_reconstruct[3].avg_time[i]);
+        printf("File %s, Row %d: n: %.2f, k: %.2f, avg_time: %.6f\n", filenames_reconstruct[5], i, records_array_reconstruct[5].n[i], records_array_reconstruct[5].k[i], records_array_reconstruct[5].avg_time[i]);
     }
     #endif
 

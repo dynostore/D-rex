@@ -7,6 +7,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import csv
 import re
 import sys
@@ -35,6 +36,11 @@ def count_decimal_places(value):
 folder_prefix = sys.argv[1]
 folder_suffix = sys.argv[2]
 
+# Nice figs
+mpl.rcParams['text.usetex'] = True
+
+
+
 print(folder_prefix)
 print(folder_suffix)
 # Base directory where your folders are located
@@ -43,7 +49,7 @@ base_dir = 'plot/drex_only'
 # ~ threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix))
 threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix) + r'$')
 # List of metrics to plot
-metrics_to_plot = ['total_chunking_time', 'total_storage_used', 'total_parralelized_upload_time', 'mean_storage_used', 'total_upload_time', 'number_of_data_stored', 'combined_mean_upload_chunk', 'combined_total_upload_chunk', 'combined_mean_reconstruct_read', 'best_fit', 'efficiency', 'size_stored']
+metrics_to_plot = ['total_chunking_time', 'total_storage_used', 'total_parralelized_upload_time', 'mean_storage_used', 'total_upload_time', 'number_of_data_stored', 'combined_mean_upload_chunk', 'combined_total_upload_chunk',  'combined_total_read_reconstruct', 'combined_mean_reconstruct_read', 'best_fit', 'efficiency', 'size_stored', 'combined_times']
 # ~ metrics_to_plot = ['efficiency']
 markers = ['o', 's', 'D', '^', 'v', '>', '<', 'p', 'h', '*', 'x', '+', '|', '_', '.', ',', '1', '2', '3', '4']
 
@@ -89,6 +95,10 @@ for metric in metrics_to_plot:
                             df['combined_mean_upload_chunk'] = df['mean_parralelized_upload_time'] + df['mean_chunking_time']
                         if metric == 'combined_total_upload_chunk':
                             df['combined_total_upload_chunk'] = df['total_parralelized_upload_time'] + df['total_chunking_time']
+                        if metric == 'combined_total_read_reconstruct':
+                            df['combined_total_read_reconstruct'] = df['total_read_time_parrallelized'] + df['total_reconstruct_time']
+                        if metric == 'combined_times':
+                            df['combined_times'] = df['total_read_time_parrallelized'] + df['total_reconstruct_time'] + df['total_parralelized_upload_time'] + df['total_chunking_time']
                         if metric == 'combined_mean_reconstruct_read':
                             df['combined_mean_reconstruct_read'] = df['mean_read_time_parrallelized'] + df['mean_reconstruct_time']
                         
@@ -131,19 +141,31 @@ for metric in metrics_to_plot:
     i = 0
     
     # Iterate over each algorithm and plot its trend
+    i = 0
     for algorithm in df_data['Algorithm'].unique():
         subset = df_data[df_data['Algorithm'] == algorithm]
         subset = subset.sort_values(by='Reliability Threshold')
-        plt.plot(subset['Reliability Threshold'], subset[metric], marker=markers[i % len(markers)], label=algorithm)
+
+        # If metric is 'combined_times', only plot the first 7 points
+        if metric == 'combined_times':
+            subset = subset.head(7)
+
+        plt.plot(subset['Reliability Threshold'], subset[metric], 
+                 marker=markers[i % len(markers)], label=algorithm)
+        
         i += 1
 
     # Set custom x-tick labels
-    # ~ new_labels = ['0.9', '0.99', '0.999', '0.9999', '0.99999']
-    new_labels = ['0.9', '0.99', '0.999', '0.9999', '0.99999', '0.999999', '0.9999999', '0.99999999']
+    if metric == 'combined_times':
+        new_labels = ['0.9', '0.99', '0.999', '0.9999', '0.99999', '0.999999', '0.9999999']
+    else:
+        new_labels = ['0.9', '0.99', '0.999', '0.9999', '0.99999', '0.999999', '0.9999999', '0.99999999', '0.999999999']
 
     # Apply the new labels to the x-ticks
-    # ~ x_values = [1, 2, 3, 4, 5]
-    x_values = [1, 2, 3, 4, 5, 6, 7, 8]
+    if metric == 'combined_times':
+        x_values = [1, 2, 3, 4, 5, 6, 7]
+    else:
+        x_values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     plt.xticks(ticks=x_values, labels=new_labels)
 
     plt.title('Evolution of ' + metric + ' Depending on Reliability Threshold')

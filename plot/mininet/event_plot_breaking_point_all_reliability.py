@@ -131,6 +131,8 @@ for idx, reliability_threshold in enumerate(reliability_thresholds):
             
             failure_times.append(node_failures)
             percentage_values.append(percentage)
+            if (reliability_threshold == 0.999):
+                print(node_failures, "reliability", reliability_threshold, alg_name, "%", percentage)
             
             node_failures += 1
 

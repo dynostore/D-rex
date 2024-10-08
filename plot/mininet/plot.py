@@ -616,7 +616,8 @@ plt.savefig(folder_path + '/efficiency_' + input_nodes_to_print + "_" + input_da
 
 ## Violin plots
 # Load the optimal schedule if the threshold is -1
-if reliability_threshold == -1:
+# ~ if reliability_threshold == -1:
+if 1 == 1:
     optimal_df = pd.read_csv(folder_path + "/optimal_schedule.csv")
 
     # List of CSV files to read

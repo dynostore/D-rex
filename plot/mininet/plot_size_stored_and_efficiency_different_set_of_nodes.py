@@ -20,7 +20,7 @@ folder_suffix = sys.argv[1]  # This will be the part of the folder name after th
 if folder_suffix == "_MEVA_merged_365_-1.0_25_max0":
     total_possible_size_to_store = 487000*25
 elif folder_suffix == "_MEVA_merged_365_-1.0_250_max0":
-    total_possible_size_to_store *= 487000*250
+    total_possible_size_to_store = 487000*250
 else:
     print("Error suffix", folder_suffix, "not known")
     exit(1)

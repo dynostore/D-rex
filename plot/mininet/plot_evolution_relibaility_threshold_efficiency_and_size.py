@@ -27,11 +27,17 @@ folder_suffix = sys.argv[2]
 
 if folder_prefix == "10_most_used_nodes_MEVA_merged_365_" or folder_prefix == "10_most_unreliable_nodes_MEVA_merged_365_":
     total_possible_size_to_store = 487000
+else: 
+    print("Folder prefix not known") 
+    exit
 if folder_suffix == "_250_max0":
     total_possible_size_to_store = total_possible_size_to_store*250
 elif folder_suffix == "_25_max0":
     total_possible_size_to_store = total_possible_size_to_store*25
-
+else:
+    print("Folder sufix not known") 
+    exit
+    
 base_dir = 'plot/drex_only'
 threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escape(folder_suffix) + r'$')
 markers = ['o', 's', 'D', '^', 'v', '>', '<', 'p', 'h', '*', 'x', '+', '|', '_', '.', ',', '1', '2', '3', '4']
@@ -207,7 +213,7 @@ ax1.legend(handles=handles, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol
 ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)  # Added a grid behind bars
 
 # Save the plot
-folder_path = "plot/drex_only/" + folder_prefix + "evolution" + folder_suffix
-create_folder(folder_path)
+# ~ folder_path = "plot/drex_only/combined/" + folder_prefix + "evolution" + folder_suffix
+# ~ create_folder(folder_path)
 plt.tight_layout()
-plt.savefig(folder_path + '/size_stored_and_efficiency.pdf')
+plt.savefig("plot/combined/" + folder_prefix + "evolution" + folder_suffix + ".pdf")

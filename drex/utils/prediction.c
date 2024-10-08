@@ -58,16 +58,19 @@ double predict(LinearModel models, int n, int k, double nearest_size, double fil
     Y_pred = Y_pred * (file_size / nearest_size);
     Y_pred /= 1000;  // Convert to seconds
     
-    if (Y_pred < 0) { printf("predict < 0\n"); }
+    if (Y_pred < 0) { printf("predict < 0 with n %d k %d and file size %f\n", n, k, file_size); }
     return Y_pred;
 }
 
 double predict_reconstruct(LinearModel models_reconstruct, int n, int k, double nearest_size, double file_size) {    
     double Y_pred = models_reconstruct.intercept + models_reconstruct.slope_n * n + models_reconstruct.slope_k * k;
+    //~ printf("1. Y_pred = %f\n", Y_pred);
     Y_pred = Y_pred * (file_size / nearest_size);
+    //~ printf("2. Y_pred = %f\n", Y_pred);
     Y_pred /= 1000;  // Convert to seconds
-    
-    if (Y_pred < 0) { printf("predict_reconstruct < 0\n"); }
+    //~ printf("3. Y_pred = %f\n", Y_pred);
+    //~ printf("Pred %f file size %f nearest_size %f\n", Y_pred, file_size, nearest_size);
+    if (Y_pred < 0) { printf("predict_reconstruct %f < 0 with n %d k %d and file size %f nearest_size %f file_size / nearest_size %f\n", Y_pred, n, k, file_size, nearest_size, file_size / nearest_size); exit(1); }
     return Y_pred;
 }
 

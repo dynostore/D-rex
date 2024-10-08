@@ -83,8 +83,10 @@ typedef struct {
     
     // Sub values for pareto front
     double transfer_time_parralelized;
+    double read_time_parralelized;
     double total_transfer_time;
     double chunking_time;
+    double reconstruct_time;
     
     // Values in the pareto front
     double size_score;
