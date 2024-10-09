@@ -93,7 +93,7 @@ make
 # ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 0 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times}
 
 
-#~ # Alg 4
+# Alg 4
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times} 1
 
 #~ # Alg 1
@@ -120,11 +120,12 @@ make
 
 #~ # Daos
 ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times} 1 0
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times} 2 0
+# ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times} 2 0
 
 
 # Plotting results
 python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))
+
 #~ python3 plot/mininet/plot_breaking_point.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))
 #~ python3 plot/mininet/step_plot_breaking_point.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))
 #~ python3 plot/mininet/event_plot_breaking_point.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))

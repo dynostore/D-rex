@@ -37,9 +37,12 @@ folder_prefix = sys.argv[1]
 folder_suffix = sys.argv[2]
 
 # Nice figs
-mpl.rcParams['text.usetex'] = True
-
-
+plt.style.use("/home/gonthier/Chicago/paper.mplstyle")
+pt = 1./72.27
+jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
+              "CQG": {"onecol": 374.*pt},}
+my_width = jour_sizes["PRD"]["twocol"]
+golden = (1 + 5 ** 0.5) / 2
 
 print(folder_prefix)
 print(folder_suffix)
@@ -54,7 +57,7 @@ metrics_to_plot = ['total_chunking_time', 'total_storage_used', 'total_parraleli
 markers = ['o', 's', 'D', '^', 'v', '>', '<', 'p', 'h', '*', 'x', '+', '|', '_', '.', ',', '1', '2', '3', '4']
 
 for metric in metrics_to_plot:
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(my_width, my_width/golden))
     index = 0
     data = []
     df_data = []
@@ -98,10 +101,9 @@ for metric in metrics_to_plot:
                         if metric == 'combined_total_read_reconstruct':
                             df['combined_total_read_reconstruct'] = df['total_read_time_parrallelized'] + df['total_reconstruct_time']
                         if metric == 'combined_times':
-                            df['combined_times'] = df['total_read_time_parrallelized'] + df['total_reconstruct_time'] + df['total_parralelized_upload_time'] + df['total_chunking_time']
+                            df['combined_times'] = (df['total_read_time_parrallelized'] + df['total_reconstruct_time'] + df['total_parralelized_upload_time'] + df['total_chunking_time'])/3600
                         if metric == 'combined_mean_reconstruct_read':
                             df['combined_mean_reconstruct_read'] = df['mean_read_time_parrallelized'] + df['mean_reconstruct_time']
-                        
                         if metric == 'best_fit': # Goal is to get closer to 1
                             df['best_fit'] = best_upload_time_optimal/(df['total_parralelized_upload_time'] + df['total_chunking_time']) + best_read_time_optimal/(df['total_read_time_parrallelized'] + df['total_reconstruct_time']) + df['size_stored']/size_stored_optimal
                         if metric == 'efficiency': # Goal is to maximize
@@ -139,7 +141,14 @@ for metric in metrics_to_plot:
     # Filter out rows where the value is 0 in the column you want to plot
     df_data = df_data[df_data[metric] != 0]
     i = 0
-    
+        
+    # Filter out some algorithm
+    if metric == 'combined_times':
+        algorithms_to_exclude = ['HDFS_RS(3,2)', 'HDFS_RS(6,3)', 'GlusterFS', 'GlusterFS_c', 'DAOS_1R']
+        filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
+    else:
+        filtered_df = df_data
+
     # Iterate over each algorithm and plot its trend
     i = 0
     for algorithm in df_data['Algorithm'].unique():
@@ -170,7 +179,11 @@ for metric in metrics_to_plot:
 
     plt.title('Evolution of ' + metric + ' Depending on Reliability Threshold')
     plt.xlabel('Reliability Threshold')
-    plt.ylabel(metric)
+    if metric == 'combined_times':
+        plt.ylabel('Combined Duration of Data Operations (h)')
+        # ~ plt.ylim(0,)
+    else:
+        plt.ylabel(metric)
     plt.legend()
     plt.grid(True)
     folder_path = "plot/drex_only/" + folder_prefix + "evolution" + folder_suffix

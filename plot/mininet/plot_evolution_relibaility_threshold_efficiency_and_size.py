@@ -117,8 +117,10 @@ df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
 df_data = df_data[(df_data['size_stored'] != 0) & (df_data['efficiency'] != 0)]
 
 # List of algorithms to filter out
-algorithms_to_exclude = ['HDFS_RS(3,2)', 'HDFS_RS(6,3)', 'GlusterFS', 'GlusterFS_c', 'DAOS_1R']
+algorithms_to_exclude = ['HDFS_RS_ADAPTATIVE', 'hdfs_3_replications']
+# ~ algorithms_to_exclude = ['Min_Storage', 'hdfs_3_replications', 'Greedy_Load_Balancing', 'GlusterFS_ADAPTATIVE', 'GlusterFS_c']
 filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
+# ~ filtered_df = df_data
 
 # Initialize the figure and axes
 fig, ax1 = plt.subplots(figsize=(10, 6))

@@ -35,9 +35,18 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
      *  domain_nr >= 10 : OC_EC_8P2GX
      *  domain_nr >= 6 : OC_EC_4P2GX
      **/
+    start : ;
     if (is_daos == true) {
         //~ printf("is daos true %d nodes\n", number_of_nodes);
-        if (number_of_nodes >= 10 && max_N > 6) {
+        if (RS1 == 3) {
+            *N = 4;
+            *K = 1;
+        }
+        else if (RS1 == 4) {
+            *N = 6;
+            *K = 1;
+        }
+        else if (number_of_nodes >= 10 && max_N > 6) {
             if (RS1 == 1) {
                 *N = 9;
                 *K = 8;
@@ -46,7 +55,7 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
                 *N = 10;
                 *K = 8;
             }
-            else { printf("Wrong RS1 value for DAOS\n"); exit(1); }
+            //~ else { printf("Wrong RS1 value for DAOS\n"); exit(1); }
         }
         else if (number_of_nodes >= 6) {
         //~ printf("number_of_nodes sup 6\n");
@@ -58,7 +67,7 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
                 *N = 6;
                 *K = 4;
             }
-            else { printf("Wrong RS1 value for DAOS\n"); exit(1); } 
+            //~ else { printf("Wrong RS1 value for DAOS\n"); exit(1); } 
         }
         else {
             *N = -1;
@@ -154,6 +163,23 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
     //~ while (!reliability_threshold_met(N, 1, reliability_threshold, reliability_of_nodes_chosen)) {
     while (!reliability_threshold_met_accurate(*N, *K, reliability_threshold, reliability_of_nodes_chosen)) {
         if (loop > number_of_nodes - *N) {
+            if (is_daos == true) {
+                if (RS1 == 1) {
+                    //~ printf("Swicth to RS1 = 2\n");
+                    RS1 = 2;
+                    goto start;
+                }
+                else if (RS1 == 2) {
+                    //~ printf("Swicth to 4 rep now\n");
+                    RS1 = 3;
+                    goto start;
+                }
+                else if (RS1 == 3) {
+                    //~ printf("Swicth to 6 rep now\n");
+                    RS1 = 4;
+                    goto start;
+                }
+            }
             free(set_of_nodes_chosen_temp);
             free(reliability_of_nodes_chosen);
             *N= -1;

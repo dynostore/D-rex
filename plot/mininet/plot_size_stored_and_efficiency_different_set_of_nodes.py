@@ -21,6 +21,8 @@ if folder_suffix == "_MEVA_merged_365_-1.0_25_max0":
     total_possible_size_to_store = 487000*25
 elif folder_suffix == "_MEVA_merged_365_-1.0_250_max0":
     total_possible_size_to_store = 487000*250
+elif folder_suffix == "_FB_merged_365_-1.0_1_max0":
+    total_possible_size_to_store = 928000000*1
 else:
     print("Error suffix", folder_suffix, "not known")
     exit(1)
