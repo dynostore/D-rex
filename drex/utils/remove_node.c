@@ -81,10 +81,11 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
             }
         }
         free(chunk_nodes_used);
-        
+        printf("End of reschedule_lost_chunks\n");
         return data_to_replicate;
     }
     else {
+        printf("End of reschedule_lost_chunks\n");
         //~ *data_to_replicate = NULL;
         return NULL;
     }

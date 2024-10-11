@@ -54,7 +54,10 @@ threshold_regex = re.compile(re.escape(folder_prefix) + r'(\d+\.\d+)' + re.escap
 # List of metrics to plot
 metrics_to_plot = ['total_chunking_time', 'total_storage_used', 'total_parralelized_upload_time', 'mean_storage_used', 'total_upload_time', 'number_of_data_stored', 'combined_mean_upload_chunk', 'combined_total_upload_chunk',  'combined_total_read_reconstruct', 'combined_mean_reconstruct_read', 'best_fit', 'efficiency', 'size_stored', 'combined_times']
 # ~ metrics_to_plot = ['efficiency']
-markers = ['o', 's', 'D', '^', 'v', '>', '<', 'p', 'h', '*', 'x', '+', '|', '_', '.', ',', '1', '2', '3', '4']
+
+markers = ['o', '^', 's', 'D', '+', 'v', 'h', 'x', '*', 'x', '+', '|', '_', '.', ',', '1', '2', '3', '4']
+colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#7f7f7f', '#800000', '#d62728', '#ff7f0e']
+order = [0, 2, 1, 3, 5, 6, 4, 7]  # The new order for labels (C first, A second, B third)
 
 for metric in metrics_to_plot:
     plt.figure(figsize=(my_width, my_width/golden))
@@ -69,7 +72,7 @@ for metric in metrics_to_plot:
             # Extract reliability threshold from the folder name
             match = threshold_regex.search(folder)
             if match:
-                print(folder_path)
+                # ~ print(folder_path)
                 reliability_threshold = float(match.group(1))
                 index = count_decimal_places(reliability_threshold)
                 
@@ -111,7 +114,7 @@ for metric in metrics_to_plot:
                         
                         # Fetch the algorithm names and corresponding mean_chunking_time
                         for i, algorithm in enumerate(df['algorithm']):
-                            print(i, algorithm)
+                            # ~ print(i, algorithm)
                             value = df[metric].iloc[i]
                             data.append((index, algorithm, value))
 
@@ -119,23 +122,23 @@ for metric in metrics_to_plot:
     df_data = pd.DataFrame(data, columns=['Reliability Threshold', 'Algorithm', metric])
         
     # Rename algorithms
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1', 'Min_Storage')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-rex')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', 'hdfs_3_replications')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'HDFS_RS(3,2)')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'HDFS_RS(6,3)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1_c', 'GreedyMinStorage')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-Rex SC')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', 'HDFS 3 Rep')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'HDFS(3,2)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'HDFS(6,3)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('Min_Storage_c', 'Min_Storage')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg_bogdan', 'Greedy_Load_Balancing')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg_bogdan', 'D-Rex LB')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4_c', 'GlusterFS')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_0_0_c', 'GlusterFS_ADAPTATIVE')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS_RS(3,2)')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS_RS(6,3)')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS_RS(4,2)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS(3,2)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS(6,3)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS(4,2)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_RS_ADAPTATIVE')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS_1R')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
 
     # Filter out rows where the value is 0 in the column you want to plot
@@ -144,23 +147,25 @@ for metric in metrics_to_plot:
         
     # Filter out some algorithm
     if metric == 'combined_times':
-        algorithms_to_exclude = ['HDFS_RS(3,2)', 'HDFS_RS(6,3)', 'GlusterFS', 'GlusterFS_c', 'DAOS_1R']
+        algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE']
         filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
     else:
         filtered_df = df_data
 
     # Iterate over each algorithm and plot its trend
     i = 0
-    for algorithm in df_data['Algorithm'].unique():
-        subset = df_data[df_data['Algorithm'] == algorithm]
+    for algorithm in filtered_df['Algorithm'].unique():
+        subset = filtered_df[filtered_df['Algorithm'] == algorithm]
         subset = subset.sort_values(by='Reliability Threshold')
 
         # If metric is 'combined_times', only plot the first 7 points
         if metric == 'combined_times':
             subset = subset.head(7)
-
-        plt.plot(subset['Reliability Threshold'], subset[metric], 
-                 marker=markers[i % len(markers)], label=algorithm)
+        if algorithm == 'D-Rex SC' or algorithm == 'D-Rex LB':
+            zorder=3
+        else:
+            zorder=2
+        plt.plot(subset['Reliability Threshold'], subset[metric], marker=markers[i], label=algorithm, color=colors[i % len(colors)], zorder=zorder)
         
         i += 1
 
@@ -177,14 +182,16 @@ for metric in metrics_to_plot:
         x_values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     plt.xticks(ticks=x_values, labels=new_labels)
 
-    plt.title('Evolution of ' + metric + ' Depending on Reliability Threshold')
-    plt.xlabel('Reliability Threshold')
+    plt.xlabel('Minimum Reliability Requirement')
     if metric == 'combined_times':
         plt.ylabel('Combined Duration of Data Operations (h)')
         # ~ plt.ylim(0,)
+        handles, labels = plt.gca().get_legend_handles_labels()
+        plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
     else:
+        plt.title('Evolution of ' + metric + ' Depending on Reliability Threshold')
         plt.ylabel(metric)
-    plt.legend()
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
     plt.grid(True)
     folder_path = "plot/drex_only/" + folder_prefix + "evolution" + folder_suffix
     create_folder(folder_path)

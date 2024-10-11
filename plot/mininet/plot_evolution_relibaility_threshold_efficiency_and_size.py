@@ -21,6 +21,16 @@ def count_decimal_places(value):
     else:
         return 0
 
+# Nice figs
+plt.style.use("/home/gonthier/Chicago/paper.mplstyle")
+pt = 1./72.27
+jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
+              "CQG": {"onecol": 374.*pt},
+              "PRDFULLPAGE": {"twocol": 1000.*pt},}
+my_width = jour_sizes["PRDFULLPAGE"]["twocol"]
+golden = (1 + 5 ** 0.5) / 2
+fig, ax1 = plt.subplots(figsize=(my_width, my_width/(golden*1.5)))  # Adjust width and height here
+
 # Prompt the user for folder name parts before and after the reliability threshold
 folder_prefix = sys.argv[1]
 folder_suffix = sys.argv[2]
@@ -45,8 +55,6 @@ markers = ['o', 's', 'D', '^', 'v', '>', '<', 'p', 'h', '*', 'x', '+', '|', '_',
 # Combined plot for 'size_stored' as bars and 'efficiency' as lines
 metric_to_plot_bars = 'size_stored'
 metric_to_plot_lines = 'efficiency'
-
-plt.figure(figsize=(10, 6))
 
 index = 0
 data = []
@@ -95,38 +103,37 @@ for folder in os.listdir(base_dir):
 df_data = pd.DataFrame(data, columns=['Reliability Threshold', 'Algorithm', 'size_stored', 'efficiency'])
 
 # Rename algorithms
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1', 'Min_Storage')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-rex')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', 'hdfs_3_replications')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'HDFS_RS(3,2)')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'HDFS_RS(6,3)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1_c', 'GreedyMinStorage')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-Rex SC')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', 'HDFS 3 Rep')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'HDFS(3,2)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'HDFS(6,3)')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('Min_Storage_c', 'Min_Storage')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg_bogdan', 'Greedy_Load_Balancing')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg_bogdan', 'D-Rex LB')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4_c', 'GlusterFS')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_0_0_c', 'GlusterFS_ADAPTATIVE')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS_RS(3,2)')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS_RS(6,3)')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS_RS(4,2)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS(3,2)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS(6,3)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS(4,2)')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_RS_ADAPTATIVE')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS_1R')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
 
 # Filter out rows where the value is 0 in the column you want to plot
 df_data = df_data[(df_data['size_stored'] != 0) & (df_data['efficiency'] != 0)]
 
 # List of algorithms to filter out
-algorithms_to_exclude = ['HDFS_RS_ADAPTATIVE', 'hdfs_3_replications']
-# ~ algorithms_to_exclude = ['Min_Storage', 'hdfs_3_replications', 'Greedy_Load_Balancing', 'GlusterFS_ADAPTATIVE', 'GlusterFS_c']
+algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE']
 filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
-# ~ filtered_df = df_data
 
 # Initialize the figure and axes
-fig, ax1 = plt.subplots(figsize=(10, 6))
+# ~ fig, ax1 = plt.subplots(figsize=(10, 6))
 
 # Set bar width and positions
-bar_width = 0.11
+bar_width = 0.09
 # Initialize dictionaries for efficiency and storage data
 efficiency_data = {}
 storage_data = {}
@@ -168,38 +175,46 @@ print("Storage Data:", storage_data)
 print("reliability_thresholds:", reliability_thresholds)
 print("schedulers:", schedulers)
 
+markers = ['o', '^', 's', 'D', 'v', 'h', 'x', '+', '*', 'x', '+', '|', '_', '.', ',', '1', '2', '3', '4']
+colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
+order = [0, 2, 1, 3, 4, 5, 7, 6]
 
 # Plot total storage as bars
 for i, scheduler in enumerate(schedulers):
     bars = ax1.bar(x + i * bar_width, [storage_data[threshold][i] for threshold in reliability_thresholds], 
-                    width=bar_width, alpha=0.6, label=f'Storage Used ({scheduler})', edgecolor='black')
+                    width=bar_width, alpha=0.6, label=f'Storage Used ({scheduler})', edgecolor='black', color=colors[i])
+ax1.set_ylim(0,100)
+
+# Draw thinner vertical lines behind the bars
+for tick in x[1:]:  # Start from the second x-tick
+    ax1.axvline(x=tick - 2*bar_width, color='black', linestyle='-', linewidth=0.5, zorder=1)
 
 # Create a second y-axis for the efficiency lines
 ax2 = ax1.twinx()
 line_colors = []
 for i, scheduler in enumerate(schedulers):
-    line_color = f"C{i}"  # Get the color used for the line
-    line_colors.append(line_color)  # Store color for legend
-    # Plot the efficiency values for each scheduler at each reliability threshold
-    ax2.plot(x + 3.4*bar_width, [efficiency_data[threshold][i] for threshold in reliability_thresholds],
-             marker='o', color=line_color, label=f'Efficiency ({scheduler})')
+    if scheduler == 'D-Rex SC' or scheduler == 'D-Rex LB':
+        zorder=3
+    else:
+        zorder=2
+    ax2.plot(x + 3.4*bar_width, [efficiency_data[threshold][i] for threshold in reliability_thresholds], color=colors[i], marker=markers[i], zorder=zorder, label=f'{scheduler}')
 
 # Set labels
 ax1.set_xlabel('Minimum Reliability Requirement')
-ax1.set_ylabel('Proportion of Data Sizes Stored (%) (bar)')
+ax1.set_ylabel('Proportion of Data Sizes Stored (\%) (bar)')
 ax2.set_ylabel('Efficiency (line)')
+ax2.set_ylim(0,14)
 
 # Adding x-ticks
 ax1.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
 ax1.set_xticklabels(reliability_thresholds)
 
 # Custom legend
-handles = []
-for i, scheduler in enumerate(schedulers):
+# ~ handles = []
+# ~ for i, scheduler in enumerate(schedulers):
     # Create a bar handle for storage
-    bar_handle = plt.Line2D([0], [0], color=line_colors[i], lw=4, label=f'{scheduler}')
-    handles.append(bar_handle)
-    # ~ handles.append(dot_handle)
+    # ~ bar_handle = plt.Line2D([0], [0], color=clors[i], lw=4, label=f'{scheduler}')
+    # ~ handles.append(bar_handle)
 
 # ~ barr_handle = plt.Line2D([0], [0], color='grey', lw=4, label='Storage Used')
 # ~ # Create a dot handle for efficiency
@@ -209,13 +224,13 @@ for i, scheduler in enumerate(schedulers):
 # ~ handles.append(dot_handle)
 
 # Combine handles into a single legend
-ax1.legend(handles=handles, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)  # Adjusted the legend position
+# ~ ax1.legend(handles=handles, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)  # Adjusted the legend position
+handles, labels = plt.gca().get_legend_handles_labels()
+ax1.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
 
 # Add a grid behind the bars for better readability
 ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)  # Added a grid behind bars
 
 # Save the plot
-# ~ folder_path = "plot/drex_only/combined/" + folder_prefix + "evolution" + folder_suffix
-# ~ create_folder(folder_path)
 plt.tight_layout()
 plt.savefig("plot/combined/" + folder_prefix + "evolution" + folder_suffix + ".pdf")

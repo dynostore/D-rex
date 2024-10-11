@@ -784,10 +784,6 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     printf("System saturation = %f\n", system_saturation);
     printf("Data size = %f\n", size);
     #endif
-    //~ printf("0 max_N %d.\n", max_N); fflush(stdout);
-    //~ printf("In alg4 %d nodes\n", number_of_nodes);
-    //~ qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
-    //~ print_nodes(nodes, number_of_nodes);
     
     // 2. Iterates over a range of nodes combination
     for (i = 0; i < total_combinations; i++) {
@@ -843,10 +839,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
                 // Ajout du read and reconstruct
                 combinations[i]->read_time_parralelized = fmax(size/out_going_bandwidth, chunk_size/combinations[i]->min_read_bandwidth);
                 combinations[i]->reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], combinations[i]->num_elements, *K, nearest_size, size);
-                //~ printf("%f\n", combinations[i]->reconstruct_time); fflush(stdout);
-                //~ combinations[i]->reconstruct_time = 0;
-                
-                //~ combinations[i]->replication_and_write_time = combinations[i]->chunking_time + combinations[i]->transfer_time_parralelized;
+
                 combinations[i]->replication_and_write_time = combinations[i]->chunking_time + combinations[i]->transfer_time_parralelized + combinations[i]->read_time_parralelized + combinations[i]->reconstruct_time;
                 
                 
@@ -1014,7 +1007,6 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
 
                 combinations[best_index]->nodes[i]->storage_size -= chunk_size;
                 
-                //~ printf("Alg4 chose node %d\n", combinations[best_index]->nodes[i]->id);
                 used_combinations[i] = combinations[best_index]->nodes[i]->id;
             }
             
