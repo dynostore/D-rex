@@ -261,6 +261,19 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
             //~ printf("0.2.\n");
         }
     }
+    
+    if (*N > max_N) {
+                    free(reliability_of_nodes_chosen);
+                free(set_of_nodes_chosen);
+                free(size_to_stores);
+                *K = -1;
+                *N = -1;
+                gettimeofday(&end, NULL);
+                seconds  = end.tv_sec  - start.tv_sec;
+                useconds = end.tv_usec - start.tv_usec;
+                *total_scheduling_time += seconds + useconds/1000000.0;
+                return;
+}
     //~ printf("1.\n");
     // Updates
     if (*N != -1) { // We have a valid solution 

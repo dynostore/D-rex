@@ -50,6 +50,7 @@ input_nodes_to_print = input_nodes.split('/')[-1]
 input_nodes_to_print = input_nodes_to_print.rsplit('.', 1)[0]
 
 reliability_thresholds = [0.9, 0.99, 0.999, 0.9999, 0.99999]
+# ~ reliability_thresholds = [0.9]
 
 # Create a plot figure
 plt.figure(figsize=(10, 6))
@@ -131,8 +132,8 @@ for idx, reliability_threshold in enumerate(reliability_thresholds):
             
             failure_times.append(node_failures)
             percentage_values.append(percentage)
-            if (reliability_threshold == 0.999):
-                print(node_failures, "reliability", reliability_threshold, alg_name, "%", percentage)
+            # ~ if (reliability_threshold == 0.999):
+            print(node_failures, "reliability", reliability_threshold, alg_name, "%", percentage)
             
             node_failures += 1
 

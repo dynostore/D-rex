@@ -20,7 +20,7 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
         }
     }
     
-    printf("number_of_lost_chunks = %d\n", number_of_lost_chunks);
+    //~ printf("number_of_lost_chunks = %d\n", number_of_lost_chunks);
     *number_of_data_to_replicate_after_loss += number_of_lost_chunks;
 
     if (number_of_lost_chunks != 0) {
@@ -59,8 +59,7 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
                 
         for (i = 0; i < number_of_lost_chunks; i++) {                
             // Add space
-            if (i%10000 == 0) {
-            printf("i = %d/%d chunk_sizes[i] %f num_of_nodes_used[i] %d number_of_nodes %d\n", i, number_of_lost_chunks, chunk_sizes[i], num_of_nodes_used[i], number_of_nodes); }
+            //~ if (i%10000 == 0) {            printf("i = %d/%d chunk_sizes[i] %f num_of_nodes_used[i] %d number_of_nodes %d\n", i, number_of_lost_chunks, chunk_sizes[i], num_of_nodes_used[i], number_of_nodes); }
             //~ printf("total_remaining_size before = %f\n", *total_remaining_size);
             for (j = 0; j < num_of_nodes_used[i]; j++) {
                 for (k = 0; k < number_of_nodes; k++) {
@@ -81,11 +80,11 @@ double* reschedule_lost_chunks(Node* removed_node, Node* nodes, int number_of_no
             }
         }
         free(chunk_nodes_used);
-        printf("End of reschedule_lost_chunks\n");
+        //~ printf("End of reschedule_lost_chunks\n");
         return data_to_replicate;
     }
     else {
-        printf("End of reschedule_lost_chunks\n");
+        //~ printf("End of reschedule_lost_chunks\n");
         //~ *data_to_replicate = NULL;
         return NULL;
     }
@@ -115,7 +114,7 @@ int remove_random_node (int number_of_nodes, Node* node, int* removed_node_id) {
 int remove_node_following_failure_rate (int number_of_nodes, Node* nodes, int* removed_node_id, int time) {
     for (int i = 0; i < number_of_nodes; i++) {
         if (check_if_node_failed(&nodes[i])) {
-            printf("Node %d failed at time %d\n", nodes[i].id, time);
+            //~ printf("Node %d failed at time %d\n", nodes[i].id, time);
             nodes[i].add_after_x_jobs = -1;
             *removed_node_id = nodes[i].id;
             return i;

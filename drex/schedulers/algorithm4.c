@@ -909,7 +909,6 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             idx = pareto_indices[i];
             if (total_progress_replication_and_write_time > 0) {  // In some cases, when there are not enough solution or if they are similar the total progress is 0. As we don't want to divide by 0, we keep the score at 0 for the corresponding value as no progress could be made
                 time_score = 100 - ((combinations[idx]->replication_and_write_time - min_replication_and_write_time)*100)/total_progress_replication_and_write_time;
-                //~ printf("time_score %f", time_score);
             }
             
             if (total_progress_storage_overhead > 0) {
@@ -1889,7 +1888,7 @@ int main(int argc, char *argv[]) {
                     }
                     
                     if ((algorithm == 4 || algorithm == 2) && removed_node_index != -1) {
-                        free_combinations(combinations, total_combinations);
+                        free_combinations(combinations, total_combinations); //pb here ?
                         combinations = reset_combinations_and_recreate_them(&total_combinations, min_number_node_in_combination, current_number_of_nodes, complexity_threshold, nodes, i, &reduced_complexity_situation);
                     }
             // Reschedule if I have to

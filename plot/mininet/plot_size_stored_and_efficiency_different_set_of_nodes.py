@@ -27,6 +27,14 @@ else:
     print("Error suffix", folder_suffix, "not known")
     exit(1)
 
+# Nice figs
+plt.style.use("/home/gonthier/Chicago/paper.mplstyle")
+pt = 1./72.27
+jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
+              "CQG": {"onecol": 374.*pt},}
+my_width = jour_sizes["PRD"]["twocol"]
+golden = (1 + 5 ** 0.5) / 2
+
 base_dir = 'plot/drex_only'
 set_of_node_regex = re.compile(r'^(.+)' + re.escape(folder_suffix) + r'$')
 
@@ -34,7 +42,11 @@ set_of_node_regex = re.compile(r'^(.+)' + re.escape(folder_suffix) + r'$')
 metric_to_plot_bars = 'size_stored'
 metric_to_plot_efficiency = 'efficiency'
 
-plt.figure(figsize=(10, 6))
+
+colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
+order = [0, 2, 1, 3, 4, 5, 7, 6]  # The new order for labels (C first, A second, B third)
+
+# ~ plt.figure(figsize=(my_width, my_width/golden))
 
 data = []
 df_data = []
@@ -79,35 +91,35 @@ for folder in os.listdir(base_dir):
 # Convert the data into a DataFrame
 df_data = pd.DataFrame(data, columns=['Set of Nodes', 'Algorithm', 'size_stored', 'efficiency'])
 
-# Rename algorithms as per previous logic
-df_data['Algorithm'] = df_data['Algorithm'].replace({
-    'alg1': 'Min_Storage',
-    'alg4_1': 'D-rex',
-    'hdfs_3_replication_c': 'hdfs_3_replications',
-    'hdfsrs_3_2': 'HDFS_RS(3,2)',
-    'hdfsrs_6_3': 'HDFS_RS(6,3)',
-    'glusterfs_6_4': 'GlusterFS',
-    'Min_Storage_c': 'Min_Storage',
-    'alg_bogdan': 'Greedy_Load_Balancing',
-    'glusterfs_0_0_c': 'GlusterFS_ADAPTATIVE',
-    'hdfs_rs_3_2_c': 'HDFS_RS(3,2)',
-    'hdfs_rs_6_3_c': 'HDFS_RS(6,3)',
-    'hdfs_rs_4_2_c': 'HDFS_RS(4,2)',
-    'hdfs_rs_0_0_c': 'HDFS_RS_ADAPTATIVE',
-    'random_c': 'Random',
-    'daos_1_0_c': 'DAOS_1R',
-    'daos_2_0_c': 'DAOS_2R'
-})
-
+# Rename algorithms
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1_c', 'GreedyMinStorage')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-Rex SC')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', 'HDFS 3 Rep')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'HDFS(3,2)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'HDFS(6,3)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('Min_Storage_c', 'Min_Storage')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg_bogdan', 'D-Rex LB')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4_c', 'GlusterFS')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_0_0_c', 'GlusterFS_ADAPTATIVE')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS(3,2)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS(6,3)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS(4,2)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_RS_ADAPTATIVE')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
+    
 # Filter out rows where the value is 0 in the column you want to plot
 df_data = df_data[(df_data['size_stored'] != 0) & (df_data['efficiency'] != 0)]
 
-# List of algorithms to filter out
-algorithms_to_exclude = ['HDFS_RS(3,2)', 'HDFS_RS(6,3)', 'GlusterFS', 'GlusterFS_c', 'DAOS_1R']
+# Filter out some algorithm
+algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE']
 filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
-
+        
 # Initialize the figure and axes
-fig, ax1 = plt.subplots(figsize=(12, 6))
+fig, ax1 = plt.subplots(figsize=(my_width, my_width/golden))
 
 # Set bar width and positions with more space between sets of nodes
 bar_width = 0.09
@@ -150,30 +162,35 @@ x = np.arange(len(sets_of_nodes)) * (len(unique_algorithms) * bar_width + bar_sp
 
 # Plot total storage as bars
 for i, scheduler in enumerate(unique_algorithms):
-    ax1.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], 
-            width=bar_width, alpha=0.6, label=f'Storage Used ({scheduler})', edgecolor='black')
-    # ~ print("Plotting", scheduler, "from", set_of_nodes)
+    ax1.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], width=bar_width, alpha=1, lw=1, label=f'{scheduler}', edgecolor='black', color=colors[i])
 
 # Create a second y-axis for efficiency (hashed bars)
 ax2 = ax1.twinx()
 
 # Plot efficiency as hashed bars (with different hatches) on the left y-axis
 for i, scheduler in enumerate(unique_algorithms):
-    ax2.bar(x + i * bar_width, [efficiency_data[set_of_node][i] for set_of_node in sets_of_nodes], 
-            width=bar_width, alpha=0.4, hatch='//', label=f'Efficiency ({scheduler})', edgecolor='black')
+    ax2.bar(x + i * bar_width, [efficiency_data[set_of_node][i] for set_of_node in sets_of_nodes], width=bar_width, alpha=0.4, hatch='xx', label=f'Efficiency ({scheduler})', edgecolor='black', lw=1, color=colors[i])
+
+ax1.set_ylim(0,100)
+ax2.set_ylim(0,14)
 
 # Set labels
-ax1.set_xlabel('Set of Nodes')
-ax1.set_ylabel('Proportion of Data Sizes Stored (%) (bar)')
+# ~ ax1.set_xlabel('Set of Nodes')
+ax1.set_ylabel('Proportion of Data Sizes Stored (\%) (bar)')
 ax2.set_ylabel('Efficiency (hashed bar)')
 
 # Adding x-ticks
 ax1.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax1.set_xticklabels(('10_most_used_nodes', '10_most_reliable_nodes', '10_most_unreliable_nodes', 'most_used_node_x10'))
+ax1.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
+
+# Draw thinner vertical lines behind the bars
+for tick in x[1:]:  # Start from the second x-tick
+    ax1.axvline(x=tick - 2*bar_width, color='black', linestyle='-', linewidth=0.5, zorder=1)
 
 # Adding a legend
 handles, labels = ax1.get_legend_handles_labels()
-ax1.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3)
+# ~ ax1.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)
+ax1.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
 
 # ~ # Custom legend
 # ~ handles = []
