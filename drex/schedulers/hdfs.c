@@ -202,7 +202,6 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
             }
         }
               //~ printf("Set of nodes chosen as index in sorted tab after adding a node: ");
-    //~ for (i = 0; i < *N+1; i++) {
         //~ printf("%d (%d) ", set_of_nodes_chosen[i], nodes[set_of_nodes_chosen[i]].write_bandwidth);
     //~ }
         if (!all_good) {
@@ -529,9 +528,10 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
                 add_node_to_print(list, data_id, size, total_upload_time_to_print, transfer_time_parralelized, chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
 
                 *total_upload_time += total_upload_time_to_print;
+                
                 /** Read **/
-            *total_read_time_parrallelized += total_read_time_parralelized_to_print;
-            *total_read_time += total_read_time_to_print;
+                *total_read_time_parrallelized += total_read_time_parralelized_to_print;
+                *total_read_time += total_read_time_to_print;
                 
                 free(set_of_nodes_chosen_temp);
                 free(used_combinations);
@@ -543,7 +543,7 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
                 *total_scheduling_time += seconds + useconds/1000000.0;
                 return;
             
-        free(set_of_nodes_chosen_temp);
+    free(set_of_nodes_chosen_temp);
     free(reliability_of_nodes_chosen);
     
     gettimeofday(&end, NULL);

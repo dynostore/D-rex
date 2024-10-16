@@ -1860,7 +1860,7 @@ int main(int argc, char *argv[]) {
                 total_storage_size -= initial_node_sizes[removed_node_id];
                 //~ printf("total_storage_size = %f\n", total_storage_size);
                 
-                data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss);
+                data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss, algorithm);
                 total_number_of_data_to_replicate_after_loss += number_of_data_to_replicate_after_loss;
                 current_number_of_nodes -=1;
                                 
@@ -1877,7 +1877,7 @@ int main(int argc, char *argv[]) {
                     removed_node_index = remove_node_following_failure_rate(current_number_of_nodes, nodes, &removed_node_id, j);
                     if (removed_node_index != -1) {
                         total_storage_size -= initial_node_sizes[removed_node_id];
-                        data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss);
+                        data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss, algorithm);
                         total_number_of_data_to_replicate_after_loss += number_of_data_to_replicate_after_loss;
                         current_number_of_nodes -=1;
                         if (max_N_arg == 0) { // max_N is just the number of nodes if we don't use it
@@ -1966,7 +1966,7 @@ int main(int argc, char *argv[]) {
                             }
                         }
                         total_storage_size -= initial_node_sizes[removed_node_id];
-                        data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss);
+                        data_to_replicate = reschedule_lost_chunks(&nodes[removed_node_index], nodes, current_number_of_nodes, &number_of_data_to_replicate_after_loss, algorithm);
                         //~ printf("la\n");
                         total_number_of_data_to_replicate_after_loss += number_of_data_to_replicate_after_loss;
                         current_number_of_nodes -=1;

@@ -50,6 +50,7 @@ input_nodes_to_print = input_nodes.split('/')[-1]
 input_nodes_to_print = input_nodes_to_print.rsplit('.', 1)[0]
 
 reliability_thresholds = [0.9, 0.99, 0.999, 0.9999, 0.99999]
+# ~ reliability_thresholds = [0.9, 0.99, 0.999]
 # ~ reliability_thresholds = [0.9]
 
 # Create a plot figure
