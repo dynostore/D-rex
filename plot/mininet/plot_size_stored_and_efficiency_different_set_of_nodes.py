@@ -189,18 +189,7 @@ for tick in x[1:]:  # Start from the second x-tick
 
 # Adding a legend
 handles, labels = ax1.get_legend_handles_labels()
-# ~ ax1.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)
 ax1.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
-
-# ~ # Custom legend
-# ~ handles = []
-# ~ for i, scheduler in enumerate(unique_algorithms):
-    # ~ # Create a bar handle for storage
-    # ~ bar_handle = plt.Line2D([0], [0], color=f"C{i}", lw=4, label=f'{scheduler}')
-    # ~ handles.append(bar_handle)
-
-# ~ # Combine handles into a single legend
-# ~ ax1.legend(handles=handles, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)
 
 # Add a grid behind the bars for better readability
 ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
