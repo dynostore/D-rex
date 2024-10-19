@@ -978,6 +978,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         // Writing down the results
         if (*N != -1 && *K != -1) {
             chunk_size = size/(*K);
+            printf("%f, %f, %d, %d, ", size, chunk_size, *N, *K);
             *number_of_data_stored += 1;
             *total_N += *N;
             *total_storage_used += chunk_size*(*N);
@@ -994,6 +995,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             int* used_combinations = malloc(*N * sizeof(int));
             
             for (i = 0; i < combinations[best_index]->num_elements; i++) {
+                printf("%d ", combinations[best_index]->nodes[i]->id);
                 total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
                 
                 /** Read **/
@@ -1008,6 +1010,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
                 
                 used_combinations[i] = combinations[best_index]->nodes[i]->id;
             }
+            printf("\n");
             
             // Adding the chunks in the chosen nodes ids
             add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes, size);
@@ -1446,7 +1449,9 @@ int main(int argc, char *argv[]) {
     int number_of_repetition = atoi(argv[5]);
     int algorithm = atoi(argv[6]); // 0: random / 1: min_storage / 2: min_time / 3: hdfs_3_replication / 4: drex / 5: Bogdan / 6: hdfs_rs / 7: glusterfs
     const char *input_supplementary_node = argv[7];
-
+    
+    printf("data_size, chunk_size, N, K, chosen_nodes\n");
+        
     // For the removal of nodes
     int remove_node_pattern = atoi(argv[8]); // 0 for no removal, 1 for removal randomly, 2 for following failure rate
     unsigned int seed = atoi(argv[9]);  // We fix the seed so all algorithm have the same one
@@ -1467,7 +1472,7 @@ int main(int argc, char *argv[]) {
         decision_value_alg4 = atoi(argv[12]);
     }
     
-    printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %.9f. Number of repetition is %d. Remove node pattern is %d. Seed is %d. Max_N is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern, seed, max_N_arg);
+    //~ printf("Algorithm %d. Data have to stay %f days on the system. Reliability threshold is %.9f. Number of repetition is %d. Remove node pattern is %d. Seed is %d. Max_N is %d.\n", algorithm, data_duration_on_system, reliability_threshold, number_of_repetition, remove_node_pattern, seed, max_N_arg);
     
     DataList list;
     init_list(&list);
@@ -1480,9 +1485,9 @@ int main(int argc, char *argv[]) {
     int number_of_initial_nodes = count_nodes(input_node);
     int number_of_supplementary_nodes = count_nodes(input_supplementary_node);
     int number_of_nodes = number_of_initial_nodes + number_of_supplementary_nodes;
-    printf("number_of_initial_nodes: %d", number_of_initial_nodes);
-    printf(" / number_of_supplementary_nodes: %d", number_of_supplementary_nodes);
-    printf(" / number_of_nodes: %d\n", number_of_nodes);
+    //~ printf("number_of_initial_nodes: %d", number_of_initial_nodes);
+    //~ printf(" / number_of_supplementary_nodes: %d", number_of_supplementary_nodes);
+    //~ printf(" / number_of_nodes: %d\n", number_of_nodes);
     
     // Step 2: Allocate memory
     double *sizes = (double*)malloc(count * sizeof(double));
@@ -1811,9 +1816,10 @@ int main(int argc, char *argv[]) {
         }
         
         add_time_to_print(&list_time, submit_times[i], size_stored);
-        if (i%250000 == 0) {
-            printf("Data %d/%d of size %f\n", i, count, sizes[i]);
-        }
+       
+        //~ if (i%250000 == 0) {
+            //~ printf("Data %d/%d of size %f\n", i, count, sizes[i]);
+        //~ }
         
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
@@ -1947,7 +1953,6 @@ int main(int argc, char *argv[]) {
                 free(data_to_replicate); // TODO yeah do that ? Or set it to null ?
                 number_of_data_to_replicate_after_loss = 0;
             }
-                    //~ last_submit_time_used = submit_times[i];
                 }
                 last_submit_time_used = submit_times[i];
             }
@@ -2173,7 +2178,7 @@ int main(int argc, char *argv[]) {
     write_linked_list_to_file(&list, file_to_print, &total_chunking_time, &total_reconstruct_time);
     write_linked_list_time_to_file(&list_time, file_to_print_time);
     
-    printf("number_of_data_stored = %d\n", number_of_data_stored);
+    //~ printf("number_of_data_stored = %d\n", number_of_data_stored);
     if (algorithm != 9) {
         /** Writting the general outputs **/
         FILE *file = fopen(output_filename, "a");
@@ -2223,6 +2228,6 @@ int main(int argc, char *argv[]) {
     free(models);
     free(models_reconstruct);
     free(combinations);
-    printf("Success\n");
+    //~ printf("Success\n");
     return EXIT_SUCCESS;
 }

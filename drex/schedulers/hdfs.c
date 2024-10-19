@@ -293,6 +293,8 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
         int* used_combinations = malloc(*N * sizeof(int));
         *size_stored += size;
         
+        printf("%f, %f, %d, %d, ", size, size, *N, *K);
+        
         for (int j = 0; j < *N; j++) {
             total_upload_time_to_print += size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth;
             
@@ -301,6 +303,8 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
                     
             nodes[set_of_nodes_chosen[j]].storage_size -= size_to_stores[j];
             //~ printf("Removed %f from node %d\n", size_to_stores[j], nodes[set_of_nodes_chosen[j]].id); 
+            
+            printf("%d ", nodes[set_of_nodes_chosen[j]].id);
             
             if (worst_transfer < size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth) {
                 worst_transfer = size_to_stores[j]/nodes[set_of_nodes_chosen[j]].write_bandwidth;
@@ -312,6 +316,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
             // To track the chunks I a fill a temp struct with nodes
             used_combinations[j] = nodes[set_of_nodes_chosen[j]].id;
         }
+        printf("\n");
         
         // Adding the chunks in the chosen nodes
         add_shared_chunks_to_nodes_3_replication(used_combinations, *N, data_id, size_to_stores, nodes, number_of_nodes, size);
@@ -489,6 +494,8 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
                 *total_storage_used += chunk_size*(*N);
                 *size_stored += size;
                 
+                printf("%f, %f, %d, %d, ", size, chunk_size, *N, *K);
+                
                 int* used_combinations = malloc(*N * sizeof(int));
                 
                 for (int j = 0; j < *N; j++) {
@@ -496,6 +503,8 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
                     
                     /** Read **/
                     total_read_time_to_print += chunk_size/nodes[set_of_nodes_chosen_temp[j]].read_bandwidth;
+                    
+                    printf("%d ", nodes[set_of_nodes_chosen_temp[j]].id);
                     
                     nodes[set_of_nodes_chosen_temp[j]].storage_size -= chunk_size;
                     //~ printf("Removing %f from node %d\n", chunk_size, nodes[set_of_nodes_chosen_temp[j]].id);
@@ -509,6 +518,7 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
                     // To track the chunks I a fill a temp struct with nodes
                     used_combinations[j] = nodes[set_of_nodes_chosen_temp[j]].id;
                 }
+                printf("\n");
                 
                 // Adding the chunks in the chosen nodes
                 add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes, size);

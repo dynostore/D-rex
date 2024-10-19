@@ -238,6 +238,8 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
                 
                 int* used_combinations = malloc(*N * sizeof(int));
                 
+                printf("%f, %f, %d, %d, ", size, chunk_size, *N, *K);
+                
                 for (int j = 0; j < *N; j++) {
                     total_upload_time_to_print += chunk_size/nodes[set_of_nodes_chosen_temp[j]].write_bandwidth;
                     
@@ -245,6 +247,9 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
                     total_read_time_to_print += chunk_size/nodes[set_of_nodes_chosen_temp[j]].read_bandwidth;
                     
                     nodes[set_of_nodes_chosen_temp[j]].storage_size -= chunk_size;
+                    
+                    printf("%d ", nodes[set_of_nodes_chosen_temp[j]].id);
+                    
                     //~ printf("Removing %f from node %d\n", chunk_size, nodes[set_of_nodes_chosen_temp[j]].id);
                     if (min_write_bandwidth > nodes[set_of_nodes_chosen_temp[j]].write_bandwidth) {
                         min_write_bandwidth = nodes[set_of_nodes_chosen_temp[j]].write_bandwidth;
@@ -256,6 +261,7 @@ void glusterfs(int number_of_nodes, Node* nodes, float reliability_threshold, do
                     // To track the chunks I a fill a temp struct with nodes
                     used_combinations[j] = nodes[set_of_nodes_chosen_temp[j]].id;
                 }
+                printf("\n");
                 
                 // Adding the chunks in the chosen nodes
                 add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes, size);
