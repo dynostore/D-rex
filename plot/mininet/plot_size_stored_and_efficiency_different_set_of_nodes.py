@@ -370,8 +370,7 @@ custom_handles = []
 for idx in order:
     if isinstance(handles[idx], BarContainer):
         # Create a plain patch without hatching for the legend
-        plain_patch = mpatches.Patch(facecolor=handles[idx].patches[0].get_facecolor(), 
-                                     edgecolor=handles[idx].patches[0].get_edgecolor())
+        plain_patch = mpatches.Patch(facecolor=handles[idx].patches[0].get_facecolor(), edgecolor=handles[idx].patches[0].get_edgecolor())
         custom_handles.append(plain_patch)
     else:
         custom_handles.append(handles[idx])
