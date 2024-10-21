@@ -206,6 +206,8 @@ import sys
 import numpy as np
 from matplotlib.ticker import LogLocator
 from functools import partial
+import matplotlib.patches as mpatches
+from matplotlib.container import BarContainer  # Import BarContainer
 
 def create_folder(folder_path):
     try:
@@ -359,9 +361,26 @@ ax1.set_ylim(0, 100)
 ax2.set_ylim(0, 14)
 
 # Add legends
-ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
-ax2.legend(loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
+handles, labels = plt.gca().get_legend_handles_labels()
 # ~ ax1.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
+ax2.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
+
+# Create custom handles for ax1 without hatching
+custom_handles = []
+for idx in order:
+    if isinstance(handles[idx], BarContainer):
+        # Create a plain patch without hatching for the legend
+        plain_patch = mpatches.Patch(facecolor=handles[idx].patches[0].get_facecolor(), 
+                                     edgecolor=handles[idx].patches[0].get_edgecolor())
+        custom_handles.append(plain_patch)
+    else:
+        custom_handles.append(handles[idx])
+# Legend for ax2 (without hatches)
+ax1.legend(custom_handles, 
+           [labels[idx] for idx in order], 
+           loc='upper center', 
+           bbox_to_anchor=(0.5, -0.11), 
+           fancybox=False, ncol=4)
 
 # Add grids
 ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
