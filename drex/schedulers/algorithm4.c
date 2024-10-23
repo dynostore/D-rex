@@ -84,7 +84,6 @@ void add_shared_chunks_to_nodes(int* nodes_used, int num_of_nodes_used, int chun
                 break;
             }
         }
-        //~ printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
         add_chunk_to_node(&nodes[j], chunk_id, chunk_size, num_of_nodes_used, nodes_used, original_data_size);
     }
 }
@@ -100,7 +99,6 @@ void add_shared_chunks_to_nodes_3_replication(int* nodes_used, int num_of_nodes_
                 break;
             }
         }
-        //~ printf("Add chunk %d to node %d\n", chunk_id, nodes[j].id);
         add_chunk_to_node(&nodes[j], chunk_id, size_to_stores[i], num_of_nodes_used, nodes_used, original_data_size);
     }
 }
@@ -328,7 +326,7 @@ int count_nodes(const char *filename) {
 int count_lines_with_access_type(const char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
-        perror("Error opening file");
+        printf("Error opening file %s", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -381,7 +379,7 @@ double probability_of_failure(double failure_rate, double data_duration_on_syste
 void read_node(const char *filename, int number_of_nodes, Node *nodes, double data_duration_on_system, double* max_node_size, double* total_storage_size, double* initial_node_sizes) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
-        perror("Error opening file");
+        printf("Error opening file %s", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -423,7 +421,7 @@ void read_node(const char *filename, int number_of_nodes, Node *nodes, double da
 void read_supplementary_node(const char *filename, int number_of_nodes, Node *nodes, double data_duration_on_system, double* initial_node_sizes, int previous_number_of_nodes, int* supplementary_nodes_next_time, double* total_storage_supplementary_nodes, double* max_node_size_supplementary_nodes) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
-        perror("Error opening file");
+        printf("Error opening file %s", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -494,7 +492,7 @@ void read_data(const char *filename, double *sizes, int *submit_times, int numbe
     
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
-        perror("Error opening file");
+        printf("Error opening file %s", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -892,6 +890,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         double total_progress_storage_overhead = max_storage_overhead - min_storage_overhead;
         double total_progress_size_score = max_size_score - min_size_score;
         double total_progress_replication_and_write_time = max_replication_and_write_time - min_replication_and_write_time;
+        //~ printf("max_replication_and_write_time %f, min_replication_and_write_time %f", max_replication_and_write_time, min_replication_and_write_time);
         #ifdef PRINT
         printf("Progresses are %f %f %f\n", total_progress_storage_overhead, total_progress_size_score, total_progress_replication_and_write_time);
         #endif
@@ -901,6 +900,10 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         double total_score = 0;
         double max_score = -DBL_MAX;
         int idx = 0;
+        
+        if(isinf(total_progress_replication_and_write_time)) {
+            total_progress_replication_and_write_time = 0;
+        }
         
         int best_index = -1;
         
@@ -967,7 +970,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         *N = combinations[best_index]->num_elements;
         *K = combinations[best_index]->K;
         gettimeofday(&end, NULL);
-        
+        //~ printf("N = %d\n", *N);
         double total_upload_time_to_print = 0;
         
         /** Read **/
@@ -1197,7 +1200,7 @@ int extract_integer_from_filename(const char *filename) {
 void read_records(const char *filename, RealRecords *records) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
-        perror("Error opening file");
+        printf("Error opening file %s", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -1450,7 +1453,7 @@ int main(int argc, char *argv[]) {
     int algorithm = atoi(argv[6]); // 0: random / 1: min_storage / 2: min_time / 3: hdfs_3_replication / 4: drex / 5: Bogdan / 6: hdfs_rs / 7: glusterfs
     const char *input_supplementary_node = argv[7];
     
-    printf("data_size, chunk_size, N, K, chosen_nodes\n");
+    //~ printf("data_size, chunk_size, N, K, chosen_nodes\n");
         
     // For the removal of nodes
     int remove_node_pattern = atoi(argv[8]); // 0 for no removal, 1 for removal randomly, 2 for following failure rate
@@ -1817,7 +1820,8 @@ int main(int argc, char *argv[]) {
         
         add_time_to_print(&list_time, submit_times[i], size_stored);
        
-        if (i%250000 == 0) {
+        //~ if (i%250000 == 0) {
+        if (i%50000 == 0) {
             printf("Data %d/%d of size %f\n", i, count, sizes[i]);
         }
         
@@ -2228,6 +2232,6 @@ int main(int argc, char *argv[]) {
     free(models);
     free(models_reconstruct);
     free(combinations);
-    //~ printf("Success\n");
+    printf("Success\n");
     return EXIT_SUCCESS;
 }

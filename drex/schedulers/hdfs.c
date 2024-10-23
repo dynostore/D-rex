@@ -64,13 +64,29 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
     for (i = 0; i < number_of_nodes; i++) {
         set_of_nodes_chosen[i] = -1; // To signify that it is not valid
         reliability_of_nodes_chosen[i] = -1; // To signify that it is not valid
-        if (nodes[i].storage_size > 128 && j < 3) {
+        //~ printf("%f\n", nodes[i].storage_size);
+        if ((nodes[i].storage_size > 128 || size <= nodes[i].storage_size) && j < 3) {
             set_of_nodes_chosen[j] = i;
             reliability_of_nodes_chosen[j] = nodes[set_of_nodes_chosen[j]].probability_failure;
             j++;
         }
     }
-        
+    //~ printf("set chosen %d %d %d\n", set_of_nodes_chosen[0], set_of_nodes_chosen[1], set_of_nodes_chosen[2]);
+    
+    for (i = 0; i < 3; i++) {
+        if (set_of_nodes_chosen[i] == -1) {
+            free(reliability_of_nodes_chosen);
+            free(set_of_nodes_chosen);
+            *K = -1;
+            *N = -1;
+            gettimeofday(&end, NULL);
+            seconds  = end.tv_sec  - start.tv_sec;
+            useconds = end.tv_usec - start.tv_usec;
+            *total_scheduling_time += seconds + useconds/1000000.0;
+            return;
+        }
+    }
+    
     int index_max_reliability = 0;
     double max_reliability = DBL_MAX; // Initialize to a value lower than any reliability value
     int loop = 0;
@@ -217,6 +233,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
                         set_of_nodes_chosen[0] = i;
                         set_of_nodes_chosen[1] = j;
                         set_of_nodes_chosen[2] = k;
+                        //~ printf("set chosen %d %d %d\n", set_of_nodes_chosen[0], set_of_nodes_chosen[1], set_of_nodes_chosen[2]);
                         reliability_of_nodes_chosen[0] = nodes[i].probability_failure;
                         reliability_of_nodes_chosen[1] = nodes[j].probability_failure;
                         reliability_of_nodes_chosen[2] = nodes[k].probability_failure;
@@ -315,6 +332,7 @@ void hdfs_3_replications(int number_of_nodes, Node* nodes, float reliability_thr
             
             // To track the chunks I a fill a temp struct with nodes
             used_combinations[j] = nodes[set_of_nodes_chosen[j]].id;
+            //~ printf("%d\n", used_combinations[j]);
         }
         //~ printf("\n");
         
