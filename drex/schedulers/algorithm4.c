@@ -252,6 +252,7 @@ void add_time_to_print(TimeList *list, int time, double size_stored) {
 
 void add_node_to_print(DataList *list, int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K, double total_read_time, double read_time_parralelized, double reconstruct_time) {
     DataToPrint *new_node = create_node(id, size, total_transfer_time, transfer_time_parralelized, chunking_time, N, K, total_read_time, read_time_parralelized, reconstruct_time);
+    //~ printf("create node with %f\n", chunking_time);
     if (list->tail) {
         list->tail->next = new_node;
     } else {
@@ -273,9 +274,14 @@ void write_linked_list_to_file(DataList *list, const char *filename, double* tot
     fprintf(file, "ID,Size,Total_Transfer_Time,Transfer_Time_Parralelized,Chunking_Time,N,K,Total_Read_Time,Read_Time_Parralelized,Reconstruct_Time\n");
     DataToPrint *current = list->head;
     while (current) {
+        //~ printf("%f\n", current->chunking_time);
         fprintf(file, "%d,%f,%f,%f,%f,%d,%d,%f,%f,%f\n", current->id, current->size, current->total_transfer_time, current->transfer_time_parralelized, current->chunking_time, current->N, current->K, current->total_read_time, current->read_time_parralelized, current->reconstruct_time);
-        *total_chunking_time += current->chunking_time;
-        *total_reconstruct_time += current->reconstruct_time;
+        if (!isinf(current->chunking_time)) {
+            *total_chunking_time += current->chunking_time;
+        }
+        if (!isinf(current->reconstruct_time)) {
+            *total_reconstruct_time += current->reconstruct_time;
+        }
         current = current->next;
     }
     fclose(file);
@@ -1019,6 +1025,8 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes, size);
             
             /** Read **/
+            //~ printf("%f N%d K%d %f\n", combinations[best_index]->chunking_time, *N, *K, reconstruct_time);
+            
             add_node_to_print(list, data_id, size, total_upload_time_to_print, combinations[best_index]->transfer_time_parralelized, combinations[best_index]->chunking_time, *N, *K, total_read_time_to_print, total_read_time_parralelized_to_print, reconstruct_time);
             
             *total_upload_time += total_upload_time_to_print;
@@ -2166,8 +2174,8 @@ int main(int argc, char *argv[]) {
     #endif
 
     // Writting the data per data outputs
-    double total_chunking_time = 0;
-    double total_reconstruct_time = 0;
+    double total_chunking_time = 0.0;
+    double total_reconstruct_time = 0.0;
     
     char file_to_print[70];
     char file_to_print_time[70];

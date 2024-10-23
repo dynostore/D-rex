@@ -356,7 +356,9 @@ for i, scheduler in enumerate(unique_algorithms):
 ax1.set_ylabel('Proportion of Data Sizes Stored (\%)')
 ax2.set_ylabel('Throughput (hashed bar)')
 ax1.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+ax2.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
 ax1.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
+ax2.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
 ax1.set_ylim(0, 100)
 ax2.set_ylim(0, 14)
 
