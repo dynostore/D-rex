@@ -1,3 +1,5 @@
+# python3 plot_line_times.py reconstruct/new_c/400MB_with_comma.csv 400MB.csv
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
@@ -11,7 +13,7 @@ if len(sys.argv) < 3:
 input_file1 = sys.argv[1]
 input_file2 = sys.argv[2]
 
-# ~ # Nice figs
+# Nice figs
 plt.style.use("/home/gonthier/Chicago/paper.mplstyle")
 pt = 1./72.27
 jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
@@ -31,6 +33,10 @@ df2['avg_time_s'] = df2['avg_time'] / 1000.0
 filtered_df1 = df1[df1['k'] == df1['n'] - 2]
 filtered_df2 = df2[df2['k'] == df2['n'] - 2]
 
+# Compute storage overhead for both datasets (assuming k != 0 to avoid division by zero)
+filtered_df1['storage_overhead'] = ( 400.0 / filtered_df1['k'] ) * filtered_df1['n']
+filtered_df2['storage_overhead'] = ( 400.0 / filtered_df2['k'] ) * filtered_df1['n']
+
 # Set the global font size and line width
 plt.rcParams.update({
     'font.size': 14,           # Increase font size for all text elements
@@ -42,25 +48,32 @@ plt.rcParams.update({
     'lines.markersize': 8,     # Marker size
 })
 
-# Create the figure
-plt.figure(figsize=(my_width, my_width/golden))
+# Create the figure and main axis
+fig, ax1 = plt.subplots(figsize=(my_width, my_width/golden))
 
-# First file: Decoding overhead
-plt.plot(filtered_df1['n'], filtered_df1['avg_time_s'], marker='o', linestyle='-', color='b', label='Decoding overhead')
+# Plot the time for decoding (first file)
+ax1.plot(filtered_df1['n'], filtered_df1['avg_time_s'], marker='o', linestyle='-', color='b', label='Decoding')
 
-# Second file: Encoding overhead
-plt.plot(filtered_df2['n'], filtered_df2['avg_time_s'], marker='s', linestyle='--', color='r', label='Encoding overhead')
+# Plot the time for encoding (second file)
+ax1.plot(filtered_df2['n'], filtered_df2['avg_time_s'], marker='s', linestyle='--', color='r', label='Encoding')
 
-# Set Y-axis limit to start from 0
-plt.ylim(0,)
+# Set Y-axis limit to start from 0 for the primary Y-axis
+ax1.set_ylim(0,)
+ax1.set_xlabel('N (Number of Nodes)')
+ax1.set_ylabel('CPU Time (seconds)')
 
-# Add labels and title
-plt.xlabel('N (Number of Nodes)')
-plt.ylabel('CPU Time (seconds)')
+# Create a secondary Y-axis for the storage overhead
+ax2 = ax1.twinx()
+ax2.bar(filtered_df1['n'], filtered_df1['storage_overhead'], width=0.4, alpha=0.5, color='g', label='Storage overhead')
 
-# Show legend and save the figure as PDF
-plt.legend(loc='best')
+# Set Y-axis label and limit for the secondary axis
+ax2.set_ylabel('Storage Overhead (MB)', color='g')
+ax2.set_ylim(0, max(filtered_df1['storage_overhead'].max(), filtered_df2['storage_overhead'].max()) * 1.1)
+
+# Add legends for both axes
+ax1.legend(loc='upper left')
+ax2.legend(loc='upper center')
+
+# Adjust layout and save the figure
 plt.tight_layout()
-
-# Save the plot as PDF
-plt.savefig("EC_times.pdf")
+plt.savefig("EC_times_with_storage_overhead.pdf")
