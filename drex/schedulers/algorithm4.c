@@ -978,7 +978,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
         // Writing down the results
         if (*N != -1 && *K != -1) {
             chunk_size = size/(*K);
-            printf("%f, %f, %d, %d, ", size, chunk_size, *N, *K);
+            //~ printf("%f, %f, %d, %d, ", size, chunk_size, *N, *K);
             *number_of_data_stored += 1;
             *total_N += *N;
             *total_storage_used += chunk_size*(*N);
@@ -995,7 +995,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
             int* used_combinations = malloc(*N * sizeof(int));
             
             for (i = 0; i < combinations[best_index]->num_elements; i++) {
-                printf("%d ", combinations[best_index]->nodes[i]->id);
+                //~ printf("%d ", combinations[best_index]->nodes[i]->id);
                 total_upload_time_to_print += chunk_size/combinations[best_index]->nodes[i]->write_bandwidth;
                 
                 /** Read **/
@@ -1010,7 +1010,7 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
                 
                 used_combinations[i] = combinations[best_index]->nodes[i]->id;
             }
-            printf("\n");
+            //~ printf("\n");
             
             // Adding the chunks in the chosen nodes ids
             add_shared_chunks_to_nodes(used_combinations, combinations[best_index]->num_elements, data_id, chunk_size, nodes,  number_of_nodes, size);
@@ -1817,9 +1817,9 @@ int main(int argc, char *argv[]) {
         
         add_time_to_print(&list_time, submit_times[i], size_stored);
        
-        //~ if (i%250000 == 0) {
-            //~ printf("Data %d/%d of size %f\n", i, count, sizes[i]);
-        //~ }
+        if (i%250000 == 0) {
+            printf("Data %d/%d of size %f\n", i, count, sizes[i]);
+        }
         
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
