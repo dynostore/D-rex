@@ -13,12 +13,15 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
     *N = -1;
     *K = -1;
 
+    /* New */
+    double min_storage_overhead = DBL_MAX;
+    int min_N = -1;
+    int min_K = -1;
+
     // Sort indices based on bandwidth in descending order
     qsort(nodes, number_of_nodes, sizeof(Node), compare_nodes_by_storage_desc_with_condition);
-    //~ print_nodes(nodes, number_of_nodes);
     int temp_N = 0;
-    //~ for (temp_N = number_of_nodes; temp_N > 2; temp_N--) {
-    for (temp_N = max_N; temp_N > 2; temp_N--) {
+    for (temp_N = max_N; temp_N > 1; temp_N--) {
         int* set_of_nodes_chosen_temp = (int*)malloc(temp_N * sizeof(int));
         if (set_of_nodes_chosen_temp == NULL) {
             perror("Failed to allocate memory");
@@ -41,21 +44,40 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
             reliability_of_nodes_chosen[i] = nodes[set_of_nodes_chosen_temp[i]].probability_failure;
         }
         
-        //~ int K = get_max_K_from_reliability_threshold_and_nodes_chosen(N, reliability_threshold, reliability_of_nodes_chosen);
         *K = get_max_K_from_reliability_threshold_and_nodes_chosen(temp_N, reliability_threshold, 0, 0, reliability_of_nodes_chosen);
         
+        /* New */
+        //~ printf("N%d K%d: %f\n", temp_N, *K, (size / *K)*temp_N);
+        
         if (*K != -1) {
-            int found = 1;
-            for (int i = 0; i < temp_N; i++) {
-                int node = set_of_nodes_chosen_temp[i];
-                if (nodes[node].storage_size - (size / *K) < 0) {
-                    found = 0;
-                    break;
+            int found = 0;
+            
+            /* New */
+            if ((size / *K)*temp_N < min_storage_overhead)
+            {
+                found = 1;
+                for (int i = 0; i < temp_N; i++) {
+                    int node = set_of_nodes_chosen_temp[i];
+                    if (nodes[node].storage_size - (size / *K) < 0) {
+                        found = 0;
+                        break;
+                    }
                 }
             }
-            
             if (found) {
-                *N = temp_N;
+                min_storage_overhead = (size / *K)*temp_N;
+                min_N = temp_N;
+                min_K = *K;
+            }
+        }
+        free(set_of_nodes_chosen_temp);
+        free(reliability_of_nodes_chosen);
+    }
+    //~ printf("min_N %d, min_K %d\n", min_N, min_K);
+            
+            if (min_N != -1) {
+                *N = min_N;
+                *K = min_K;
                 
                 double min_write_bandwidth = DBL_MAX;
                 double min_read_bandwidth = DBL_MAX;
@@ -69,7 +91,6 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                 double reconstruct_time = 0;
                 
                 double chunk_size = size/(*K);
-                //~ printf("%f, %f, %d, %d, ", size, chunk_size, *N, *K);
                 *number_of_data_stored += 1;
                 *total_N += *N;
                 *total_storage_used += chunk_size*(*N);
@@ -84,7 +105,6 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                     total_read_time_to_print += chunk_size/nodes[j].read_bandwidth;
                 
                     nodes[j].storage_size -= chunk_size;
-                    //~ printf("%d ", nodes[j].id);
                     if (min_write_bandwidth > nodes[j].write_bandwidth) {
                         min_write_bandwidth = nodes[j].write_bandwidth;
                     }
@@ -95,16 +115,13 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                     // To track the chunks I a fill a temp struct with nodes
                     used_combinations[j] = nodes[j].id;
                 }
-                //~ printf("\n");
                 
                 // Adding the chunks in the chosen nodes
                 add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes, size);
 
-                //~ *total_parralelized_upload_time += chunk_size/min_write_bandwidth;
                 *total_parralelized_upload_time += fmax(size/out_going_bandwidth, chunk_size/min_write_bandwidth);
                 
                 /** Read **/
-                //~ total_read_time_parralelized_to_print = chunk_size/min_read_bandwidth;
                 total_read_time_parralelized_to_print = fmax(chunk_size/min_read_bandwidth, size/out_going_bandwidth);
                 reconstruct_time = predict_reconstruct(models_reconstruct[closest_index], *N, *K, nearest_size, size);
                 
@@ -119,9 +136,9 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
 
                 *total_upload_time += total_upload_time_to_print;
                 
-                free(set_of_nodes_chosen_temp);
+                //~ free(set_of_nodes_chosen_temp);
                 free(used_combinations);
-                free(reliability_of_nodes_chosen);
+                //~ free(reliability_of_nodes_chosen);
 
                 gettimeofday(&end, NULL);
                 seconds  = end.tv_sec  - start.tv_sec;
@@ -129,11 +146,11 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                 *total_scheduling_time += seconds + useconds/1000000.0;
                 return;
             }
-        }
+        //~ }
         
-        free(set_of_nodes_chosen_temp);
-        free(reliability_of_nodes_chosen);
-    }
+        //~ free(set_of_nodes_chosen_temp);
+        //~ free(reliability_of_nodes_chosen);
+    //~ }
     
     // No valid solution found
     *N = -1;

@@ -21,13 +21,12 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes, nod
 	N = 0
 	
 	for N in range (number_of_nodes, 2, -1):
-		# ~ print("Try N =", N)
 		
 		set_of_nodes_chosen = list(sorted_nodes_by_sorted_sizes[:N])
 		reliability_of_nodes_chosen = [reliability_of_nodes[node] for node in set_of_nodes_chosen]
 
 		K = get_max_K_from_reliability_threshold_and_nodes_chosen(N, reliability_threshold, reliability_of_nodes_chosen)
-		
+
 		if (K != -1):		
 			found = True
 		
@@ -37,7 +36,6 @@ def algorithm1(number_of_nodes, reliability_threshold, reliability_of_nodes, nod
 				
 			if found == True:
 				node_sizes = update_node_sizes(set_of_nodes_chosen, K, file_size, node_sizes)
-				# ~ print("\nAlgorithm 1 chose N =", N, "and K =", K, "with the set of nodes:", set_of_nodes_chosen)
 				return set_of_nodes_chosen, N, K, node_sizes
 
 	

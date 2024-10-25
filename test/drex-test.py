@@ -71,7 +71,7 @@ End of the inputs
 Algorithm 1
 Time for 10 / 100 / 1000 nodes: 0 / 0 / 30 seconds
 """
-# ~ set_of_nodes_chosen, N, K, node_sizes = algorithm1(number_of_nodes, reliability_threshold, p, node_sizes, file_size)
+set_of_nodes_chosen, N, K, node_sizes = algorithm1(number_of_nodes, reliability_threshold, p, node_sizes, file_size)
 
 """
 Algorithm 2

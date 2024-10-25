@@ -195,5 +195,5 @@ for metric in metrics_to_plot:
     plt.grid(True)
     folder_path = "plot/drex_only/" + folder_prefix + "evolution" + folder_suffix
     create_folder(folder_path)
-
+    print(folder_path, metric)
     plt.savefig(folder_path + '/' + metric + '.pdf')
