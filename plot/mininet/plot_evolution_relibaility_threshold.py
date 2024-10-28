@@ -43,6 +43,11 @@ jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
               "CQG": {"onecol": 374.*pt},}
 my_width = jour_sizes["PRD"]["twocol"]
 golden = (1 + 5 ** 0.5) / 2
+# ~ golden = (1 + 5 ** 0.5) / 1.5 # Smaller height
+plt.rcParams.update({
+    'axes.labelsize': 14,       # Axis label font size
+    'legend.fontsize': 14,      # Legend font size
+})
 
 print(folder_prefix)
 print(folder_suffix)
@@ -125,16 +130,16 @@ for metric in metrics_to_plot:
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1_c', 'GreedyMinStorage')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-Rex SC')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', 'HDFS 3 Rep')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'HDFS(3,2)')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'HDFS(6,3)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'EC(3,2)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'EC(6,3)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('Min_Storage_c', 'Min_Storage')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg_bogdan', 'D-Rex LB')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4_c', 'GlusterFS')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4_c', 'EC(4,2)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_0_0_c', 'GlusterFS_ADAPTATIVE')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS(3,2)')
-    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS(6,3)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'EC(4,2)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'EC(3,2)')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'EC(6,3)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS(4,2)')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_RS_ADAPTATIVE')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
@@ -184,10 +189,10 @@ for metric in metrics_to_plot:
 
     plt.xlabel('Minimum Reliability Requirement')
     if metric == 'combined_times':
-        plt.ylabel('Combined Duration of Data Operations (h)')
+        plt.ylabel('Duration of Data Operations (h)')
         # ~ plt.ylim(0,)
         handles, labels = plt.gca().get_legend_handles_labels()
-        plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
+        plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=3)
     else:
         plt.title('Evolution of ' + metric + ' Depending on Reliability Threshold')
         plt.ylabel(metric)

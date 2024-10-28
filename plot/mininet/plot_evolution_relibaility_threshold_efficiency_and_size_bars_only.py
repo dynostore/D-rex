@@ -29,7 +29,12 @@ jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
               "PRDFULLPAGE": {"twocol": 1000.*pt},}
 my_width = jour_sizes["PRDFULLPAGE"]["twocol"]
 golden = (1 + 5 ** 0.5) / 2
-fig, ax1 = plt.subplots(figsize=(my_width, my_width/(golden*1.5)))  # Adjust width and height here
+golden = (1 + 5 ** 0.5) / 1.5 # Smaller height
+plt.rcParams.update({
+    'axes.labelsize': 14,       # Axis label font size
+    'legend.fontsize': 14,      # Legend font size
+    'xtick.labelsize': 14,      # X-axis tick label font size
+})
 
 # Prompt the user for folder name parts before and after the reliability threshold
 folder_prefix = sys.argv[1]
@@ -112,9 +117,9 @@ df_data['Algorithm'] = df_data['Algorithm'].str.replace('Min_Storage_c', 'Min_St
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg_bogdan', 'D-Rex LB')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4_c', 'GlusterFS')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_0_0_c', 'GlusterFS_ADAPTATIVE')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'GlusterFS')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'HDFS(3,2)')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'HDFS(6,3)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'EC(4,2)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'EC(3,2)')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'EC(6,3)')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS(4,2)')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_RS_ADAPTATIVE')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
@@ -171,47 +176,41 @@ print("Storage Data:", storage_data)
 print("reliability_thresholds:", reliability_thresholds)
 print("schedulers:", schedulers)
 
-markers = ['o', '^', 's', 'D', 'v', 'h', 'x', '+', '*', 'x', '+', '|', '_', '.', ',', '1', '2', '3', '4']
+# Initialize the figure and two subplots sharing the same x-axis
+fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width/(golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
+bar_width = 0.09
+
+# Colors, markers, and order to maintain color consistency across both subplots
 colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
 order = [0, 2, 1, 3, 4, 5, 7, 6]
 
-# Plot total storage as bars
+# Plot efficiency data on the top subplot
 for i, scheduler in enumerate(schedulers):
-    bars = ax1.bar(x + i * bar_width, [storage_data[threshold][i] for threshold in reliability_thresholds], 
-                    width=bar_width, alpha=0.6, label=f'Storage Used ({scheduler})', edgecolor='black', color=colors[i])
-ax1.set_ylim(0,100)
+    bars = ax_top.bar(x + i * bar_width, [efficiency_data[threshold][i] for threshold in reliability_thresholds], 
+                      width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
+# ~ ax_top.set_ylim(0, 14)
+ax_top.set_ylabel('Throughput')
+ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
-# Draw thinner vertical lines behind the bars
-for tick in x[1:]:  # Start from the second x-tick
-    ax1.axvline(x=tick - 2*bar_width, color='black', linestyle='-', linewidth=0.5, zorder=1)
-
-# Create a second y-axis for the efficiency lines
-ax2 = ax1.twinx()
-line_colors = []
+# Plot storage data on the bottom subplot
 for i, scheduler in enumerate(schedulers):
-    if scheduler == 'D-Rex SC' or scheduler == 'D-Rex LB':
-        zorder=3
-    else:
-        zorder=2
-    ax2.plot(x + 3.4*bar_width, [efficiency_data[threshold][i] for threshold in reliability_thresholds], color=colors[i], marker=markers[i], zorder=zorder, label=f'{scheduler}')
+    bars = ax_bottom.bar(x + i * bar_width, [storage_data[threshold][i] for threshold in reliability_thresholds], 
+                         width=bar_width, alpha=0.6, label=f'Storage Used ({scheduler})', color=colors[i], edgecolor='black')
+ax_bottom.set_ylim(0, 100)
+ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
+ax_bottom.set_xlabel('Minimum Reliability Requirement')
+ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
-# Set labels
-ax1.set_xlabel('Minimum Reliability Requirement')
-ax1.set_ylabel('Proportion of Data Sizes Stored (\%) (bar)')
-ax2.set_ylabel('Efficiency (line)')
-ax2.set_ylim(0,14)
+# Adding x-ticks and setting tick labels
+ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+ax_bottom.set_xticklabels(reliability_thresholds)
 
-# Adding x-ticks
-ax1.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax1.set_xticklabels(reliability_thresholds)
+# Combine handles for the legend and place them outside the plot for clarity
+handles, labels = ax_top.get_legend_handles_labels()
+fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.5, -0.10), fancybox=False, ncol=4)
 
-# Combine handles into a single legend
-handles, labels = plt.gca().get_legend_handles_labels()
-ax1.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
-
-# Add a grid behind the bars for better readability
-ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)  # Added a grid behind bars
+# Adjust layout for tight spacing
+plt.tight_layout()
 
 # Save the plot
-plt.tight_layout()
-plt.savefig("plot/combined/" + folder_prefix + "evolution" + folder_suffix + ".pdf")
+plt.savefig(f"plot/combined/{folder_prefix}evolution{folder_suffix}.pdf")

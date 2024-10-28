@@ -107,13 +107,13 @@
 #~ bash test/run_experiments_drex_only.sh 365 0.9 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 250 drex/inputs/nodes/add_node_pattern_MEVA_merged_250.csv 0 0 0 drex/
 
 # Test campaing 5: other databases too long will need to cut them before the end one way or another
-bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/processed_sentinal-2_256351_data.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
-bash ../Chicago/compare.sh output_drex_only.csv plot/drex_only/10_most_used_nodes_processed_sentinal-2_256351_data_365_-1.0_1_max0/output_drex_only_10_most_used_nodes_processed_sentinal-2_256351_data_1.csv
-bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/IBM_385707_data.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
-bash ../Chicago/compare.sh output_drex_only.csv plot/drex_only/10_most_used_nodes_IBM_385707_data_365_-1.0_1_max0/output_drex_only_10_most_used_nodes_IBM_385707_data_1.csv
-bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/FB_merged_8337_data.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
-bash ../Chicago/compare.sh output_drex_only.csv plot/drex_only/10_most_used_nodes_FB_merged_8337_data_365_-1.0_1_max0/output_drex_only_10_most_used_nodes_FB_merged_8337_data_1.csv
-python3 plot/mininet/plot_size_stored_and_efficiency_different_datasets.py 10_most_used_nodes_-1
+#~ bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/processed_sentinal-2_256351_data.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
+#~ bash ../Chicago/compare.sh output_drex_only.csv plot/drex_only/10_most_used_nodes_processed_sentinal-2_256351_data_365_-1.0_1_max0/output_drex_only_10_most_used_nodes_processed_sentinal-2_256351_data_1.csv
+#~ bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/IBM_385707_data.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
+#~ bash ../Chicago/compare.sh output_drex_only.csv plot/drex_only/10_most_used_nodes_IBM_385707_data_365_-1.0_1_max0/output_drex_only_10_most_used_nodes_IBM_385707_data_1.csv
+#~ bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/FB_merged_8337_data.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
+#~ bash ../Chicago/compare.sh output_drex_only.csv plot/drex_only/10_most_used_nodes_FB_merged_8337_data_365_-1.0_1_max0/output_drex_only_10_most_used_nodes_FB_merged_8337_data_1.csv
+#~ python3 plot/mininet/plot_size_stored_and_efficiency_different_datasets.py 10_most_used_nodes_-1
 
 # Traces for Dante
 #~ bash test/run_experiments_drex_only.sh 365 0.9 drex/inputs/nodes/8_nodes_from_chicago.csv drex/inputs/data/MEVA_merged.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/

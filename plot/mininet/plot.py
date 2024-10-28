@@ -400,15 +400,12 @@ plt.savefig(folder_path + '/total_parralelized_upload_time' + input_nodes_to_pri
 num_algorithms = len(df1)
 # Calculate bar width and positions
 bar_width = 0.2
-# ~ print("n algo:", num_algorithms)
 # Initialize lists to store the values
 initial_node_sizes_values = []
 final_node_sizes_values = []
 
 # Iterate over each row in the DataFrame
 for index, row in df1.iterrows():
-    # ~ print(row)
-    # ~ print(row['initial_node_sizes'])
     # Convert the string representation of the list to an actual list for both columns
     initial_node_sizes_list = ast.literal_eval(row['initial_node_sizes'])
     final_node_sizes_list = ast.literal_eval(row['final_node_sizes'])
@@ -417,10 +414,8 @@ for index, row in df1.iterrows():
     initial_node_sizes_values.append(initial_node_sizes_list)
     final_node_sizes_values.append(final_node_sizes_list)
     
-# ~ print(initial_node_sizes_values)
 num_nodes=len(initial_node_sizes_list)
 number_of_algorithms = len(initial_node_sizes_values)
-# ~ print("There are", num_nodes, "nodes and", number_of_algorithms, "algorithms")
 
 # Plot bars
 df = None
@@ -428,9 +423,7 @@ value1 = []
 value2 = []
 categories = []
 algs = []
-# ~ print(num_nodes, "nodes")
 categories = [f'HDD-{i+1}' for i in range(num_nodes)]
-# ~ print(categories)
 
 for a, limit in enumerate(zip(initial_node_sizes_values, final_node_sizes_values)):
     line_initial = limit[0]
@@ -442,8 +435,6 @@ for a, limit in enumerate(zip(initial_node_sizes_values, final_node_sizes_values
 
 df = pd.DataFrame({'Category': categories*(number_of_algorithms), 'Value1': value1, 'Value2': value2, 'Algorithm': algs})
 
-# ~ df_1 = df.loc[df['Algorithm'] == 0].reset_index()
-# ~ df_2 = df.loc[df['Algorithm'] == 1].reset_index()
 # Create a list to store DataFrames for each algorithm
 dfs = []
 # Loop through each algorithm and create filtered DataFrames
@@ -451,7 +442,6 @@ for alg in range(number_of_algorithms):
     df_filtered = df.loc[df['Algorithm'] == alg].reset_index()
     dfs.append(df_filtered)
     
-# ~ df = df_1.merge(df_2, left_on='Category', right_on='Category', suffixes=['_0', '_1'])
 # Start with the first DataFrame
 merged_df = dfs[0]
 print(len(dfs))
@@ -472,7 +462,6 @@ plt.rcParams.update({
 })
 
 # Initialize the matplotlib figure
-# ~ algos = [0, 1
 algos = list(range(number_of_algorithms))
 print(algos)
 
@@ -505,13 +494,13 @@ if plot_type == 'combined':
     ax.set_xticks(x0)
     _ = ax.set_xticklabels(categories)
     ax.set_xlabel('Category')
-    ax.set_ylabel('Size (TB)')
+    ax.set_ylabel('Storage Size (TB)')
 
     # Remove top and right border
     ax.spines[['right', 'top']].set_visible(False)
 
     # Configure legend
-    v1 = Patch(facecolor='#1a80bb', label='Storage space')
+    v1 = Patch(facecolor='#1a80bb', label='Total storage space')
     v2 = Patch(facecolor='#ea801c', label='Used storage')
     a1 = Patch(facecolor='white', edgecolor='black', label='Algorithm 1') 
     a2 = Patch(facecolor='white', edgecolor='black', hatch='////', label='Algorithm 2') 

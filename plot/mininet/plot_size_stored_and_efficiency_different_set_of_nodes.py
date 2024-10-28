@@ -235,6 +235,13 @@ jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
               "CQG": {"onecol": 374.*pt},}
 my_width = jour_sizes["PRD"]["twocol"]
 golden = (1 + 5 ** 0.5) / 2
+# ~ golden = (1 + 5 ** 0.5) / 1.5 # Smaller height
+golden = (1 + 5 ** 0.5) / 2.4 # Higher height
+plt.rcParams.update({
+    'axes.labelsize': 14,       # Axis label font size
+    'legend.fontsize': 14,      # Legend font size
+    'xtick.labelsize': 14,      # X-axis tick label font size
+})
 
 base_dir = 'plot/drex_only'
 set_of_node_regex = re.compile(r'^(.+)' + re.escape(folder_suffix) + r'$')
@@ -292,12 +299,12 @@ df_data = pd.DataFrame(data, columns=['Set of Nodes', 'Algorithm', 'size_stored'
 # Rename algorithms
 df_data['Algorithm'] = df_data['Algorithm'].replace({
     'alg1_c': 'GreedyMinStorage', 'alg4_1': 'D-Rex SC',
-    'hdfs_3_replication_c': 'HDFS 3 Rep', 'hdfsrs_3_2': 'HDFS(3,2)',
-    'hdfsrs_6_3': 'HDFS(6,3)', 'glusterfs_6_4': 'GlusterFS',
+    'hdfs_3_replication_c': 'HDFS 3 Rep', 'hdfsrs_3_2': 'EC(3,2)',
+    'hdfsrs_6_3': 'EC(6,3)', 'glusterfs_6_4': 'EC(4,2)',
     'Min_Storage_c': 'Min_Storage', 'alg_bogdan': 'D-Rex LB',
-    'glusterfs_6_4_c': 'GlusterFS', 'glusterfs_0_0_c': 'GlusterFS_ADAPTATIVE',
-    'GlusterFS_c': 'GlusterFS', 'hdfs_rs_3_2_c': 'HDFS(3,2)',
-    'hdfs_rs_6_3_c': 'HDFS(6,3)', 'hdfs_rs_4_2_c': 'HDFS(4,2)',
+    'glusterfs_6_4_c': 'EC(4,2)', 'glusterfs_0_0_c': 'EC(4,2)',
+    'GlusterFS_c': 'EC(4,2)', 'hdfs_rs_3_2_c': 'EC(3,2)',
+    'hdfs_rs_6_3_c': 'EC(6,3)', 'hdfs_rs_4_2_c': 'HDFS(4,2)',
     'hdfs_rs_0_0_c': 'HDFS_RS_ADAPTATIVE', 'random_c': 'Random',
     'daos_1_0_c': 'DAOS', 'daos_2_0_c': 'DAOS_2R'
 })
@@ -310,8 +317,10 @@ algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_R
 filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
 
 # Separate the data into storage and throughput
-fig_storage, ax1 = plt.subplots(figsize=(my_width, my_width/golden))
-fig_throughput, ax2 = plt.subplots(figsize=(my_width, my_width/golden))
+# ~ fig_storage, ax1 = plt.subplots(figsize=(my_width, my_width/golden))
+# ~ fig_throughput, ax2 = plt.subplots(figsize=(my_width, my_width/golden))
+
+fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width/(golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
 
 bar_width = 0.09
 bar_spacing = 0.3  # Adjust spacing between sets of nodes
@@ -344,53 +353,69 @@ for set_of_nodes, group in grouped:
 sets_of_nodes = filtered_df['Set of Nodes'].unique().tolist()
 x = np.arange(len(sets_of_nodes)) * (len(unique_algorithms) * bar_width + bar_spacing)
 
-# Plot storage data
+# Plot efficiency data on the top subplot
 for i, scheduler in enumerate(unique_algorithms):
-    ax1.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], width=bar_width, alpha=1, lw=1, label=f'{scheduler}', edgecolor='black', color=colors[i])
+    bars = ax_top.bar(x + i * bar_width, [throughput_data[set_of_node][i] for set_of_node in sets_of_nodes], 
+                      width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
 
-# Plot throughput data with hatching
+# Plot storage data on the bottom subplot
 for i, scheduler in enumerate(unique_algorithms):
-    ax2.bar(x + i * bar_width, [throughput_data[set_of_node][i] for set_of_node in sets_of_nodes], width=bar_width, alpha=1, hatch='x', label=f'{scheduler}', edgecolor='black', color=colors[i])
+    bars = ax_bottom.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], 
+                         width=bar_width, alpha=0.6, label=f'Storage Used ({scheduler})', color=colors[i], edgecolor='black')
+
+# ~ # Plot storage data
+# ~ for i, scheduler in enumerate(unique_algorithms):
+    # ~ ax1.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], width=bar_width, alpha=1, lw=1, label=f'{scheduler}', edgecolor='black', color=colors[i])
+
+# ~ # Plot throughput data with hatching
+# ~ for i, scheduler in enumerate(unique_algorithms):
+    # ~ ax2.bar(x + i * bar_width, [throughput_data[set_of_node][i] for set_of_node in sets_of_nodes], width=bar_width, alpha=1, hatch='x', label=f'{scheduler}', edgecolor='black', color=colors[i])
 
 # Set labels and limits
-ax1.set_ylabel('Proportion of Data Sizes Stored (\%)')
-ax2.set_ylabel('Throughput (hashed bar)')
-ax1.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax2.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax1.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
-ax2.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
-ax1.set_ylim(0, 100)
-ax2.set_ylim(0, 14)
-
+ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
+ax_top.set_ylabel('Throughput')
+ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+ax_top.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+ax_bottom.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
+# ~ ax2.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
+ax_bottom.set_ylim(0, 100)
+ax_top.set_ylim(0, 14)
+ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 # Add legends
 handles, labels = plt.gca().get_legend_handles_labels()
 # ~ ax1.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
-ax2.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
+# ~ ax2.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
 
 # Create custom handles for ax1 without hatching
-custom_handles = []
-for idx in order:
-    if isinstance(handles[idx], BarContainer):
-        # Create a plain patch without hatching for the legend
-        plain_patch = mpatches.Patch(facecolor=handles[idx].patches[0].get_facecolor(), edgecolor=handles[idx].patches[0].get_edgecolor())
-        custom_handles.append(plain_patch)
-    else:
-        custom_handles.append(handles[idx])
-# Legend for ax2 (without hatches)
-ax1.legend(custom_handles, 
-           [labels[idx] for idx in order], 
-           loc='upper center', 
-           bbox_to_anchor=(0.5, -0.11), 
-           fancybox=False, ncol=4)
+# ~ custom_handles = []
+# ~ for idx in order:
+    # ~ if isinstance(handles[idx], BarContainer):
+        # ~ # Create a plain patch without hatching for the legend
+        # ~ plain_patch = mpatches.Patch(facecolor=handles[idx].patches[0].get_facecolor(), edgecolor=handles[idx].patches[0].get_edgecolor())
+        # ~ custom_handles.append(plain_patch)
+    # ~ else:
+        # ~ custom_handles.append(handles[idx])
+# ~ # Legend for ax2 (without hatches)
+# ~ ax1.legend(custom_handles, 
+           # ~ [labels[idx] for idx in order], 
+           # ~ loc='upper center', 
+           # ~ bbox_to_anchor=(0.5, -0.11), 
+           # ~ fancybox=False, ncol=4)
+# Combine handles for the legend and place them outside the plot for clarity
+handles, labels = ax_top.get_legend_handles_labels()
+fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
 
 # Add grids
-ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
-ax2.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+# ~ ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+# ~ ax2.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
 # Adjust the layout for better visualization
-fig_storage.tight_layout()
-fig_throughput.tight_layout()
+# ~ fig_storage.tight_layout()
+# ~ fig_throughput.tight_layout()
+plt.tight_layout()
 
 # Save the figures as PDFs
-fig_storage.savefig("plot/combined/nodes_evolution_storage" + folder_suffix + ".pdf")
-fig_throughput.savefig("plot/combined/nodes_evolution_throughput" + folder_suffix + ".pdf")
+# ~ fig_storage.savefig("plot/combined/nodes_evolution_storage" + folder_suffix + ".pdf")
+# ~ fig_throughput.savefig("plot/combined/nodes_evolution_throughput" + folder_suffix + ".pdf")
+plt.savefig("plot/combined/nodes_evolution_throughput_and_storage" + folder_suffix + ".pdf")
