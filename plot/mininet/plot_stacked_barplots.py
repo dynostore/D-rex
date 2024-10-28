@@ -30,6 +30,21 @@ def count_lines_minus_one(file_path):
         lines = file.readlines()
         return len(lines) - 1
 
+# Nice figs
+plt.style.use("/home/gonthier/Chicago/paper.mplstyle")
+pt = 1./72.27
+jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
+              "CQG": {"onecol": 374.*pt},}
+my_width = jour_sizes["PRD"]["twocol"]
+golden = (1 + 5 ** 0.5) / 2
+# ~ golden = (1 + 5 ** 0.5) / 1.5 # Smaller height
+# ~ golden = (1 + 5 ** 0.5) / 2.4 # Higher height
+plt.rcParams.update({
+    'axes.labelsize': 14,       # Axis label font size
+    'legend.fontsize': 14,      # Legend font size
+    'xtick.labelsize': 14,      # X-axis tick label font size
+})
+
 data_duration_on_system = int(sys.argv[1])
 reliability_threshold = float(sys.argv[2])
 mode = sys.argv[3] # mininet or drex_only
@@ -69,6 +84,8 @@ create_folder(folder_path)
 if mode != "mininet" and mode != "drex_only":
     print("mode must be drex_only or mininet")
 
+file_path1 = folder_path + "/output_drex_only_" + input_nodes_to_print + "_" + input_data_to_print + "_" + str(number_of_loops) + ".csv"
+
 df1 = pd.read_csv(file_path1, quotechar='"', doublequote=True, skipinitialspace=True)
 
 # Rename algorithms
@@ -77,8 +94,8 @@ df1['algorithm'] = df1['algorithm'].str.replace('alg1', 'Min_Storage')
 df1['algorithm'] = df1['algorithm'].str.replace('D-rex_1', 'D-rex')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_three_replications', '3_replications')
 df1['algorithm'] = df1['algorithm'].str.replace('hdfs_3_replication_c', 'hdfs_3_replications')
-df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'HDFS_RS(3,2)')
-df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_6_3', 'HDFS_RS(6,3)')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_3_2', 'EC(3,2)')
+df1['algorithm'] = df1['algorithm'].str.replace('hdfsrs_6_3', 'EC(6,3)')
 df1['algorithm'] = df1['algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
 df1['algorithm'] = df1['algorithm'].str.replace('Min_Storage_c', 'Min_Storage')
 df1['algorithm'] = df1['algorithm'].str.replace('alg_bogdan', 'Greedy_Load_Balancing')
@@ -150,7 +167,7 @@ value1 = []
 value2 = []
 categories = []
 algs = []
-categories = [f'HDD-{i+1}' for i in range(num_nodes)]
+categories = [f'{i+1}' for i in range(num_nodes)]
 
 for a, limit in enumerate(zip(initial_node_sizes_values, final_node_sizes_values)):
     line_initial = limit[0]
@@ -239,7 +256,7 @@ if plot_type == 'combined':
     plt.savefig(folder_path + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 else:
     for a in algos:
-        plt.figure(figsize=(8, 4))
+        plt.figure(figsize=(my_width, my_width/golden))
         # Plot the first set of bars
         sns.barplot(
             x='Category',
@@ -248,7 +265,7 @@ else:
             color='#1a80bb',
             edgecolor='black',
             linewidth=1.5,
-            label='Total storage space'
+            label='Total storage'
         )
 
         # Plot the second set of bars on top of the first set
@@ -264,59 +281,8 @@ else:
         )
 
         plt.ylabel('Storage Size (TB)')
-        plt.xlabel(str(df1['algorithm'][a]))
-        plt.legend()
+        # ~ plt.xlabel(str(df1['algorithm'][a]))
+        plt.xlabel('Storage nodes')
+        plt.legend(loc='upper center', bbox_to_anchor=(0.45, 1), fancybox=False)
         print(str(df1['algorithm'][a]))
         plt.savefig(folder_path + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(df1['algorithm'][a]) + ".pdf")
-
-
-# ~ # Plot relative to optimal
-# ~ # Initialize variables to store the data
-# ~ number_of_data_stored_optimal = 0
-# ~ total_storage_used_optimal = 0
-# ~ best_upload_time_optimal = 0
-# ~ best_read_time_optimal = 0
-
-# ~ # Read the CSV file
-# ~ with open(folder_path + "/output_optimal_schedule.csv", mode='r') as file:
-    # ~ csv_reader = csv.reader(file)
-    
-    # ~ # Skip the header
-    # ~ next(csv_reader)
-    
-    # ~ # Read the single row of values
-    # ~ for row in csv_reader:
-        # ~ number_of_data_stored_optimal = int(row[0])
-        # ~ total_storage_used_optimal = float(row[1])
-        # ~ best_upload_time_optimal = float(row[2])
-        # ~ best_read_time_optimal = float(row[3])
-        # ~ size_stored_optimal = float(row[4])
-
-# ~ # Print the values (optional)
-# ~ print(f"Size stored optimal: {size_stored_optimal}")
-# ~ print(df1['size_stored'])
-# ~ print(f"Total storage used: {total_storage_used_optimal}")
-# ~ print(f"Best upload time: {best_upload_time_optimal}")
-# ~ print(df1['total_parralelized_upload_time'] + df1['total_chunking_time'])
-# ~ print(f"Best read time: {best_read_time_optimal}")
-# ~ print(df1['total_read_time_parrallelized'] + df1['total_reconstruct_time'])
-
-# ~ # Best fit score
-# ~ plt.figure(figsize=(10, 6))
-# ~ plt.bar(df1['algorithm'], best_upload_time_optimal/(df1['total_parralelized_upload_time'] + df1['total_chunking_time']) + best_read_time_optimal/(df1['total_read_time_parrallelized'] + df1['total_reconstruct_time']) + df1['size_stored']/size_stored_optimal, color=get_colors(df1['algorithm']))
-# ~ plt.xlabel('Algorithm')
-# ~ plt.ylabel('Best Fit')
-# ~ plt.title('Best Fit')
-# ~ plt.xticks(rotation=90)
-# ~ plt.tight_layout()
-# ~ plt.savefig(folder_path + '/best_fit_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
-
-# ~ # Efficiency
-# ~ plt.figure(figsize=(10, 6))
-# ~ plt.bar(df1['algorithm'], df1['size_stored']/(df1['total_parralelized_upload_time'] + df1['total_chunking_time'] + df1['total_read_time_parrallelized'] + df1['total_reconstruct_time']), color=get_colors(df1['algorithm']))
-# ~ plt.xlabel('Algorithm')
-# ~ plt.ylabel('Efficiency')
-# ~ plt.title('Efficiency')
-# ~ plt.xticks(rotation=90)
-# ~ plt.tight_layout()
-# ~ plt.savefig(folder_path + '/efficiency_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
