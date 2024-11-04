@@ -125,7 +125,7 @@ def read_data(datapath, minmax):
 
     return data
     
-def plot_stats_input_nodes(datapath, data, minmax):
+def plot_stats_input_nodes(datapath, data, minmax, my_width, golden):
 
     result = process_filename(datapath)
 
@@ -134,7 +134,7 @@ def plot_stats_input_nodes(datapath, data, minmax):
         'storage_size_TB': 'Storage Size (TB)',
         'write_bandwidth': 'Write Bandwidth (MB/s)',
         'read_bandwidth': 'Read Bandwidth (MB/s)',
-        'annual_failure_rate': 'Annual Failure Rate (%)'
+        'annual_failure_rate': 'Annual Failure Rate (\%)'
     }
     y_labels = x_labels
     # Define custom colors
@@ -198,20 +198,31 @@ def plot_stats_input_nodes(datapath, data, minmax):
     plt.savefig('drex/inputs/nodes/correlation_' + result + '.pdf')
     # plt.savefig('drex/inputs/nodes/correlation_' + result + '.png')
 
-    plt.rcParams['axes.labelsize'] = 16     # X and Y labels font size
-    plt.rcParams['xtick.labelsize'] = 16    # X-axis tick labels font size
-    plt.rcParams['ytick.labelsize'] = 16    # Y-axis tick labels font size
-    plt.rcParams['legend.fontsize'] = 16
+    plt.rcParams['axes.labelsize'] = 22     # X and Y labels font size
+    plt.rcParams['xtick.labelsize'] = 22    # X-axis tick labels font size
+    plt.rcParams['ytick.labelsize'] = 22    # Y-axis tick labels font size
+    plt.rcParams['legend.fontsize'] = 22
 
     # Plot histogram
     for factor in x_labels:
-        plt.figure()
+        # ~ plt.figure()
+        plt.figure(figsize=(my_width, my_width/(golden*1.5)))
         plt.hist(data[factor], color=hist_color)
         plt.xlabel(x_labels[factor])
         plt.ylabel("No. nodes")
         plt.tight_layout()
         plt.savefig('drex/inputs/nodes/histogram_' + result + '_' + factor + ".pdf")
 
+# Nice figs
+plt.style.use("/home/gonthier/Chicago/paper.mplstyle")
+pt = 1./72.27
+jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
+              "CQG": {"onecol": 374.*pt},
+              "PRDFULLPAGE": {"twocol": 1000.*pt},}
+my_width = jour_sizes["PRD"]["twocol"]
+# ~ golden = (1 + 5 ** 0.5) / 2
+golden = (1 + 5 ** 0.5) / 1.5
+# ~ golden = (1 + 5 ** 0.5) / 4.5
 
 data_names = [
     "drex/inputs/nodes/10_most_used_nodes.csv",
@@ -226,5 +237,5 @@ for data_name in data_names:
     plot_data[data_name] = read_data(data_name, minmax)
 
 for data_name in data_names:
-    plot_stats_input_nodes(data_name, plot_data[data_name], minmax)
+    plot_stats_input_nodes(data_name, plot_data[data_name], minmax, my_width, golden)
 
