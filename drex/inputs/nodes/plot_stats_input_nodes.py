@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 import numpy as np
+import scipy
+import texttable
+import latextable
 
 def process_filename(file_path):
     """
@@ -80,6 +83,46 @@ def read_data(datapath, minmax):
     plt.ylabel('Frequency')
     plt.savefig('drex/inputs/nodes/sizes_' + result + '.pdf')
 
+    # Calculate pairwise correlation
+    datatable = {}
+    datatable["Size (TB)"] = data['storage_size_TB'].to_list()
+    datatable["Write BW"] = data['write_bandwidth'].to_list()
+    datatable["Read BW"] = data ['read_bandwidth'].to_list()
+    datatable["Failure Rate"] = data['annual_failure_rate'].to_list()
+    df = pd.DataFrame(datatable)
+    corr_matrix = df.corr()
+
+    # Create a texttable object
+    table = texttable.Texttable()
+    # Add the header row
+    header = [''] + corr_matrix.columns.tolist()
+    table.header(header)
+    # Add the data rows
+    for index, row in corr_matrix.iterrows():
+        row_data = [index] + row.values.tolist()
+        table.add_row(row_data)
+
+    set_names = {
+        "drex/inputs/nodes/10_most_used_nodes.csv" : "10 most used nodes",
+        "drex/inputs/nodes/10_most_reliable_nodes.csv" : "10 most reliable nodes",
+        "drex/inputs/nodes/10_most_unreliable_nodes.csv" : "10 most unreliable nodes",
+        "drex/inputs/nodes/all_nodes_backblaze.csv" : "all nodes backblaze"
+    }
+    set_labels = {
+        "drex/inputs/nodes/10_most_used_nodes.csv" : "10_most_used_nodes",
+        "drex/inputs/nodes/10_most_reliable_nodes.csv" : "10_most_reliable_nodes",
+        "drex/inputs/nodes/10_most_unreliable_nodes.csv" : "10_most_unreliable_nodes",
+        "drex/inputs/nodes/all_nodes_backblaze.csv" : "all_nodes_backblaze"
+    }
+
+    latex_table = latextable.draw_latex(
+        table,
+        caption="Pairwise Pearson correlation among storage properties (" + set_names[datapath] + ")",
+        label="tab:correlation-" + set_labels[datapath]
+    )
+
+    print(latex_table)
+
     return data
     
 def plot_stats_input_nodes(datapath, data, minmax):
@@ -94,10 +137,13 @@ def plot_stats_input_nodes(datapath, data, minmax):
         'annual_failure_rate': 'Annual Failure Rate (%)'
     }
     y_labels = x_labels
-    plt.figure(figsize=(12, 10))
     # Define custom colors
     scatter_color = 'black'
     hist_color = 'black'
+
+
+    # Plot correlations
+    plt.figure(figsize=(12, 10))
     g = sns.pairplot(data[['storage_size_TB', 'write_bandwidth', 'read_bandwidth', 'annual_failure_rate']],
                     plot_kws={'alpha':0.7, 'edgecolor': 'black', 'color': 'black'}, diag_kws={'color': hist_color})  # Use black for histograms)
 
@@ -106,7 +152,7 @@ def plot_stats_input_nodes(datapath, data, minmax):
         if ax is not None:
             x_label = ax.get_xlabel()
             y_label = ax.get_ylabel()
-            print(x_label, y_label)
+            # print(x_label, y_label)
             if x_label != "":
                 ax.set_xlim(minmax['min'][x_label], minmax['max'][x_label])
             if y_label != "":
@@ -151,6 +197,20 @@ def plot_stats_input_nodes(datapath, data, minmax):
     plt.tight_layout()  # Adjust layout to prevent clipping of labels
     plt.savefig('drex/inputs/nodes/correlation_' + result + '.pdf')
     # plt.savefig('drex/inputs/nodes/correlation_' + result + '.png')
+
+    plt.rcParams['axes.labelsize'] = 16     # X and Y labels font size
+    plt.rcParams['xtick.labelsize'] = 16    # X-axis tick labels font size
+    plt.rcParams['ytick.labelsize'] = 16    # Y-axis tick labels font size
+    plt.rcParams['legend.fontsize'] = 16
+
+    # Plot histogram
+    for factor in x_labels:
+        plt.figure()
+        plt.hist(data[factor], color=hist_color)
+        plt.xlabel(x_labels[factor])
+        plt.ylabel("No. nodes")
+        plt.tight_layout()
+        plt.savefig('drex/inputs/nodes/histogram_' + result + '_' + factor + ".pdf")
 
 
 data_names = [
