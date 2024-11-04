@@ -361,7 +361,7 @@ for i, scheduler in enumerate(unique_algorithms):
 # Plot storage data on the bottom subplot
 for i, scheduler in enumerate(unique_algorithms):
     bars = ax_bottom.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], 
-                         width=bar_width, alpha=0.6, label=f'Storage Used ({scheduler})', color=colors[i], edgecolor='black')
+                         width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
 
 # ~ # Plot storage data
 # ~ for i, scheduler in enumerate(unique_algorithms):
@@ -383,7 +383,7 @@ ax_top.set_ylim(0, 14)
 ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 # Add legends
-handles, labels = plt.gca().get_legend_handles_labels()
+# ~ handles, labels = plt.gca().get_legend_handles_labels()
 # ~ ax1.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
 # ~ ax2.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
 
@@ -403,7 +403,7 @@ handles, labels = plt.gca().get_legend_handles_labels()
            # ~ bbox_to_anchor=(0.5, -0.11), 
            # ~ fancybox=False, ncol=4)
 # Combine handles for the legend and place them outside the plot for clarity
-handles, labels = ax_top.get_legend_handles_labels()
+handles, labels = plt.gca().get_legend_handles_labels()
 fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
 
 # Add grids

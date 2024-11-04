@@ -195,7 +195,7 @@ ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 # Plot storage data on the bottom subplot
 for i, scheduler in enumerate(schedulers):
     bars = ax_bottom.bar(x + i * bar_width, [storage_data[threshold][i] for threshold in reliability_thresholds], 
-                         width=bar_width, alpha=0.6, label=f'Storage Used ({scheduler})', color=colors[i], edgecolor='black')
+                         width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
 ax_bottom.set_ylim(0, 100)
 ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
 ax_bottom.set_xlabel('Minimum Reliability Requirement')
@@ -206,7 +206,7 @@ ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
 ax_bottom.set_xticklabels(reliability_thresholds)
 
 # Combine handles for the legend and place them outside the plot for clarity
-handles, labels = ax_top.get_legend_handles_labels()
+handles, labels = plt.gca().get_legend_handles_labels()
 fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.5, -0.10), fancybox=False, ncol=4)
 
 # Adjust layout for tight spacing
