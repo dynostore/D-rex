@@ -1470,6 +1470,7 @@ int main(int argc, char *argv[]) {
     int max_N_arg = atoi(argv[10]); // 0 if no max_N, otherwise if we set up a max_N
     const char *remove_node_pattern_file = NULL;
     if (remove_node_pattern == 3) { remove_node_pattern_file = argv[11]; }
+    //~ double fixed_throughput = atof(argv[12]);
     
     // For certain algorithms there are additional args
     int RS1;

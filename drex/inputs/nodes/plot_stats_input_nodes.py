@@ -137,6 +137,7 @@ def plot_stats_input_nodes(datapath, data, minmax, my_width, golden):
         'annual_failure_rate': 'Annual Failure Rate (\%)'
     }
     y_labels = x_labels
+    
     # Define custom colors
     scatter_color = 'black'
     hist_color = 'black'
