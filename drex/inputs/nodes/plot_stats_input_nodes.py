@@ -206,11 +206,17 @@ def plot_stats_input_nodes(datapath, data, minmax, my_width, golden):
 
     # Plot histogram
     for factor in x_labels:
-        # ~ plt.figure()
-        plt.figure(figsize=(my_width, my_width/(golden*1.5)))
+        plt.figure(figsize=(400.*pt, 200.*pt))
         plt.hist(data[factor], color=hist_color)
         plt.xlabel(x_labels[factor])
-        plt.ylabel("No. nodes")
+        plt.yticks([0, 2])  # Set y-axis ticks to only 0 and 2
+        if x_labels[factor] == "Storage Size (TB)":
+            plt.ylabel("\#")
+            plt.xticks([5, 10, 15]) 
+        if x_labels[factor] == "Write Bandwidth (MB/s)":
+            plt.xticks([150, 200, 250])
+        if x_labels[factor] == "Annual Failure Rate (\%)":
+            plt.xticks([8, 16, 24]) 
         plt.tight_layout()
         plt.savefig('drex/inputs/nodes/histogram_' + result + '_' + factor + ".pdf")
 
@@ -222,7 +228,7 @@ jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
               "PRDFULLPAGE": {"twocol": 1000.*pt},}
 my_width = jour_sizes["PRD"]["twocol"]
 # ~ golden = (1 + 5 ** 0.5) / 2
-golden = (1 + 5 ** 0.5) / 1.5
+golden = (1 + 5 ** 0.5) / 2
 # ~ golden = (1 + 5 ** 0.5) / 4.5
 
 data_names = [
