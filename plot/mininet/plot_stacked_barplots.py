@@ -199,11 +199,11 @@ merged_df.rename(columns={
     'Algorithm': f'Algorithm_{number_of_algorithms-1}'
 }, inplace=True)
 
-# Change font of plot to Times
-plt.rcParams.update({
-    "xtick.color": 'grey',
-    "ytick.color": 'grey'
-})
+# ~ # Change font of plot to Times
+# ~ plt.rcParams.update({
+    # ~ "xtick.color": 'grey',
+    # ~ "ytick.color": 'grey'
+# ~ })
 
 # Initialize the matplotlib figure
 algos = list(range(number_of_algorithms))
@@ -256,7 +256,7 @@ if plot_type == 'combined':
     plt.savefig(folder_path + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + ".pdf")
 else:
     for a in algos:
-        plt.figure(figsize=(my_width, my_width/golden))
+        plt.figure(figsize=(my_width, my_width/(golden+1)))
         # Plot the first set of bars
         sns.barplot(
             x='Category',
@@ -265,7 +265,7 @@ else:
             color='#1a80bb',
             edgecolor='black',
             linewidth=1.5,
-            label='Total storage'
+            # ~ label='Total storage'
         )
 
         # Plot the second set of bars on top of the first set

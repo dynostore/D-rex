@@ -188,9 +188,13 @@ order = [0, 2, 1, 3, 4, 5, 7, 6]
 for i, scheduler in enumerate(schedulers):
     bars = ax_top.bar(x + i * bar_width, [efficiency_data[threshold][i] for threshold in reliability_thresholds], 
                       width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
-# ~ ax_top.set_ylim(0, 14)
-ax_top.set_ylabel('Throughput')
+ax_top.set_ylabel('Throughput (MB/s)')
 ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+
+
+# optimal line
+# ~ mean_optimal_throughput = size_stored_optimal/(best_upload_time_optimal + best_read_time_optimal)
+# ~ ax_top.axhline(mean_optimal_throughput, color='blue', linestyle='--', linewidth=1.5, label='Mean optimal throughput')
 
 # Plot storage data on the bottom subplot
 for i, scheduler in enumerate(schedulers):
@@ -203,7 +207,16 @@ ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
 # Adding x-ticks and setting tick labels
 ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax_bottom.set_xticklabels(reliability_thresholds)
+# ~ ax_bottom.set_xticklabels(reliability_thresholds)
+# Custom ticks
+# ~ tick_positions = [0.9, 0.99, 0.999, 0.9999, 0.99999, 0.999999, 0.9999999, 0.99999999, 0.999999999]
+if folder_prefix == "10_most_unreliable_nodes_MEVA_merged_365_":
+    tick_labels = [r'$1-10^{-1}$', r'$1-10^{-2}$', r'$1-10^{-3}$', r'$1-10^{-4}$', r'$1-10^{-5}$', r'$1-10^{-6}$', r'$1-10^{-7}$']
+else:
+    tick_labels = [r'$1-10^{-1}$', r'$1-10^{-2}$', r'$1-10^{-3}$', r'$1-10^{-4}$', r'$1-10^{-5}$', r'$1-10^{-6}$', r'$1-10^{-7}$', r'$1-10^{-8}$', r'$1-10^{-9}$']
+
+# ~ ax_bottom.set_xticks(tick_positions)
+ax_bottom.set_xticklabels(tick_labels)
 
 # Combine handles for the legend and place them outside the plot for clarity
 handles, labels = plt.gca().get_legend_handles_labels()
