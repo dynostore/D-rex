@@ -59,15 +59,15 @@ ax1.plot(filtered_df2['n'], filtered_df2['avg_time_s'], marker='s', linestyle='-
 
 # Set Y-axis limit to start from 0 for the primary Y-axis
 ax1.set_ylim(0,)
-ax1.set_xlabel('N (Number of Nodes)')
+ax1.set_xlabel('Total number of chunks')
 ax1.set_ylabel('CPU Time (seconds)')
-
+ax1.set_xticks(range(2, 21, 2))
 # Create a secondary Y-axis for the storage overhead
 ax2 = ax1.twinx()
 ax2.bar(filtered_df1['n'], filtered_df1['storage_overhead'], width=0.4, alpha=0.5, color='g', label='Storage overhead')
 
 # Set Y-axis label and limit for the secondary axis
-ax2.set_ylabel('Storage Overhead (MB)', color='g')
+ax2.set_ylabel('Aggregate storage (MB)', color='g')
 ax2.set_ylim(0, max(filtered_df1['storage_overhead'].max(), filtered_df2['storage_overhead'].max()) * 1.1)
 
 # Add legends for both axes
