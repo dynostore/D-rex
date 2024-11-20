@@ -10,6 +10,7 @@ def plot_throughput_boxplots(folder_paths, threshold=10):
     jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt}}
     my_width = jour_sizes["PRD"]["twocol"]
     golden = (1 + 5 ** 0.5) / 1.8
+    # ~ plt.figure(figsize=(my_width, my_width / golden))
     plt.rcParams.update({
         'axes.labelsize': 14,
         'legend.fontsize': 14,

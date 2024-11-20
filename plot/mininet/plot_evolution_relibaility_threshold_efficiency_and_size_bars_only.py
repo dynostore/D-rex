@@ -30,6 +30,7 @@ jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
 my_width = jour_sizes["PRDFULLPAGE"]["twocol"]
 golden = (1 + 5 ** 0.5) / 2
 golden = (1 + 5 ** 0.5) / 1.5 # Smaller height
+golden = (1 + 5 ** 0.5) / 0.85 # Smaller height for only one subplot
 plt.rcParams.update({
     'axes.labelsize': 14,       # Axis label font size
     'legend.fontsize': 14,      # Legend font size
@@ -177,7 +178,8 @@ print("reliability_thresholds:", reliability_thresholds)
 print("schedulers:", schedulers)
 
 # Initialize the figure and two subplots sharing the same x-axis
-fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width/(golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
+# ~ fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width/(golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
+fig, ax_bottom = plt.subplots(figsize=(my_width, my_width/(golden)))
 bar_width = 0.09
 
 # Colors, markers, and order to maintain color consistency across both subplots
@@ -185,11 +187,11 @@ colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff
 order = [0, 2, 1, 3, 4, 5, 7, 6]
 
 # Plot efficiency data on the top subplot
-for i, scheduler in enumerate(schedulers):
-    bars = ax_top.bar(x + i * bar_width, [efficiency_data[threshold][i] for threshold in reliability_thresholds], 
-                      width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
-ax_top.set_ylabel('Throughput (MB/s)')
-ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+# ~ for i, scheduler in enumerate(schedulers):
+    # ~ bars = ax_top.bar(x + i * bar_width, [efficiency_data[threshold][i] for threshold in reliability_thresholds], 
+                      # ~ width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
+# ~ ax_top.set_ylabel('Throughput (MB/s)')
+# ~ ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
 
 # optimal line
@@ -220,7 +222,8 @@ ax_bottom.set_xticklabels(tick_labels)
 
 # Combine handles for the legend and place them outside the plot for clarity
 handles, labels = plt.gca().get_legend_handles_labels()
-fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.5, -0.10), fancybox=False, ncol=4)
+# ~ fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.5, -0.10), fancybox=False, ncol=4)
+fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.5, -0.17), fancybox=False, ncol=4)
 
 # Adjust layout for tight spacing
 plt.tight_layout()

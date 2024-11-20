@@ -256,7 +256,7 @@ order = [0, 2, 1, 3, 4, 5, 7, 6]  # The new order for labels (C first, A second,
 data = []
 df_data = []
 df = []
-
+throughput_optimal_all = []
 # Traverse through each folder
 for folder in os.listdir(base_dir):
     folder_path = os.path.join(base_dir, folder)
@@ -271,13 +271,18 @@ for folder in os.listdir(base_dir):
             with open(folder_path + "/output_optimal_schedule.csv", mode='r') as file:
                 csv_reader = csv.reader(file)
                 next(csv_reader)
+                throughput_optimal = 0
                 for row in csv_reader:
                     number_of_data_stored_optimal = int(row[0])
                     total_storage_used_optimal = float(row[1])
                     best_upload_time_optimal = float(row[2])
                     best_read_time_optimal = float(row[3])
                     size_stored_optimal = float(row[4])
-
+                    
+                    throughput_optimal += size_stored_optimal / (best_upload_time_optimal + best_read_time_optimal)
+                print("throughput_optimal:", throughput_optimal)
+                throughput_optimal_all.append(throughput_optimal)
+                
             # Read all CSV files in the folder
             for file in os.listdir(folder_path):
                 if file.endswith('.csv') and file.startswith('output_drex_only'):
@@ -358,6 +363,18 @@ for i, scheduler in enumerate(unique_algorithms):
     bars = ax_top.bar(x + i * bar_width, [throughput_data[set_of_node][i] for set_of_node in sets_of_nodes], 
                       width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
 
+for i, set_of_node in enumerate(sets_of_nodes):
+    optimal_throughput = throughput_optimal_all[i]  # Use index since throughput_optimal_all is a list
+    ax_top.hlines(
+        y=optimal_throughput, 
+        xmin=x[i] - bar_width / 2,  # Start slightly before the first bar
+        xmax=x[i] + (len(unique_algorithms) - 0.5) * bar_width,  # End slightly after the last bar
+        color='blue', 
+        linewidth=2, 
+        linestyle='--', 
+        label='Optimal Throughput' if i == 0 else None  # Add legend only once
+    )
+    
 # Plot storage data on the bottom subplot
 for i, scheduler in enumerate(unique_algorithms):
     bars = ax_bottom.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], 
@@ -373,13 +390,13 @@ for i, scheduler in enumerate(unique_algorithms):
 
 # Set labels and limits
 ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
-ax_top.set_ylabel('Throughput')
+ax_top.set_ylabel('Throughput (MB/s)')
 ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
 ax_top.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
 ax_bottom.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
 # ~ ax2.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
 ax_bottom.set_ylim(0, 100)
-ax_top.set_ylim(0, 14)
+ax_top.set_ylim(0, 15)
 ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 # Add legends
