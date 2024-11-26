@@ -1,4 +1,4 @@
-# python3 plot_line_times.py reconstruct/new_c/400MB_with_comma.csv 400MB.csv
+# python3 plot_line_times.py reconstruct/new_c/400MB_with_comma.csv 400MB.csv upload_400MB.csv
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -12,6 +12,7 @@ if len(sys.argv) < 3:
 # Read the input files from the command line arguments
 input_file1 = sys.argv[1]
 input_file2 = sys.argv[2]
+input_file3 = sys.argv[3]
 
 # Nice figs
 plt.style.use("/home/gonthier/Chicago/paper.mplstyle")
@@ -24,18 +25,22 @@ golden = (1 + 5 ** 0.5) / 2
 # Load the data from both files (assuming space-separated values; adjust delimiter if needed)
 df1 = pd.read_csv(input_file1)  # assuming default delimiter
 df2 = pd.read_csv(input_file2, delimiter='\t')  # tab-separated
+df3 = pd.read_csv(input_file3, delimiter='\t')  # tab-separated
 
 # Convert avg_time from milliseconds to seconds for both datasets
 df1['avg_time_s'] = df1['avg_time'] / 1000.0
 df2['avg_time_s'] = df2['avg_time'] / 1000.0
+df3['avg_time_s'] = df3['avg_time'] / 1000.0
 
 # Filter the data where K = N - 2 for both datasets
 filtered_df1 = df1[df1['k'] == df1['n'] - 2]
 filtered_df2 = df2[df2['k'] == df2['n'] - 2]
+filtered_df3 = df3[df3['k'] == df3['n'] - 2]
 
 # Compute storage overhead for both datasets (assuming k != 0 to avoid division by zero)
 filtered_df1['storage_overhead'] = ( 400.0 / filtered_df1['k'] ) * filtered_df1['n']
 filtered_df2['storage_overhead'] = ( 400.0 / filtered_df2['k'] ) * filtered_df1['n']
+# ~ filtered_df3['storage_overhead'] = ( 400.0 / filtered_df3['k'] ) * filtered_df1['n']
 
 # Set the global font size and line width
 plt.rcParams.update({
@@ -57,10 +62,13 @@ ax1.plot(filtered_df1['n'], filtered_df1['avg_time_s'], marker='o', linestyle='-
 # Plot the time for encoding (second file)
 ax1.plot(filtered_df2['n'], filtered_df2['avg_time_s'], marker='s', linestyle='--', color='r', label='Encoding')
 
+# Plot upload time
+ax1.plot(filtered_df3['n'], filtered_df3['avg_time_s']*filtered_df3['n'], marker='x', linestyle='--', color='orange', label='Uploading')
+
 # Set Y-axis limit to start from 0 for the primary Y-axis
 ax1.set_ylim(0,)
 ax1.set_xlabel('Total number of chunks')
-ax1.set_ylabel('CPU Time (seconds)')
+ax1.set_ylabel('Time (seconds)')
 ax1.set_xticks(range(2, 21, 2))
 # Create a secondary Y-axis for the storage overhead
 ax2 = ax1.twinx()

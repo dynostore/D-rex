@@ -162,7 +162,7 @@ for i, set_of_node in enumerate(data_set):
         y=optimal_throughput, 
         xmin=x[i] - bar_width / 2,  # Start slightly before the first bar
         xmax=x[i] + (len(unique_algorithms) - 0.5) * bar_width,  # End slightly after the last bar
-        color='red', 
+        color='blue', 
         linewidth=2, 
         linestyle='--', 
         label='Optimal Throughput' if i == 0 else None  # Add legend only once
@@ -178,10 +178,10 @@ for i, scheduler in enumerate(unique_algorithms):
     # ~ ax1.bar(x + i * bar_width, [storage_data[data_se][i] for data_se in data_set], width=bar_width, alpha=1, lw=1, label=f'{scheduler}', edgecolor='black', color=colors[i])
 # Set labels and limits
 ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
-ax_top.set_ylabel('Throughput')
+ax_top.set_ylabel('Throughput (MB/s)')
 ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
 ax_top.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax_bottom.set_xticklabels(('Sentinal', 'FB', 'IBM'), rotation=0, ha='center')
+ax_bottom.set_xticklabels(('Sentinel-2', 'SWIM', 'IBM COS'), rotation=0, ha='center')
 # ~ ax2.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
 ax_bottom.set_ylim(0, 100)
 ax_top.set_ylim(0, 15)

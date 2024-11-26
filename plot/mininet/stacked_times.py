@@ -12,8 +12,8 @@ jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
               "CQG": {"onecol": 374.*pt},
               "PRDFULLPAGE": {"twocol": 1000.*pt},}
 my_width = jour_sizes["PRD"]["twocol"]
-# ~ golden = (1 + 5 ** 0.5) / 2
-golden = (1 + 5 ** 0.5) / 1.8 # Smaller height
+golden = (1 + 5 ** 0.5) / 2
+# ~ golden = (1 + 5 ** 0.5) / 1.8 # Smaller height
 plt.rcParams.update({
     'axes.labelsize': 14,       # Axis label font size
     'legend.fontsize': 14,      # Legend font size
@@ -83,17 +83,17 @@ for algorithm in algorithms:
     summed_times = algorithm_df[time_columns].sum()
     
     # Plot the stacked bar for the current algorithm
-    plt.bar(algorithm, summed_times['total_parralelized_upload_time']/dividor, label=custom_labels['total_parralelized_upload_time'], bottom=0, color=colors['total_parralelized_upload_time'], edgecolor='black')
-    plt.bar(algorithm, summed_times['total_read_time_parrallelized']/dividor, label=custom_labels['total_read_time_parrallelized'], bottom=summed_times['total_parralelized_upload_time']/dividor, color=colors['total_read_time_parrallelized'], edgecolor='black')
-    plt.bar(algorithm, summed_times['total_chunking_time']/dividor, label=custom_labels['total_chunking_time'], bottom=summed_times['total_parralelized_upload_time']/dividor + summed_times['total_read_time_parrallelized']/dividor, color=colors['total_chunking_time'] ,edgecolor='black')
-    plt.bar(algorithm, summed_times['total_reconstruct_time']/dividor, label=custom_labels['total_reconstruct_time'], bottom=summed_times['total_parralelized_upload_time']/dividor + summed_times['total_read_time_parrallelized']/dividor + summed_times['total_chunking_time']/dividor, color=colors['total_reconstruct_time'], edgecolor='black')
+    plt.bar(algorithm, summed_times['total_parralelized_upload_time']/dividor, label=custom_labels['total_parralelized_upload_time'], bottom=0, color=colors['total_parralelized_upload_time'], edgecolor='black', width=0.7)
+    plt.bar(algorithm, summed_times['total_read_time_parrallelized']/dividor, label=custom_labels['total_read_time_parrallelized'], bottom=summed_times['total_parralelized_upload_time']/dividor, color=colors['total_read_time_parrallelized'], edgecolor='black', width=0.7)
+    plt.bar(algorithm, summed_times['total_chunking_time']/dividor, label=custom_labels['total_chunking_time'], bottom=summed_times['total_parralelized_upload_time']/dividor + summed_times['total_read_time_parrallelized']/dividor, color=colors['total_chunking_time'] ,edgecolor='black', width=0.7)
+    plt.bar(algorithm, summed_times['total_reconstruct_time']/dividor, label=custom_labels['total_reconstruct_time'], bottom=summed_times['total_parralelized_upload_time']/dividor + summed_times['total_read_time_parrallelized']/dividor + summed_times['total_chunking_time']/dividor, color=colors['total_reconstruct_time'], edgecolor='black', width=0.7)
     
 # Adding labels and title
 # ~ plt.xlabel('algorithm')
 plt.ylabel('Hours (h)', fontsize=14)
 # ~ plt.title('Stacked Times for Different algorithms')
 # Set tick parameters (size for x and y axis)
-plt.xticks(fontsize=12, rotation=30)
+plt.xticks(fontsize=12, rotation=25, ha="right")
 plt.yticks(fontsize=14)
 # Reduce the number of y-ticks
 max_y = plt.gca().get_ylim()[1]
@@ -102,7 +102,7 @@ plt.yticks(ticks=range(0, int(20000) + 1, int(20000 // 5)))  # 5 intervals
 handles, labels = plt.gca().get_legend_handles_labels()
 by_label = dict(zip(labels, handles))
 # ~ plt.legend(by_label.values(), by_label.keys(), loc='upper right', bbox_to_anchor=(0.5, -0.4), ncol=2, fontsize=14)
-plt.legend(by_label.values(), by_label.keys(), loc='upper right', bbox_to_anchor=(1, 1.05), ncol=2, fontsize=14)
+plt.legend(by_label.values(), by_label.keys(), loc='center', bbox_to_anchor=(0.5, -0.64), ncol=2, fontsize=14)
 # Display the plot
 # ~ plt.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
