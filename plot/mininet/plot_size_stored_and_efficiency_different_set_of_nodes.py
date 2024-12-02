@@ -304,7 +304,7 @@ df_data = pd.DataFrame(data, columns=['Set of Nodes', 'Algorithm', 'size_stored'
 # Rename algorithms
 df_data['Algorithm'] = df_data['Algorithm'].replace({
     'alg1_c': 'GreedyMinStorage', 'alg4_1': 'D-Rex SC',
-    'hdfs_3_replication_c': 'HDFS 3 Rep', 'hdfsrs_3_2': 'EC(3,2)',
+    'hdfs_3_replication_c': '3 Replication', 'hdfsrs_3_2': 'EC(3,2)',
     'hdfsrs_6_3': 'EC(6,3)', 'glusterfs_6_4': 'EC(4,2)',
     'Min_Storage_c': 'Min_Storage', 'alg_bogdan': 'D-Rex LB',
     'glusterfs_6_4_c': 'EC(4,2)', 'glusterfs_0_0_c': 'EC(4,2)',
@@ -354,6 +354,8 @@ for set_of_nodes, group in grouped:
     
     throughput_data[set_of_nodes] = efficiency_list
     storage_data[set_of_nodes] = storage_list
+    print(efficiency_list)
+    print(storage_list)
 
 sets_of_nodes = filtered_df['Set of Nodes'].unique().tolist()
 x = np.arange(len(sets_of_nodes)) * (len(unique_algorithms) * bar_width + bar_spacing)
@@ -363,22 +365,28 @@ for i, scheduler in enumerate(unique_algorithms):
     bars = ax_top.bar(x + i * bar_width, [throughput_data[set_of_node][i] for set_of_node in sets_of_nodes], 
                       width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
 
+legend_handles = []
+
 for i, set_of_node in enumerate(sets_of_nodes):
     optimal_throughput = throughput_optimal_all[i]  # Use index since throughput_optimal_all is a list
-    ax_top.hlines(
+    oracle_line = ax_top.hlines(
         y=optimal_throughput, 
         xmin=x[i] - bar_width / 2,  # Start slightly before the first bar
         xmax=x[i] + (len(unique_algorithms) - 0.5) * bar_width,  # End slightly after the last bar
         color='blue', 
         linewidth=2, 
         linestyle='--', 
-        label='Optimal Throughput' if i == 0 else None  # Add legend only once
+        label='Oracle' if i == 0 else None  # Add legend only once
     )
+    if i == 0:  # Add the first "Oracle" line to the legend
+        legend_handles.append(oracle_line)
+
     
 # Plot storage data on the bottom subplot
 for i, scheduler in enumerate(unique_algorithms):
     bars = ax_bottom.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], 
                          width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
+    legend_handles.append(bars)
 
 # ~ # Plot storage data
 # ~ for i, scheduler in enumerate(unique_algorithms):
@@ -421,7 +429,8 @@ ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
            # ~ fancybox=False, ncol=4)
 # Combine handles for the legend and place them outside the plot for clarity
 handles, labels = plt.gca().get_legend_handles_labels()
-fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
+# ~ fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
+fig.legend(legend_handles, [h.get_label() for h in legend_handles], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
 
 # Add grids
 # ~ ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)

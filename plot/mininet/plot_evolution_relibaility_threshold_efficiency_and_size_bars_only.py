@@ -110,7 +110,7 @@ df_data = pd.DataFrame(data, columns=['Reliability Threshold', 'Algorithm', 'siz
 # Rename algorithms
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1_c', 'GreedyMinStorage')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-Rex SC')
-df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', 'HDFS 3 Rep')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', '3 Replication')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'HDFS(3,2)')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'HDFS(6,3)')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
@@ -173,8 +173,6 @@ reliability_thresholds = sorted(filtered_df['Reliability Threshold'].unique().to
 x = np.arange(len(reliability_thresholds))  # x positions for reliability thresholds
 print("Efficiency Data:", efficiency_data)
 print("Storage Data:", storage_data)
-print("Storage Data:", storage_data)
-print("reliability_thresholds:", reliability_thresholds)
 print("schedulers:", schedulers)
 
 # Initialize the figure and two subplots sharing the same x-axis
@@ -213,9 +211,9 @@ ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
 # Custom ticks
 # ~ tick_positions = [0.9, 0.99, 0.999, 0.9999, 0.99999, 0.999999, 0.9999999, 0.99999999, 0.999999999]
 if folder_prefix == "10_most_unreliable_nodes_MEVA_merged_365_":
-    tick_labels = [r'$1-10^{-1}$', r'$1-10^{-2}$', r'$1-10^{-3}$', r'$1-10^{-4}$', r'$1-10^{-5}$', r'$1-10^{-6}$', r'$1-10^{-7}$']
+    tick_labels = [r'$90\%$', r'$99\%$', r'$99.9\%$', r'$99.99\%$', r'$99.999\%$', r'$99.9999\%$', r'$99.99999\%$']
 else:
-    tick_labels = [r'$1-10^{-1}$', r'$1-10^{-2}$', r'$1-10^{-3}$', r'$1-10^{-4}$', r'$1-10^{-5}$', r'$1-10^{-6}$', r'$1-10^{-7}$', r'$1-10^{-8}$', r'$1-10^{-9}$']
+    tick_labels = [r'$90\%$', r'$99\%$', r'$99.9\%$', r'$99.99\%$', r'$99.999\%$', r'$99.9999\%$', r'$99.99999\%$', r'$99.999999\%$', r'$99.9999999\%$']
 
 # ~ ax_bottom.set_xticks(tick_positions)
 ax_bottom.set_xticklabels(tick_labels)
