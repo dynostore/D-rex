@@ -206,17 +206,20 @@ def plot_stats_input_nodes(datapath, data, minmax, my_width, golden):
 
     # Plot histogram
     for factor in x_labels:
-        plt.figure(figsize=(400.*pt, 200.*pt))
+        plt.figure(figsize=(400.*pt, 260.*pt))
         plt.hist(data[factor], color=hist_color)
         plt.xlabel(x_labels[factor])
-        plt.yticks([0, 2])  # Set y-axis ticks to only 0 and 2
         if x_labels[factor] == "Storage Size (TB)":
             plt.ylabel("\#")
             plt.xticks([5, 10, 15]) 
+            plt.yticks([0, 2, 4])
+            plt.ylim(0,4.1)
         if x_labels[factor] == "Write Bandwidth (MB/s)":
             plt.xticks([150, 200, 250])
         if x_labels[factor] == "Annual Failure Rate (\%)":
             plt.xticks([8, 16, 24]) 
+            plt.yticks([0, 2, 4, 6])
+            plt.ylim(0,6.1)
         plt.tight_layout()
         plt.savefig('drex/inputs/nodes/histogram_' + result + '_' + factor + ".pdf")
 
