@@ -42,8 +42,8 @@
 #   100 1000
 #   1000 1000
 
-python3 -m venv venv
-. venv/bin/activate
+#~ python3 -m venv venv
+#~ . venv/bin/activate
 # pip install seaborn
 
 # Truncate current output files and add header
@@ -136,20 +136,5 @@ fi
 #~ # ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times} 1 0 > "trace_daos_${reliability_threshold}_${nodes_to_print}.csv"
 # ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 8 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times} 2 0
 
-
 # Plotting results
 python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))
-
-#~ python3 plot/mininet/plot_breaking_point.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))
-#~ python3 plot/mininet/step_plot_breaking_point.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))
-#~ python3 plot/mininet/event_plot_breaking_point.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))
-#~ python3 plot/mininet/event_plot_breaking_point_all_reliability.py ${data_duration_on_system} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))
-
-
-#~ if [[ "$4" == *.csv ]]; then
-    #~ python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition)) $((max_N)) $((remove_node_pattern))
-    # python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} ${input_data} $((number_of_repetition))
-#~ else
-    #~ # python3 plot/mininet/plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))
-    #~ python3 plot/mininet/curve_plot.py ${data_duration_on_system} ${reliability_threshold} "drex_only" "individual" ${input_nodes} $((number_of_data)) $((data_size))
-#~ fi

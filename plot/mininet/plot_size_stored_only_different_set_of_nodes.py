@@ -40,7 +40,7 @@ else:
     exit(1)
 
 # Nice figs
-plt.style.use("/home/gonthier/Chicago/paper.mplstyle")
+plt.style.use("paper.mplstyle")
 pt = 1./72.27
 jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
               "CQG": {"onecol": 374.*pt},}

@@ -49,9 +49,8 @@ print(number_input_data, "input data")
 input_nodes_to_print = input_nodes.split('/')[-1]
 input_nodes_to_print = input_nodes_to_print.rsplit('.', 1)[0]
 
-reliability_thresholds = [0.9, 0.99, 0.999, 0.9999, 0.99999]
-# ~ reliability_thresholds = [0.9, 0.99, 0.999]
-# ~ reliability_thresholds = [0.9]
+# ~ reliability_thresholds = [0.9, 0.99, 0.999, 0.9999, 0.99999]
+reliability_thresholds = [0.9, 0.99999]
 
 # Create a plot figure
 plt.figure(figsize=(10, 6))
@@ -92,7 +91,8 @@ for idx, reliability_threshold in enumerate(reliability_thresholds):
     else:
         folder_path = f"plot/{mode}/{input_nodes_to_print}_{input_data_to_print}_{data_duration_on_system}_{reliability_threshold}_{number_of_loops}_max{max_N}"
 
-    files = glob.glob(f"{folder_path}/*_times.csv")
+    # ~ files = glob.glob(f"{folder_path}/*_times.csv")
+    files = glob.glob(f"*_times.csv")
     
     # Gather all data sizes across all schedulers to compute global_max
     all_data_sizes = []
@@ -126,76 +126,98 @@ for idx, reliability_threshold in enumerate(reliability_thresholds):
         percentage_values = []
 
         node_failures = 0
-        for _, failure in failures_df.iterrows():
-            failed_time = failure['failed_time']
-            failure_row = df_downsampled[df_downsampled['Time'] <= failed_time].iloc[-1]
-            percentage = failure_row['Percentage_stored']
-            
-            failure_times.append(node_failures)
-            percentage_values.append(percentage)
-            # ~ if (reliability_threshold == 0.999):
-            print(node_failures, "reliability", reliability_threshold, alg_name, "%", percentage)
-            
-            node_failures += 1
-
-        y_position_base_index=alg_y_positions[alg_name] + idx
         
-        for i in range(1, len(failure_times)):
-            # Set color to white if percentage is 0, otherwise use algorithm's color
-            if percentage_values[i] == 0:
-                linestyle_line='dotted'
-                color_line = 'white' 
-            else:
-                color_line = alg_colors[alg_name]
-                linestyle_line='solid'
+            # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg1_c', 'GreedyMinStorage')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg4_1', 'D-Rex SC')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_3_replication_c', 'HDFS 3 Rep')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_3_2', 'EC(3,2)')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfsrs_6_3', 'EC(6,3)')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4', 'GlusterFS')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('Min_Storage_c', 'Min_Storage')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('alg_bogdan', 'D-Rex LB')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_6_4_c', 'EC(4,2)')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('glusterfs_0_0_c', 'GlusterFS_ADAPTATIVE')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('GlusterFS_c', 'EC(4,2)')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_3_2_c', 'EC(3,2)')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_6_3_c', 'EC(6,3)')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_4_2_c', 'HDFS(4,2)')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_RS_ADAPTATIVE')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS')
+    # ~ df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
+        
+        if alg_name == "output_hdfs_rs_3_2_c":
+            alg_name = "EC(3,2)"
+        if alg_name == "output_hdfs_rs_6_3_c":
+            alg_name = "EC(6,3)"
+        if alg_name == "output_hdfs_rs_4_2_c":
+            alg_name = "EC(4,2)"
+        if alg_name == "output_alg4_1":
+            alg_name = "D-Rex SC"
+        if alg_name == "output_alg1_c":
+            alg_name = "GreedyMinStorage"
+        if alg_name == "output_alg_bogdan":
+            alg_name = "D-Rex LB"
+        if alg_name == "output_glusterfs_6_4_c":
+            alg_name = "EC(6,4)"
+        if alg_name == "output_hdfs_3_replication_c":
+            alg_name = "3 Replication"
+        if alg_name == "output_daos_1_0_c":
+            alg_name = "DAOS"
+        
+        if alg_name != "output_optimal_schedule":
+            print("Algorithm", alg_name, "with target reliability", reliability_threshold)
+            for _, failure in failures_df.iterrows():
+                failed_time = failure['failed_time']
+                failure_row = df_downsampled[df_downsampled['Time'] <= failed_time].iloc[-1]
+                percentage = failure_row['Percentage_stored']
+                
+                failure_times.append(node_failures)
+                percentage_values.append(percentage)
+                # ~ if (reliability_threshold == 0.999):
+                print("# failures:", node_failures, "-", percentage, "% of data retained")
+                
+                node_failures += 1
+
+        # ~ y_position_base_index=alg_y_positions[alg_name] + idx
+        
+        # ~ for i in range(1, len(failure_times)):
+            # ~ # Set color to white if percentage is 0, otherwise use algorithm's color
+            # ~ if percentage_values[i] == 0:
+                # ~ linestyle_line='dotted'
+                # ~ color_line = 'white' 
+            # ~ else:
+                # ~ color_line = alg_colors[alg_name]
+                # ~ linestyle_line='solid'
             
-            # Calculate line width proportional to the percentage of data stored
-            # Assuming a base width of 1 and a maximum width of 4
-            base_width = 1
-            max_width = 8
-            line_width = base_width + (max_width - base_width) * (percentage_values[i] / 100)
+            # ~ # Calculate line width proportional to the percentage of data stored
+            # ~ # Assuming a base width of 1 and a maximum width of 4
+            # ~ base_width = 1
+            # ~ max_width = 8
+            # ~ line_width = base_width + (max_width - base_width) * (percentage_values[i] / 100)
             
-            plt.plot(
-                [failure_times[i-1], failure_times[i]], 
-                [y_position_base_index, y_position_base_index], 
-                color=color_line, 
-                linestyle=linestyle_line,  # Use solid lines for all
-                lw=line_width  # Set line width based on percentage
-            )
+            # ~ plt.plot(
+                # ~ [failure_times[i-1], failure_times[i]], 
+                # ~ [y_position_base_index, y_position_base_index], 
+                # ~ color=color_line, 
+                # ~ linestyle=linestyle_line,  # Use solid lines for all
+                # ~ lw=line_width  # Set line width based on percentage
+            # ~ )
     
-        # ~ for i in range(1, len(failure_times)):
-            # ~ if percentage_values[i] == 0:
-                # ~ color_line = 'white'
-            # ~ else:
-                # ~ color_line=alg_colors[alg_name]
-            # ~ linestyle_line='solid' if percentage_values[i] == 100 else 'dotted'
-            
-            # ~ plt.plot([failure_times[i-1], failure_times[i]], [y_position_base_index, y_position_base_index], 
-                     # ~ color=color_line, linestyle=linestyle_line, lw=4)  # Increased line width
-        
-        # ~ for i in range(1, len(failure_times)):
-            # ~ if percentage_values[i] == 0:
-                # ~ color_line = 'gray'
-            # ~ else:
-                # ~ color_line = colors[idx] if percentage_values[i] == 100 else 'orange'
-            # ~ linestyle_line = 'solid' if percentage_values[i] == 100 else 'dotted'
-            
-            # ~ plt.plot([failure_times[i-1], failure_times[i]], [y_position_base_index, y_position_base_index], 
-                     # ~ color=color_line, linestyle=linestyle_line, lw=4)
 
-# Add labels and title
-plt.xlabel('Number of Node Failures')
-plt.yticks(
-   [pos + idx for pos in alg_y_positions.values() for idx in range(len(reliability_thresholds))],
-   [f"{alg} ({reliability})" for alg in alg_y_positions.keys() for reliability in reliability_thresholds]
-)
-plt.title('Event Plot of Node Failures and Data Retention Across Reliability Thresholds')
+# ~ # Add labels and title
+# ~ plt.xlabel('Number of Node Failures')
+# ~ plt.yticks(
+   # ~ [pos + idx for pos in alg_y_positions.values() for idx in range(len(reliability_thresholds))],
+   # ~ [f"{alg} ({reliability})" for alg in alg_y_positions.keys() for reliability in reliability_thresholds]
+# ~ )
+# ~ plt.title('Event Plot of Node Failures and Data Retention Across Reliability Thresholds')
 
-# Show grid and legend
-plt.grid(True)
+# ~ # Show grid and legend
+# ~ plt.grid(True)
 
-# Display the plot
-plt.tight_layout()
-output_folder_path="plot/combined"
-create_folder(output_folder_path)
-plt.savefig(output_folder_path + '/event_plot_with_global_max_array_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + ".pdf")
+# ~ # Display the plot
+# ~ plt.tight_layout()
+# ~ output_folder_path="plot/combined"
+# ~ create_folder(output_folder_path)
+# ~ plt.savefig(output_folder_path + '/event_plot_with_global_max_array_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + ".pdf")

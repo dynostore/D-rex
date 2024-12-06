@@ -24,7 +24,7 @@ folder_suffix = sys.argv[1]  # This will be the part of the folder name after th
 total_possible_size_to_store = 487000*250
 
 # Nice figs
-plt.style.use("/home/gonthier/Chicago/paper.mplstyle")
+plt.style.use("paper.mplstyle")
 pt = 1./72.27
 jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
               "CQG": {"onecol": 374.*pt},}
