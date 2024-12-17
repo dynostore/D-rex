@@ -376,7 +376,7 @@ for i, set_of_node in enumerate(sets_of_nodes):
         color='blue', 
         linewidth=2, 
         linestyle='--', 
-        label='Oracle' if i == 0 else None  # Add legend only once
+        label='Ideal Throughput' if i == 0 else None  # Add legend only once
     )
     if i == 0:  # Add the first "Oracle" line to the legend
         legend_handles.append(oracle_line)
