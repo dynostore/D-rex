@@ -65,8 +65,8 @@ colors = {
 
 # Custom labels for the legend
 custom_labels = {
-    'total_parralelized_upload_time': 'Parallelized upload',
-    'total_read_time_parrallelized': 'Parallelized download',
+    'total_parralelized_upload_time': 'Parallel writes',
+    'total_read_time_parrallelized': 'Parallel reads',
     'total_chunking_time': 'Encoding',
     'total_reconstruct_time': 'Decoding'
 }
