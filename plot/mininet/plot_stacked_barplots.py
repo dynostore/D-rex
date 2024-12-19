@@ -265,7 +265,7 @@ else:
             color='#1a80bb',
             edgecolor='black',
             linewidth=1.5,
-            # ~ label='Total storage'
+            label='Available'
         )
 
         # Plot the second set of bars on top of the first set
@@ -277,12 +277,12 @@ else:
             bottom=0,
             edgecolor='black',
             linewidth=1.5,
-            label='Used storage'
+            label='Used'
         )
 
         plt.ylabel('Storage Size (TB)')
         # ~ plt.xlabel(str(df1['algorithm'][a]))
         plt.xlabel('Storage nodes')
-        plt.legend(loc='upper center', bbox_to_anchor=(0.45, 1), fancybox=False)
+        plt.legend(loc='upper center', bbox_to_anchor=(0.86, 1.05), fancybox=False)
         print(str(df1['algorithm'][a]))
         plt.savefig(folder_path + '/storage_distribution_' + input_nodes_to_print + "_" + input_data_to_print + "_" + str(data_duration_on_system) + "_" + str(reliability_threshold) + "_" + str(df1['algorithm'][a]) + ".pdf")
