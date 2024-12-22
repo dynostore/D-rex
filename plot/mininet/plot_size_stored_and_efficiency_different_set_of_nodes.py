@@ -250,8 +250,10 @@ set_of_node_regex = re.compile(r'^(.+)' + re.escape(folder_suffix) + r'$')
 metric_to_plot_bars = 'size_stored'
 metric_to_plot_efficiency = 'efficiency'
 
-colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
-order = [0, 2, 1, 3, 4, 5, 7, 6]  # The new order for labels (C first, A second, B third)
+# ~ colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
+colors = ['#1f77b4', '#ffbf00', '#17becf', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
+# ~ order = [0, 2, 1, 3, 4, 5, 7, 6]  # The new order for labels (C first, A second, B third)
+order = [0, 2, 1, 3, 4, 6, 7]  # The new order for labels (C first, A second, B third)
 
 data = []
 df_data = []
@@ -318,7 +320,8 @@ df_data['Algorithm'] = df_data['Algorithm'].replace({
 df_data = df_data[(df_data['size_stored'] != 0) & (df_data['throughput'] != 0)]
 
 # Filter out some algorithms
-algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE']
+# ~ algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE']
+algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE', '3 Replication']
 filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
 
 # Separate the data into storage and throughput

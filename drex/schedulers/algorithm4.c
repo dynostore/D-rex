@@ -1604,7 +1604,8 @@ int main(int argc, char *argv[]) {
     int combination_count = 0;
     bool reduced_complexity_situation;
     int min_number_node_in_combination = 2;
-    unsigned long long complexity_threshold = 2000;
+    //~ unsigned long long complexity_threshold = 2000;
+    unsigned long long complexity_threshold = 1025;
     int max_number_node_in_combination = number_of_initial_nodes;
     for (i = min_number_node_in_combination; i <= max_number_node_in_combination; i++) {
         total_combinations += combination(number_of_initial_nodes, i, complexity_threshold);

@@ -52,7 +52,8 @@ df['algorithm'] = df['algorithm'].str.replace('random_c', 'Random')
 df['algorithm'] = df['algorithm'].str.replace('daos_1_0_c', 'DAOS')
 df['algorithm'] = df['algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
 
-algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE']
+# ~ algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE']
+algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE', '3 Replication']
 filtered_df = df[~df['algorithm'].isin(algorithms_to_exclude)]
 
 # Define fixed colors for each type of operation

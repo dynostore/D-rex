@@ -10,7 +10,7 @@
 #include <combinations.h>
 
 void free_combinations(Combination** combinations, int num_combinations) {
-    printf("1.\n"); fflush(stdout);
+    //~ printf("1.\n"); fflush(stdout);
     for (int i = 0; i < num_combinations; i++) {
         if (combinations[i] != NULL) {
             // Free the array of Node pointers (if dynamically allocated)
@@ -35,7 +35,7 @@ void free_combinations(Combination** combinations, int num_combinations) {
 
     // Finally, free the array of Combination* pointers
     free(combinations);
-    printf("2.\n"); fflush(stdout);
+    //~ printf("2.\n"); fflush(stdout);
 }
 
 void create_combinations(Node *nodes, int n, int r, Combination **combinations, int *combination_count) {
