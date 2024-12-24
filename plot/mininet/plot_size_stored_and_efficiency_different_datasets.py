@@ -87,7 +87,8 @@ for folder in folder_list:
             df = pd.read_csv(file_path, quotechar='"', doublequote=True, skipinitialspace=True)
             
             df['throughput'] = df['size_stored'] / (df['total_parralelized_upload_time'] + df['total_chunking_time'] + df['total_read_time_parrallelized'] + df['total_reconstruct_time'])
-                    
+            # ~ df['throughput'] = df.apply(lambda row: row['size_stored'] / (row['total_parralelized_upload_time'] + (0 if row['algorithm'] == 'hdfs_3_replication_c' else row['total_chunking_time']) + row['total_read_time_parrallelized'] + (0 if row['algorithm'] == 'hdfs_3_replication_c' else row['total_reconstruct_time'])),axis=1)
+        
             # Fetch the algorithm names and corresponding values
             for i, algorithm in enumerate(df['algorithm']):
                 size_stored_value = (df[metric_to_plot_bars].iloc[i] * 100) / total_possible_size_to_store
@@ -190,8 +191,9 @@ ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
 ax_top.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
 ax_bottom.set_xticklabels(('Sentinel-2', 'SWIM', 'IBM COS'), rotation=0, ha='center')
 # ~ ax2.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
-ax_bottom.set_ylim(0, 100)
+# ~ ax_bottom.set_ylim(0, 100)
 ax_top.set_ylim(0, 15)
+# ~ ax_top.set_ylim(0, 50)
 ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 

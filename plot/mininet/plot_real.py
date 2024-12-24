@@ -9,11 +9,12 @@ jour_sizes = {"PRD": {"onecol": 246.*pt, "twocol": 510.*pt},
 my_width = jour_sizes["PRD"]["twocol"]
 golden = (1 + 5 ** 0.5) / 2
 golden = (1 + 5 ** 0.5) / 1.5 # Smaller height
+golden = (1 + 5 ** 0.5) / 1.2 # Smaller height
 # ~ golden = (1 + 5 ** 0.5) / 2.4 # Higher height
 plt.rcParams.update({
-    'axes.labelsize': 14,       # Axis label font size
-    'legend.fontsize': 14,      # Legend font size
-    'xtick.labelsize': 14,      # X-axis tick label font size
+    'axes.labelsize': 16,       # Axis label font size
+    'legend.fontsize': 16,      # Legend font size
+    'xtick.labelsize': 18,      # X-axis tick label font size
 })
 
 # Data
@@ -30,10 +31,10 @@ fig, ax = plt.subplots(figsize=(my_width, my_width/(golden)))
 bars = plt.bar(methods, throughput, color=colors, width=bar_width, edgecolor='black')
 
 # Formatting
-plt.ylabel('Writing + Encoding\nThroughput (MB/s)', fontsize=12)
+plt.ylabel('Writing + Encoding\nThroughput (MB/s)', fontsize=14)
 plt.ylim(0, 35)
-plt.xticks(fontsize=10)
-plt.yticks(fontsize=10)
+plt.xticks(fontsize=14)
+plt.yticks(fontsize=14)
 # ~ plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()
 plt.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
