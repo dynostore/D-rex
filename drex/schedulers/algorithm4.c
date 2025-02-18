@@ -13,6 +13,7 @@
 #include "../utils/remove_node.h"
 #include "bogdan_balance_penalty.h"
 #include "algorithm1.h"
+#include "least_used_node.h"
 #include "random.h"
 #include "hdfs.h"
 #include "glusterfs.h"
@@ -1567,6 +1568,9 @@ int main(int argc, char *argv[]) {
     else if (algorithm == 1) {
         strcpy(alg_to_print, "alg1_c");
     }
+    else if (algorithm == 10) {
+        strcpy(alg_to_print, "least_used_node");
+    }
     else if (algorithm == 9) {
         strcpy(alg_to_print, "optimal_schedule");
     }
@@ -1928,6 +1932,9 @@ int main(int argc, char *argv[]) {
                     else if (algorithm == 1) {
                         min_storage(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, &size_stored);
                     }
+                    else if (algorithm == 10) {
+                        least_used_node(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, &size_stored);
+                    }
                     else if (algorithm == 9) {
                         optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print, &size_stored);
                     }
@@ -2014,6 +2021,9 @@ int main(int argc, char *argv[]) {
                             else if (algorithm == 1) {
                                 min_storage(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, &size_stored);
                             }
+                            else if (algorithm == 10) {
+                                least_used_node(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, &size_stored);
+                            }
                             else if (algorithm == 9) {
                                 optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print, &size_stored);
                             }
@@ -2086,6 +2096,9 @@ int main(int argc, char *argv[]) {
                 else if (algorithm == 1) {
                     min_storage(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, &size_stored);
                 }
+                else if (algorithm == 10) {
+                    least_used_node(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, &size_stored);
+                }
                 else if (algorithm == 9) {
                     optimal_schedule(current_number_of_nodes, nodes, reliability_threshold, data_to_store, &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, data_to_store_id, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print, &size_stored);
                 }
@@ -2132,6 +2145,9 @@ int main(int argc, char *argv[]) {
         }
         else if (algorithm == 1) {
             min_storage(current_number_of_nodes, nodes, current_target_reliability, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time, &size_stored);
+        }
+        else if (algorithm == 10) {
+            least_used_node(current_number_of_nodes, nodes, current_target_reliability, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_scheduling_time, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time, &size_stored);
         }
         else if (algorithm == 9) {
             optimal_schedule(current_number_of_nodes, nodes, current_target_reliability, sizes[i], &N, &K, &total_storage_used, &total_upload_time, &total_parralelized_upload_time, &number_of_data_stored, &total_N, closest_index, models, models_reconstruct, nearest_size, &list, i, max_N, &total_read_time_parrallelized, &total_read_time, combinations, total_combinations, &best_upload_time_to_print, &best_read_time_to_print, &size_stored);

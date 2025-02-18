@@ -120,12 +120,13 @@ df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_R
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('least_used_node', 'GreedyLeastUsed')
 
 # Filter out rows where the value is 0 in the column you want to plot
 df_data = df_data[(df_data['size_stored'] != 0) & (df_data['efficiency'] != 0)]
 
 # List of algorithms to filter out
-algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE']
+algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE', 'HDFS 3 Rep']
 filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
 
 # Set bar width and positions

@@ -95,7 +95,7 @@
 #~ python3 plot/mininet/plot_size_stored_and_efficiency_different_set_of_nodes.py _MEVA_merged_365_-1.0_25_max0
 
 #~ bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodes.csv drex/inputs/data/MEVA_merged.csv 250 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
-bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodesx1.5.csv drex/inputs/data/MEVA_merged.csv 325 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
+#~ bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nodesx1.5.csv drex/inputs/data/MEVA_merged.csv 325 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
 #~ bash ../Chicago/compare.sh output_drex_only.csv plot/drex_only/10_most_used_nodes_MEVA_merged_365_-1.0_250_max0/output_drex_only_10_most_used_nodes_MEVA_merged_250.csv
 #~ bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
 #~ bash ../Chicago/compare.sh output_drex_only.csv plot/drex_only/10_most_unreliable_nodes_MEVA_merged_365_-1.0_250_max0/output_drex_only_10_most_unreliable_nodes_MEVA_merged_250.csv
@@ -125,7 +125,6 @@ bash test/run_experiments_drex_only.sh 365 -1 drex/inputs/nodes/10_most_used_nod
 #~ bash test/run_experiments_drex_only.sh 365 0.9 drex/inputs/nodes/10_nodes_from_chicago.csv drex/inputs/data/MEVA_merged.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
 #~ bash test/run_experiments_drex_only.sh 365 0.999 drex/inputs/nodes/10_nodes_from_chicago.csv drex/inputs/data/MEVA_merged.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
 #~ bash test/run_experiments_drex_only.sh 365 0.99999 drex/inputs/nodes/10_nodes_from_chicago.csv drex/inputs/data/MEVA_merged.csv 1 drex/inputs/nodes/no_supplementary_nodes.csv 0 0 0 drex/
-
 
 
 

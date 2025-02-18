@@ -126,6 +126,7 @@ df_data['Algorithm'] = df_data['Algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_R
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS')
 df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
+df_data['Algorithm'] = df_data['Algorithm'].str.replace('least_used_node', 'GreedyLeastUsed')
 
 # Filter out rows where the value is 0 in the column you want to plot
 df_data = df_data[(df_data['size_stored'] != 0) & (df_data['efficiency'] != 0)]
@@ -182,10 +183,10 @@ fig, ax_bottom = plt.subplots(figsize=(my_width, my_width/(golden)))
 bar_width = 0.09
 
 # Colors, markers, and order to maintain color consistency across both subplots
-# ~ colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
-colors = ['#1f77b4', '#ffbf00', '#17becf', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
-# ~ order = [0, 2, 1, 3, 4, 5, 7, 6]
-order = [0, 2, 1, 3, 4, 6, 5]
+colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
+# ~ colors = ['#1f77b4', '#ffbf00', '#17becf', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
+order = [0, 2, 1, 7, 6, 3, 4, 5]
+# ~ order = [0, 2, 1, 3, 4, 6, 5]
 
 # Plot efficiency data on the top subplot
 # ~ for i, scheduler in enumerate(schedulers):

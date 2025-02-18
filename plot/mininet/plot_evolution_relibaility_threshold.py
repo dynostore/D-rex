@@ -145,6 +145,7 @@ for metric in metrics_to_plot:
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('random_c', 'Random')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_1_0_c', 'DAOS')
     df_data['Algorithm'] = df_data['Algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
+    df_data['Algorithm'] = df_data['Algorithm'].str.replace('least_used_node', 'GreedyLeastUsed')
 
     # Filter out rows where the value is 0 in the column you want to plot
     df_data = df_data[df_data[metric] != 0]

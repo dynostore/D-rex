@@ -107,7 +107,8 @@ files_to_move = [
     ("output_hdfs_rs_6_3_c_stats.csv", folder_path + "/hdfs_rs_6_3_c.csv"),
     ("output_optimal_schedule.csv", folder_path + "/output_optimal_schedule.csv"),
     ("output_optimal_schedule_stats.csv", folder_path + "/optimal_schedule.csv"),
-    ("output_random_c_stats.csv", folder_path + "/random_c.csv")
+    ("output_random_c_stats.csv", folder_path + "/random_c.csv"),
+    ("output_least_used_node_stats.csv", folder_path + "/least_used_node.csv")
 ]
 
 if mode == "mininet":
@@ -158,6 +159,7 @@ df1['algorithm'] = df1['algorithm'].str.replace('hdfs_rs_0_0_c', 'HDFS_RS_ADAPTA
 df1['algorithm'] = df1['algorithm'].str.replace('random_c', 'Random')
 df1['algorithm'] = df1['algorithm'].str.replace('daos_1_0_c', 'DAOS_1R')
 df1['algorithm'] = df1['algorithm'].str.replace('daos_2_0_c', 'DAOS_2R')
+df1['algorithm'] = df1['algorithm'].str.replace('least_used_node', 'GreedyLeastUsed')
 
 # Define colors
 colors = {
@@ -181,7 +183,8 @@ colors = {
     'vandermonders_3_2': 'red',
     'vandermonders_6_3': 'red',
     'vandermonders_10_4': 'red',
-    'GlusterFS': 'red'
+    'GlusterFS': 'red',
+    'GreedyLeastUsed': 'green'
 }
 
 # Function to get colors based on algorithm names
@@ -616,7 +619,7 @@ if 1 == 1:
         folder_path + "/daos_2_0_c.csv", folder_path + "/gluster_fs_6_4_c.csv",
         folder_path + "/glusterfs_0_0_c.csv", folder_path + "/hdfs_3_replication_c.csv",
         folder_path + "/hdfs_rs_0_0_c.csv", folder_path + "/hdfs_rs_3_2_c.csv",
-        folder_path + "/hdfs_rs_4_2_c.csv", folder_path + "/hdfs_rs_6_3_c.csv"
+        folder_path + "/hdfs_rs_4_2_c.csv", folder_path + "/hdfs_rs_6_3_c.csv", folder_path + "/least_used_node.csv"
     ]
 
     # Dictionary to store data for plotting
