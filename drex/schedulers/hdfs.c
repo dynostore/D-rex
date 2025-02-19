@@ -536,6 +536,7 @@ void hdfs_rs(int number_of_nodes, Node* nodes, float reliability_threshold, doub
                     // To track the chunks I a fill a temp struct with nodes
                     used_combinations[j] = nodes[set_of_nodes_chosen_temp[j]].id;
                 }
+                
                 //~ printf("\n");
                 
                 // Adding the chunks in the chosen nodes

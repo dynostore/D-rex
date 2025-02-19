@@ -58,7 +58,9 @@ double predict(LinearModel models, int n, int k, double nearest_size, double fil
     Y_pred = Y_pred * (file_size / nearest_size);
     Y_pred /= 1000;  // Convert to seconds
     
-    if (Y_pred < 0) { printf("predict < 0 with n %d k %d and file size %f\n", n, k, file_size); }
+    if (Y_pred < 0) {
+        //~ printf("predict < 0 with n %d k %d and file size %f\n", n, k, file_size);
+    }
     return Y_pred;
 }
 

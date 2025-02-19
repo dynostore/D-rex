@@ -171,14 +171,6 @@ void remove_chunk_from_node(int* index_node_used, int index_count, int chunk_id,
     free(copied_indices);
 }
 
-//~ void remove_shared_chunk_from_nodes(int* nodes_used, int num_of_nodes_used, int chunk_id, Node* nodes, int number_of_nodes) {
-    //~ // Remove the chunk from each node
-    //~ for (int i = 0; i < num_of_nodes_used; i++) {
-        //~ printf("i %d Remove chunk %d from node %d\n", i, chunk_id, nodes_used[i]);
-        //~ remove_chunk_from_node(nodes_used[i], chunk_id, nodes, number_of_nodes);
-    //~ }
-//~ }
-
 DataToPrint* create_node(int id, double size, double total_transfer_time, double transfer_time_parralelized, double chunking_time, int N, int K, double total_read_time, double read_time_parralelized, double reconstruct_time) {
     DataToPrint *new_node = (DataToPrint*)malloc(sizeof(DataToPrint));
     if (!new_node) {
@@ -1825,6 +1817,9 @@ int main(int argc, char *argv[]) {
     }
     
     /** Simulation main loop **/
+    
+    printf("data_size, chunk_size, N, K, chosen_nodes\n");
+    
     for (i = 0; i < count; i++) {
         
         if (reliability_threshold == -1) {
@@ -1835,9 +1830,9 @@ int main(int argc, char *argv[]) {
         add_time_to_print(&list_time, submit_times[i], size_stored);
        
         //~ if (i%250000 == 0) {
-        if (i%50000 == 0) {
-            printf("Data %d/%d of size %f\n", i, count, sizes[i]);
-        }
+        //~ if (i%50000 == 0) {
+            //~ printf("Data %d/%d of size %f\n", i, count, sizes[i]);
+        //~ }
         
         if (min_data_size > sizes[i]) {
             min_data_size = sizes[i];
@@ -1847,7 +1842,7 @@ int main(int argc, char *argv[]) {
         // If we reached a threshold for a new node, we add it to the list of combinations
         if (number_of_supplementary_nodes > 0 && i == supplementary_nodes_next_time[next_node_to_add_index]) {
             global_current_data_value = i;
-            printf("Adding node %d\n", nodes[number_of_initial_nodes + next_node_to_add_index].id);
+            //~ printf("Adding node %d\n", nodes[number_of_initial_nodes + next_node_to_add_index].id);
             current_number_of_nodes += 1;
             
             if (max_N_arg == 0) { // max_N is just the number of nodes if we don't use it
@@ -1981,7 +1976,7 @@ int main(int argc, char *argv[]) {
                 for (j = 0; j < number_of_initial_nodes; j++) {
                     if (tab[j] != -1 && submit_times[i] >= tab[j]) {
                         tab[j] = -1;
-                        printf("Node %d failed at time %d\n", j, submit_times[i]);
+                        //~ printf("Node %d failed at time %d\n", j, submit_times[i]);
                         for (k = 0; k < number_of_initial_nodes; k++) {
                             if (nodes[k].id == j) {
                                 nodes[k].add_after_x_jobs = -1;
@@ -2258,6 +2253,6 @@ int main(int argc, char *argv[]) {
     free(models);
     free(models_reconstruct);
     free(combinations);
-    printf("Success\n");
+    printf("sched time %f\n", total_scheduling_time);
     return EXIT_SUCCESS;
 }

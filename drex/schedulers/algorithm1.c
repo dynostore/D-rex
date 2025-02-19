@@ -78,7 +78,6 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
             if (min_N != -1) {
                 *N = min_N;
                 *K = min_K;
-                
                 double min_write_bandwidth = DBL_MAX;
                 double min_read_bandwidth = DBL_MAX;
                 
@@ -96,10 +95,14 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                 *total_storage_used += chunk_size*(*N);
                 *size_stored += size;
                 
+                //~ printf("%f, %f, %d, %d, ", size, chunk_size, *N, *K);
+
                 int* used_combinations = malloc(*N * sizeof(int));
                 
                 for (int j = 0; j < *N; j++) {
                     total_upload_time_to_print += chunk_size/nodes[j].write_bandwidth;
+                    
+                    //~ printf("%d ", nodes[j].id);
                     
                     /** Read **/
                     total_read_time_to_print += chunk_size/nodes[j].read_bandwidth;
@@ -115,6 +118,8 @@ void min_storage(int number_of_nodes, Node* nodes, float reliability_threshold, 
                     // To track the chunks I a fill a temp struct with nodes
                     used_combinations[j] = nodes[j].id;
                 }
+                
+                //~ printf("\n");
                 
                 // Adding the chunks in the chosen nodes
                 add_shared_chunks_to_nodes(used_combinations, *N, data_id, chunk_size, nodes, number_of_nodes, size);
