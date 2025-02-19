@@ -49,8 +49,8 @@ print(number_input_data, "input data")
 input_nodes_to_print = input_nodes.split('/')[-1]
 input_nodes_to_print = input_nodes_to_print.rsplit('.', 1)[0]
 
-reliability_thresholds = [0.9, 0.99, 0.999, 0.9999, 0.99999]
-# ~ reliability_thresholds = [0.9, 0.99, 0.999]
+# ~ reliability_thresholds = [0.9, 0.99, 0.999, 0.9999, 0.99999]
+reliability_thresholds = [0.9, 0.99999]
 # ~ reliability_thresholds = [0.9]
 
 # Create a plot figure
@@ -96,9 +96,10 @@ for idx, reliability_threshold in enumerate(reliability_thresholds):
     
     # Gather all data sizes across all schedulers to compute global_max
     all_data_sizes = []
-    
-    for file in files:
-        df = pd.read_csv(file)
+    print("folder_path", folder_path)
+    for f in files:
+        print("Read", f)
+        df = pd.read_csv(f)
         all_data_sizes.append(df[['Time', ' Size_stored']])
 
     combined_df = pd.concat(all_data_sizes)

@@ -183,10 +183,15 @@ fig, ax_bottom = plt.subplots(figsize=(my_width, my_width/(golden)))
 bar_width = 0.09
 
 # Colors, markers, and order to maintain color consistency across both subplots
-colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
+# ~ colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
 # ~ colors = ['#1f77b4', '#ffbf00', '#17becf', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
-order = [0, 2, 1, 7, 6, 3, 4, 5]
+# ~ order = [0, 2, 1, 7, 6, 3, 4, 5]
 # ~ order = [0, 2, 1, 3, 4, 6, 5]
+
+colors = ['#1f77b4', '#17becf','#ffbf00', '#7f7f7f', '#800000', '#d62728', '#ff7f0e', '#2ca02c']
+order = [0, 1, 2, 3, 4, 5, 6, 7]  # The new order for labels (C first, A second, B third)
+
+
 
 # Plot efficiency data on the top subplot
 # ~ for i, scheduler in enumerate(schedulers):
