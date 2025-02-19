@@ -111,7 +111,7 @@ df_data['Algorithm'] = df_data['Algorithm'].replace({
     'GlusterFS_c': 'EC(4,2)', 'hdfs_rs_3_2_c': 'EC(3,2)',
     'hdfs_rs_6_3_c': 'EC(6,3)', 'hdfs_rs_4_2_c': 'HDFS(4,2)',
     'hdfs_rs_0_0_c': 'HDFS_RS_ADAPTATIVE', 'random_c': 'Random',
-    'daos_1_0_c': 'DAOS', 'daos_2_0_c': 'DAOS_2R'
+    'daos_1_0_c': 'DAOS', 'daos_2_0_c': 'DAOS_2R', 'least_used_node': 'GreedyLeastUsed'
 })
 
 # Filter out rows where the value is 0 in the column you want to plot
