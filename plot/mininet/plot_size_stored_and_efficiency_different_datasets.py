@@ -48,8 +48,11 @@ metric_to_plot_bars = 'size_stored'
 metric_to_plot_efficiency = 'efficiency'
 
 # ~ colors = ['#1f77b4', '#ffbf00', '#17becf', '#2ca02c', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
-colors = ['#1f77b4', '#ffbf00', '#17becf', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
+# ~ colors = ['#1f77b4', '#ffbf00', '#17becf', '#800000', '#d62728', '#ff7f0e', '#7f7f7f']
 # ~ order = [0, 2, 1, 3, 4, 5, 7, 6]  # The new order for labels (C first, A second, B third)
+# ~ order = [0, 2, 1, 3, 4, 6, 7]  # The new order for labels (C first, A second, B third)
+
+colors = ['#1f77b4', '#17becf','#ffbf00', '#7f7f7f', '#800000', '#d62728', '#ff7f0e', '#2ca02c']
 order = [0, 2, 1, 3, 4, 6, 7]  # The new order for labels (C first, A second, B third)
 
 data = []
@@ -202,35 +205,7 @@ handles, labels = plt.gca().get_legend_handles_labels()
 # ~ fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
 fig.legend(legend_handles, [h.get_label() for h in legend_handles], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
 
-# ~ ax1.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
-# ~ ax2.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper center', bbox_to_anchor=(0.5, -0.11), fancybox=False, ncol=4)
-
-# ~ # Create custom handles for ax1 without hatching
-# ~ custom_handles = []
-# ~ for idx in order:
-    # ~ if isinstance(handles[idx], BarContainer):
-        # ~ # Create a plain patch without hatching for the legend
-        # ~ plain_patch = mpatches.Patch(facecolor=handles[idx].patches[0].get_facecolor(), edgecolor=handles[idx].patches[0].get_edgecolor())
-        # ~ custom_handles.append(plain_patch)
-    # ~ else:
-        # ~ custom_handles.append(handles[idx])
-# ~ # Legend for ax2 (without hatches)
-# ~ ax1.legend(custom_handles, 
-           # ~ [labels[idx] for idx in order], 
-           # ~ loc='upper center', 
-           # ~ bbox_to_anchor=(0.5, -0.11), 
-           # ~ fancybox=False, ncol=4)
-
-# Add grids
-# ~ ax1.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
-# ~ ax2.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
-
-# Adjust the layout for better visualization
-# ~ fig_storage.tight_layout()
-# ~ fig_throughput.tight_layout()
 plt.tight_layout()
 
 # Save the figures as PDFs
-# ~ fig_storage.savefig("plot/combined/dataset_evolution_storage" + folder_suffix + ".pdf")
-# ~ fig_throughput.savefig("plot/combined/dataset_evolution_throughput" + folder_suffix + ".pdf")
 plt.savefig("plot/combined/dataset_evolution_throughput_and_storage" + folder_suffix + ".pdf")
