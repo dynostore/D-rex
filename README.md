@@ -1,4 +1,4 @@
-# Reproducibility repository for the paper "D-Rex: Adaptive Erasure Coding for Efficient Data Storage on Wide-Area Heterogeneous Storage Systems"
+# Reproducibility repository for the paper "D-Rex: Heterogeneity-Aware Reliability Framework and Adaptive Algorithms for Distributed Storage"
 
 This repository provides the source code, input data, and simulation necessary to reproduce the results presented in the D-Rex paper. You can regenerate the figures and tables from the paper using the provided simulation and plotting scripts.
 
@@ -9,9 +9,9 @@ Clone the repository using the following command:
 
 ## Reproducing Results
 
-To reproduce Figures 5, 7, 8, 9 and Tables IV and V, run the following command:
+To reproduce Figures 5, 7, 8, 9 and Tables V and VI, run the following command:
 ```bash
-~/D-rex$ bash test/all_drex_only.sh
+~/D-rex$ bash test/reproducibility.sh
 ```
 Results will be generated in the folder: D-rex/plot/combined
 
@@ -58,14 +58,14 @@ Run experiments with different datasets:
 ~/D-rex$ python3 plot/mininet/plot_size_stored_and_efficiency_different_datasets.py 10_most_used_nodes_-1
 ```
 
-### Tables IV V:
-Run experiments to analyze node failure and reliability:
+### Tables V VI:
+Run experiments to analyze node failure and reliability. The standard output then prints the results:
 ```bash
 ~/D-rex$ bash test/run_experiments_drex_only.sh 365 0.9 drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250 drex/inputs/nodes/no_supplementary_nodes.csv 3 0 0 drex/inputs/nodes/10_most_unreliable_nodes_failure_MEVA_merged_250.csv
-~/D-rex$ python3 plot/mininet/event_plot_breaking_point_all_reliability.py 365 drex_only individual drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250 0 3
+~/D-rex$ mkdir -p plot/drex_only/10_most_unreliable_nodes_MEVA_merged_365_0.9_250_max0_node_removal/
+~/D-rex$ mv *_times.csv plot/drex_only/10_most_unreliable_nodes_MEVA_merged_365_0.9_250_max0_node_removal/
 ~/D-rex$ bash test/run_experiments_drex_only.sh 365 0.99999 drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250 drex/inputs/nodes/no_supplementary_nodes.csv 3 0 0 drex/inputs/nodes/10_most_unreliable_nodes_failure_MEVA_merged_250.csv
+~/D-rex$ mkdir -p plot/drex_only/10_most_unreliable_nodes_MEVA_merged_365_0.99999_250_max0_node_removal/
+~/D-rex$ mv *_times.csv plot/drex_only/10_most_unreliable_nodes_MEVA_merged_365_0.99999_250_max0_node_removal
 ~/D-rex$ python3 plot/mininet/event_plot_breaking_point_all_reliability.py 365 drex_only individual drex/inputs/nodes/10_most_unreliable_nodes.csv drex/inputs/data/MEVA_merged.csv 250 0 3
 ```
-The standard output then prints the results.
-
-
