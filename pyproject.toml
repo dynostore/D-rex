@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 name = "drex"
 version = "0.0.246"
 authors = [
-  { name="Maxime, Dante, Haochen", email="dantsanc@pa.uc3m.es" },
+  { name="a", email="a" },
 ]
 description = "DRex package"
 readme = "README.md"
