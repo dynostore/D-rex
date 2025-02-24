@@ -1,4 +1,3 @@
-
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,6 +9,7 @@ from matplotlib.ticker import LogLocator
 from functools import partial
 import matplotlib.patches as mpatches
 from matplotlib.container import BarContainer  # Import BarContainer
+from matplotlib.patches import Patch
 
 def create_folder(folder_path):
     try:
@@ -250,12 +250,11 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
     # Renaming dictionary (for CSV file base names)
     rename_dict = {
         'alg1_c': 'GreedyMinStorage', 'alg4_1': 'D-Rex SC',
-        'hdfs_3_replication_c': '3 Replication', 'hdfsrs_3_2': 'EC(3,2)',
-        'hdfsrs_6_3': 'EC(6,3)', 'glusterfs_6_4': 'EC(4,2)',
+        'hdfs_3_replication_c': '3 Replication',
         'Min_Storage_c': 'Min_Storage', 'alg_bogdan': 'D-Rex LB',
-        'glusterfs_6_4_c': 'EC(4,2)', 'glusterfs_0_0_c': 'EC(4,2)',
-        'GlusterFS_c': 'EC(4,2)', 'hdfs_rs_3_2_c': 'EC(3,2)',
-        'hdfs_rs_6_3_c': 'EC(6,3)', 'hdfs_rs_4_2_c': 'HDFS(4,2)',
+        'gluster_fs_6_4_c': 'EC(4,2)',
+        'hdfs_rs_3_2_c': 'EC(3,2)',
+        'hdfs_rs_6_3_c': 'EC(6,3)',
         'hdfs_rs_0_0_c': 'HDFS_RS_ADAPTATIVE', 'random_c': 'Random',
         'daos_1_0_c': 'DAOS', 'daos_2_0_c': 'DAOS_2R', 'least_used_node': 'GreedyLeastUsed'
     }
@@ -283,9 +282,11 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
         return
     
     # Arrange subplots: for instance, 2 columns.
-    ncols = 2
-    nrows = int(np.ceil(n_folders / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 4))
+    # ~ ncols = 2
+    ncols = 1
+    # ~ nrows = int(np.ceil(n_folders / ncols))
+    nrows = 4
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 2.4))
     if n_folders == 1:
         axes = [axes]
     else:
@@ -334,16 +335,16 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
         # Plot D-Rex SC bars (left side of group).
         bars_sc = ax.bar(x - offset, sc_values, width=bar_width,
                          color=[algorithm_colors[alg] for alg in ordered_algs],
-                         edgecolor='black', linewidth=0.5, label='D-Rex SC')
+                         edgecolor='black', linewidth=1)
         # Plot D-Rex LB bars (right side of group) with a hatch pattern.
         bars_lb = ax.bar(x + offset, lb_values, width=bar_width,
                          color=[algorithm_colors[alg] for alg in ordered_algs],
-                         edgecolor='black', linewidth=0.5, hatch='//', label='D-Rex LB')
+                         edgecolor='black', linewidth=1, hatch='//')
         
         # Draw a horizontal line at 0.
         ax.axhline(0, color='black', linewidth=1)
         # Set uniform y-axis limits.
-        ax.set_ylim(-2, 2.5)
+        ax.set_ylim(-3, 3)
         # Set x-axis ticks at group centers.
         ax.set_xticks(x)
         # Only show x-axis tick labels on bottom row.
@@ -376,6 +377,7 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
         else:
             title = folder
         ax.set_title(title)
+        ax.set_ylabel("")
         
         # Optionally, add a legend on the first subplot.
         if idx == 0:
@@ -385,7 +387,16 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
     for j in range(n_folders, nrows * ncols):
         fig.delaxes(axes[j])
     
-    fig.suptitle('Combined Improvement of D-Rex SC and LB over Other Algorithms', fontsize=16)
+    # Add one global y-axis label, centered on the left.
+    fig.text(0.04, 0.5, 'Avg Throughput Difference (MB/s)', va='center', rotation='vertical', fontsize=12)
+    
+    # Create a combined legend for both D-Rex SC and D-Rex LB, placed at the bottom.
+    from matplotlib.patches import Patch
+    legend_handles = [
+        Patch(facecolor='white', edgecolor='black', linewidth=0.5, label='D-Rex SC'),
+        Patch(facecolor='white', edgecolor='black', linewidth=0.5, hatch='//', label='D-Rex LB')
+    ]
+    fig.legend(handles=legend_handles, loc='lower center', ncol=2, bbox_to_anchor=(0.54, -0.04), fancybox=False)
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.savefig(out_filename)
     plt.close(fig)
@@ -398,3 +409,232 @@ create_improvement_figure(improvements_alg_bogdan, "alg_bogdan.csv", os.path.joi
 
 # Create the combined one
 create_combined_improvement_figure(improvements_alg4, improvements_alg_bogdan, "plot/combined/combined_throughput_different_set_of_nodes_improvements_drex.pdf")
+
+
+
+# For the different datasets
+def create_combined_improvement_figure_datasets(improvements_sc, improvements_lb, out_filename):
+    # Renaming dictionary for CSV file base names
+    rename_dict = {
+        'alg1_c': 'GreedyMinStorage', 'alg4_1': 'D-Rex SC',
+        'hdfs_3_replication_c': '3 Replication',
+        'Min_Storage_c': 'Min_Storage', 'alg_bogdan': 'D-Rex LB',
+        'gluster_fs_6_4_c': 'EC(4,2)',
+        'hdfs_rs_3_2_c': 'EC(3,2)',
+        'hdfs_rs_6_3_c': 'EC(6,3)',
+        'hdfs_rs_0_0_c': 'HDFS_RS_ADAPTATIVE', 'random_c': 'Random',
+        'daos_1_0_c': 'DAOS', 'daos_2_0_c': 'DAOS_2R', 'least_used_node': 'GreedyLeastUsed'
+    }
+    # Exclude these algorithms (after renaming)
+    exclude_list = ['D-Rex SC', 'D-Rex LB', 'HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE', '3 Replication']
+    # Desired order from left to right
+    desired_order = ['D-Rex SC', 'D-Rex LB', 'GreedyMinStorage', 'GreedyLeastUsed',
+                     'EC(3,2)', 'EC(4,2)', 'EC(6,3)', 'DAOS']
+    # Color mapping (the two blues for the Drex's, yellow for GreedyMinStorage, etc.)
+    algorithm_colors = {
+        'GreedyMinStorage': '#ffbf00',
+        'GreedyLeastUsed': '#7f7f7f',
+        'EC(3,2)': '#800000',
+        'EC(4,2)': '#d62728',
+        'EC(6,3)': '#ff7f0e',
+        'DAOS': '#2ca02c'
+    }
+    
+    # Determine common folders (keys) present in both dictionaries.
+    common_folders = sorted(set(improvements_sc.keys()).intersection(set(improvements_lb.keys())))
+    n_folders = len(common_folders)
+    if n_folders == 0:
+        print("No common folder data found between the two improvement dictionaries.")
+        return
+    
+    # Arrange subplots in a grid (here we use 2 columns)
+    ncols = 2
+    nrows = int(np.ceil(n_folders / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 4))
+    if n_folders == 1:
+        axes = [axes]
+    else:
+        axes = axes.flatten()
+    
+    for idx, folder in enumerate(common_folders):
+        ax = axes[idx]
+        # Retrieve improvement dictionaries for this folder.
+        diffs_sc = improvements_sc[folder]
+        diffs_lb = improvements_lb[folder]
+        
+        # Process keys: remove ".csv" and rename using rename_dict.
+        renamed_sc = {}
+        for file_name, val in diffs_sc.items():
+            base = file_name.replace('.csv', '')
+            renamed = rename_dict.get(base, base)
+            if renamed in exclude_list:
+                continue
+            renamed_sc[renamed] = val
+        renamed_lb = {}
+        for file_name, val in diffs_lb.items():
+            base = file_name.replace('.csv', '')
+            renamed = rename_dict.get(base, base)
+            if renamed in exclude_list:
+                continue
+            renamed_lb[renamed] = val
+        
+        # Determine set of algorithms to plot (ordered by desired_order)
+        all_algs = set(renamed_sc.keys()).union(set(renamed_lb.keys()))
+        # ~ print(all_algs)
+        ordered_algs = [alg for alg in desired_order if alg in all_algs]
+        # ~ print(ordered_algs)
+        M = len(ordered_algs)
+        if M == 0:
+            print(f"No valid algorithms for folder {folder}")
+            continue
+        
+        # X positions for groups
+        x = np.arange(M)
+        bar_width = 0.35  # width for each bar
+        offset = bar_width / 2.0  # offset for side-by-side bars
+        
+        # Get improvement values (or NaN if missing)
+        sc_values = [renamed_sc.get(alg, np.nan) for alg in ordered_algs]
+        lb_values = [renamed_lb.get(alg, np.nan) for alg in ordered_algs]
+        
+        # Plot D-Rex SC bars (left side)
+        ax.bar(x - offset, sc_values, width=bar_width,
+               color=[algorithm_colors[alg] for alg in ordered_algs],
+               edgecolor='black', linewidth=0.5, label='D-Rex SC')
+        # Plot D-Rex LB bars (right side) with hatch pattern
+        ax.bar(x + offset, lb_values, width=bar_width,
+               color=[algorithm_colors[alg] for alg in ordered_algs],
+               edgecolor='black', linewidth=0.5, hatch='//', label='D-Rex LB')
+        
+        # Draw a horizontal line at 0 and set uniform y-axis limits.
+        ax.axhline(0, color='black', linewidth=1)
+        ax.set_ylim(-3, 3)
+        ax.set_xticks(x)
+        # Only show x-axis tick labels on the bottom row.
+        if idx < (nrows - 1) * ncols:
+            ax.set_xticklabels([])
+        else:
+            ax.set_xticklabels(ordered_algs, rotation=45, ha='right')
+        
+        # Set subplot title based on folder name contents.
+        folder_lower = folder.lower()
+        print("folder_lower:", folder_lower)
+        if "sentinal" in folder_lower:
+            title = "Sentinel-2"
+        elif "fb" in folder_lower:
+            title = "SWIM"
+        elif "ibm" in folder_lower:
+            title = "IBM COS"
+        else:
+            title = folder
+        ax.set_title(title)
+        # Remove individual y-axis labels (global one will be added)
+        ax.set_ylabel("")
+    
+    # Remove any unused axes.
+    for j in range(n_folders, nrows * ncols):
+        fig.delaxes(axes[j])
+        
+    # ~ # If the last row contains only one subplot, center it horizontally.
+    # ~ # Force-center the third subplot
+    # ~ if n_folders == 3:
+        # ~ third_ax = axes[2]  # Third subplot (index 2)
+        # ~ pos = third_ax.get_position()
+        # ~ new_left = 0.5 - pos.width / 2  # Center it horizontally
+        # ~ third_ax.set_position([new_left, pos.y0, pos.width, pos.height])    
+        
+    # Add one global y-axis label (centered on the left).
+    fig.text(-0.01, 0.5, 'Avg Throughput Difference (MB/s)', va='center',
+             rotation='vertical', fontsize=12)
+    
+    # Create a combined legend for both D-Rex SC and D-Rex LB, placed at the bottom.
+    from matplotlib.patches import Patch
+    legend_handles = [
+        Patch(facecolor='white', edgecolor='black', linewidth=0.5, label='D-Rex SC'),
+        Patch(facecolor='white', edgecolor='black', linewidth=0.5, hatch='//', label='D-Rex LB')
+    ]
+    fig.legend(handles=legend_handles, loc='lower center', ncol=2, bbox_to_anchor=(0.54, -0.03), fancybox=False)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(out_filename)
+    plt.close(fig)
+
+data_folder_sentinal = 'plot/drex_only/10_most_used_nodes_processed_sentinal-2_256351_data_365_-1.0_1_max0'
+data_folder_fb       = 'plot/drex_only/10_most_used_nodes_FB_merged_8337_data_365_-1.0_1_max0'
+data_folder_ibm      = 'plot/drex_only/10_most_used_nodes_IBM_385707_data_365_-1.0_1_max0'
+folder_list = [data_folder_sentinal, data_folder_fb, data_folder_ibm]
+
+improvements_sc_datasets = {}  # For D-Rex SC (alg4_1.csv as reference)
+improvements_lb_datasets = {}  # For D-Rex LB (alg_bogdan.csv as reference)
+
+for folder in folder_list:
+    if not os.path.isdir(folder):
+        print(f"Folder not found: {folder}")
+        continue
+    csv_files = {}
+    # Read all CSV files except those starting with 'output_drex_only_'
+    for file in os.listdir(folder):
+        if file.endswith('.csv') and not file.startswith('output_drex_only_') and not file.startswith('output_optimal_schedule') and not file.startswith('optimal_schedule'):
+            file_path = os.path.join(folder, file)
+            # ~ print("Open", file_path)
+
+            # Read the CSV
+            df_temp = pd.read_csv(file_path)
+
+            # Replace inf, -inf, and NaN with 0 in each relevant column
+            for col in ['Transfer_Time_Parralelized', 'Chunking_Time', 'Read_Time_Parralelized', 'Reconstruct_Time']:
+                df_temp[col] = pd.to_numeric(df_temp[col], errors='coerce').replace([np.inf, -np.inf], 0).fillna(0)
+
+            df_temp['Reconstruct_Time'] = df_temp['Reconstruct_Time'].replace([np.inf, -np.inf], 0)
+            df_temp['Chunking_Time'] = df_temp['Chunking_Time'].replace([np.inf, -np.inf], 0)
+
+            df_temp['throughput'] = df_temp['Size'] / (df_temp['Transfer_Time_Parralelized'] + df_temp['Chunking_Time'] + df_temp['Read_Time_Parralelized'] + df_temp['Reconstruct_Time'])
+            
+            # Final replacement for the entire DataFrame to catch any missed infinities or NaNs
+            df_temp = df_temp.replace([np.inf, -np.inf], 0).fillna(0)
+
+            # Store the cleaned DataFrame
+            csv_files[file] = df_temp.copy()  # Explicit copy to ensure it's fully updated
+    
+    # Compute improvements for D-Rex SC using "alg4_1.csv" as the reference.
+    if 'alg4_1.csv' in csv_files:
+        ref_df = csv_files['alg4_1.csv']
+        diffs_sc = {}
+        for file_name, df_other in csv_files.items():
+            if file_name == 'alg4_1.csv':
+                continue
+            # ~ print("Open", file_name)
+            n_lines = min(len(ref_df), len(df_other))
+            throughput_ref = ref_df['throughput'].iloc[:n_lines].values
+            throughput_other = df_other['throughput'].iloc[:n_lines].values
+
+            # Print out any problematic rows:
+            for i, (ref_val, other_val) in enumerate(zip(throughput_ref, throughput_other)):
+                if not (np.isfinite(ref_val) and np.isfinite(other_val)):
+                    print(f"Problem at row {i}: throughput_ref = {ref_val}, throughput_other = {other_val}")
+
+            diff = throughput_ref - throughput_other
+            avg_diff = diff.mean()
+            diffs_sc[file_name] = avg_diff
+        improvements_sc_datasets[folder] = diffs_sc
+    else:
+        print(f"Reference file alg4_1.csv not found in folder: {folder}")
+    
+    # Compute improvements for D-Rex LB using "alg_bogdan.csv" as the reference.
+    if 'alg_bogdan.csv' in csv_files:
+        ref_df = csv_files['alg_bogdan.csv']
+        diffs_lb = {}
+        for file_name, df_other in csv_files.items():
+            if file_name == 'alg_bogdan.csv':
+                continue
+            n_lines = min(len(ref_df), len(df_other))
+            throughput_ref = ref_df['throughput'].iloc[:n_lines].values
+            throughput_other = df_other['throughput'].iloc[:n_lines].values
+            diff = throughput_ref - throughput_other
+            avg_diff = diff.mean()
+            diffs_lb[file_name] = avg_diff
+        improvements_lb_datasets[folder] = diffs_lb
+    else:
+        print(f"Reference file alg_bogdan.csv not found in folder: {folder}")
+
+create_combined_improvement_figure_datasets(improvements_sc_datasets, improvements_lb_datasets,
+                                   "plot/combined/combined_improvements_drex_datasets.pdf")

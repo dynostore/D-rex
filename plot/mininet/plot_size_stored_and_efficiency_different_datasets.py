@@ -162,6 +162,7 @@ x = np.arange(len(data_set)) * (len(unique_algorithms) * bar_width + bar_spacing
 
 if mode != "all":
     # Only plot storage data
+    golden = (1 + 5 ** 0.5) / 1.7
     fig, ax_storage = plt.subplots(figsize=(my_width, my_width / (golden)))
 
     for i, scheduler in enumerate(unique_algorithms):
@@ -175,7 +176,7 @@ if mode != "all":
     ax_storage.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
     handles, labels = plt.gca().get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.54, -0.23), fancybox=False, ncol=3)
     
     plt.tight_layout()
     plt.savefig("plot/combined/dataset_evolution_storage_only" + folder_suffix + ".pdf")
