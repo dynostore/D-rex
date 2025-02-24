@@ -19,6 +19,7 @@ def create_folder(folder_path):
 
 # Prompt the user for the folder suffix
 folder_suffix = sys.argv[1]  # This will be the part of the folder name after the set of nodes
+mode = sys.argv[2]
 
 if folder_suffix == "_MEVA_merged_365_-1.0_25_max0":
     total_possible_size_to_store = 487000*25
@@ -122,15 +123,10 @@ df_data['Algorithm'] = df_data['Algorithm'].replace({
 df_data = df_data[(df_data['size_stored'] != 0) & (df_data['throughput'] != 0)]
 
 # Filter out some algorithms
-# ~ algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE']
 algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE', '3 Replication']
 filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
 
-# Separate the data into storage and throughput
-# ~ fig_storage, ax1 = plt.subplots(figsize=(my_width, my_width/golden))
-# ~ fig_throughput, ax2 = plt.subplots(figsize=(my_width, my_width/golden))
-
-fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width/(golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
+# ~ fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width/(golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
 
 bar_width = 0.09
 bar_spacing = 0.3  # Adjust spacing between sets of nodes
@@ -165,54 +161,124 @@ for set_of_nodes, group in grouped:
 sets_of_nodes = filtered_df['Set of Nodes'].unique().tolist()
 x = np.arange(len(sets_of_nodes)) * (len(unique_algorithms) * bar_width + bar_spacing)
 
-# Plot efficiency data on the top subplot
-for i, scheduler in enumerate(unique_algorithms):
-    bars = ax_top.bar(x + i * bar_width, [throughput_data[set_of_node][i] for set_of_node in sets_of_nodes], 
-                      width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
 
-legend_handles = []
+if mode != "all":
+    # Only plot storage when mode is 'all'
+    golden = (1 + 5 ** 0.5) / 2.2
+    fig, ax = plt.subplots(figsize=(my_width, my_width / golden))
 
-for i, set_of_node in enumerate(sets_of_nodes):
-    optimal_throughput = throughput_optimal_all[i]  # Use index since throughput_optimal_all is a list
-    oracle_line = ax_top.hlines(
-        y=optimal_throughput, 
-        xmin=x[i] - bar_width / 2,  # Start slightly before the first bar
-        xmax=x[i] + (len(unique_algorithms) - 0.5) * bar_width,  # End slightly after the last bar
-        color='blue', 
-        linewidth=2, 
-        linestyle='--', 
-        label='Ideal Throughput' if i == 0 else None  # Add legend only once
-    )
-    if i == 0:  # Add the first "Oracle" line to the legend
-        legend_handles.append(oracle_line)
+    bar_width = 0.09
+    bar_spacing = 0.3
+
+    sets_of_nodes = filtered_df['Set of Nodes'].unique().tolist()
+    x = np.arange(len(sets_of_nodes)) * (len(unique_algorithms) * bar_width + bar_spacing)
+
+    # Plot storage data
+    for i, scheduler in enumerate(unique_algorithms):
+        ax.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes],
+               width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
+
+    ax.set_ylabel('Proportion of Data Sizes Stored (\%)')
+    ax.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+    ax.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Homogeneous'), rotation=0, ha='center')
+    ax.set_ylim(0, 100)
+    ax.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+
+    # Add legend
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.41), fancybox=False, ncol=3)
+
+    plt.tight_layout()
+    plt.savefig("plot/combined/nodes_evolution_storage" + folder_suffix + ".pdf")
+
+else:
+    # Plot both throughput and storage
+    fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width / golden), sharex=True,
+                                             gridspec_kw={'height_ratios': [1, 1]})
+    x = np.arange(len(sets_of_nodes)) * (len(unique_algorithms) * bar_width + bar_spacing)
+
+    # Plot throughput data on top
+    for i, scheduler in enumerate(unique_algorithms):
+        ax_top.bar(x + i * bar_width, [throughput_data[set_of_node][i] for set_of_node in sets_of_nodes],
+                   width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
+
+    # Plot optimal throughput lines
+    for i, set_of_node in enumerate(sets_of_nodes):
+        ax_top.hlines(y=throughput_optimal_all[i], xmin=x[i] - bar_width / 2,
+                      xmax=x[i] + (len(unique_algorithms) - 0.5) * bar_width,
+                      color='blue', linewidth=2, linestyle='--', label='Ideal Throughput' if i == 0 else None)
+
+    # Plot storage data on bottom
+    for i, scheduler in enumerate(unique_algorithms):
+        ax_bottom.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes],
+                      width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
+
+    # Set labels and formatting
+    ax_top.set_ylabel('Throughput (MB/s)')
+    ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
+    ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+    ax_bottom.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Homogeneous'), rotation=0, ha='center')
+
+    ax_top.set_ylim(0, 15)
+    ax_bottom.set_ylim(0, 100)
+    ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+    ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+
+    # Add legend
+    handles, labels = ax_top.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
+
+    plt.tight_layout()
+    plt.savefig("plot/combined/nodes_evolution_throughput_and_storage" + folder_suffix + ".pdf")
+
+
+
+
+
+# ~ # Plot efficiency data on the top subplot
+# ~ for i, scheduler in enumerate(unique_algorithms):
+    # ~ bars = ax_top.bar(x + i * bar_width, [throughput_data[set_of_node][i] for set_of_node in sets_of_nodes], 
+                      # ~ width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
+
+# ~ legend_handles = []
+
+# ~ for i, set_of_node in enumerate(sets_of_nodes):
+    # ~ optimal_throughput = throughput_optimal_all[i]  # Use index since throughput_optimal_all is a list
+    # ~ oracle_line = ax_top.hlines(
+        # ~ y=optimal_throughput, 
+        # ~ xmin=x[i] - bar_width / 2,  # Start slightly before the first bar
+        # ~ xmax=x[i] + (len(unique_algorithms) - 0.5) * bar_width,  # End slightly after the last bar
+        # ~ color='blue', 
+        # ~ linewidth=2, 
+        # ~ linestyle='--', 
+        # ~ label='Ideal Throughput' if i == 0 else None  # Add legend only once
+    # ~ )
+    # ~ if i == 0:  # Add the first "Oracle" line to the legend
+        # ~ legend_handles.append(oracle_line)
 
     
-# Plot storage data on the bottom subplot
-for i, scheduler in enumerate(unique_algorithms):
-    print(i, scheduler)
-    bars = ax_bottom.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], 
-                         width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
-    legend_handles.append(bars)
+# ~ # Plot storage data on the bottom subplot
+# ~ for i, scheduler in enumerate(unique_algorithms):
+    # ~ print(i, scheduler)
+    # ~ bars = ax_bottom.bar(x + i * bar_width, [storage_data[set_of_node][i] for set_of_node in sets_of_nodes], 
+                         # ~ width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
+    # ~ legend_handles.append(bars)
 
-# Set labels and limits
-ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
-ax_top.set_ylabel('Throughput (MB/s)')
-ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax_top.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax_bottom.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Homogeneous'), rotation=0, ha='center')
-# ~ ax2.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
-ax_bottom.set_ylim(0, 100)
-ax_top.set_ylim(0, 15)
-ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
-ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+# ~ # Set labels and limits
+# ~ ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
+# ~ ax_top.set_ylabel('Throughput (MB/s)')
+# ~ ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+# ~ ax_top.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+# ~ ax_bottom.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Homogeneous'), rotation=0, ha='center')
+# ~ ax_bottom.set_ylim(0, 100)
+# ~ ax_top.set_ylim(0, 15)
+# ~ ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+# ~ ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
-# Create custom handles for ax1 without hatching
-handles, labels = plt.gca().get_legend_handles_labels()
-# ~ fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
-fig.legend(legend_handles, [h.get_label() for h in legend_handles], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
-plt.tight_layout()
+# ~ # Create custom handles for ax1 without hatching
+# ~ handles, labels = plt.gca().get_legend_handles_labels()
+# ~ fig.legend(legend_handles, [h.get_label() for h in legend_handles], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
+# ~ plt.tight_layout()
 
-# Save the figures as PDFs
-# ~ fig_storage.savefig("plot/combined/nodes_evolution_storage" + folder_suffix + ".pdf")
-# ~ fig_throughput.savefig("plot/combined/nodes_evolution_throughput" + folder_suffix + ".pdf")
-plt.savefig("plot/combined/nodes_evolution_throughput_and_storage" + folder_suffix + ".pdf")
+# ~ # Save the figures as PDFs
+# ~ plt.savefig("plot/combined/nodes_evolution_throughput_and_storage" + folder_suffix + ".pdf")

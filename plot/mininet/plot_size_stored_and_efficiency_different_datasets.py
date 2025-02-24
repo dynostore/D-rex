@@ -20,6 +20,7 @@ def create_folder(folder_path):
 
 # Prompt the user for the folder suffix
 folder_suffix = sys.argv[1]  # This will be the part of the folder name after the set of nodes
+mode = sys.argv[2]
 
 total_possible_size_to_store = 487000*250
 
@@ -123,9 +124,7 @@ algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_R
 filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
 
 # Separate the data into storage and throughput
-# ~ fig_storage, ax1 = plt.subplots(figsize=(my_width, my_width/golden))
-# ~ fig_throughput, ax2 = plt.subplots(figsize=(my_width, my_width/golden))
-fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width/(golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
+# ~ fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width/(golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
 
 bar_width = 0.09
 bar_spacing = 0.3  # Adjust spacing between sets of nodes
@@ -160,52 +159,112 @@ for data_set, group in grouped:
 data_set = filtered_df['Data Set'].unique().tolist()
 x = np.arange(len(data_set)) * (len(unique_algorithms) * bar_width + bar_spacing)
 
-# Plot efficiency data on the top subplot
-for i, scheduler in enumerate(unique_algorithms):
-    bars = ax_top.bar(x + i * bar_width, [throughput_data[data_se][i] for data_se in data_set], 
-                      width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
-legend_handles = []
-for i, set_of_node in enumerate(data_set):
-    optimal_throughput = throughput_optimal_all[i]  # Use index since throughput_optimal_all is a list
-    oracle_line = ax_top.hlines(
-        y=optimal_throughput, 
-        xmin=x[i] - bar_width / 2,  # Start slightly before the first bar
-        xmax=x[i] + (len(unique_algorithms) - 0.5) * bar_width,  # End slightly after the last bar
-        color='blue', 
-        linewidth=2, 
-        linestyle='--', 
-        label='Ideal Throughput' if i == 0 else None  # Add legend only once
-    )
-    if i == 0:  # Add the first "Oracle" line to the legend
-        legend_handles.append(oracle_line)
+
+if mode != "all":
+    # Only plot storage data
+    fig, ax_storage = plt.subplots(figsize=(my_width, my_width / (golden)))
+
+    for i, scheduler in enumerate(unique_algorithms):
+        bars = ax_storage.bar(x + i * bar_width, [storage_data[data_se][i] for data_se in data_set], 
+                              width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
+
+    ax_storage.set_ylabel('Proportion of Data Sizes Stored (\%)')
+    ax_storage.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+    ax_storage.set_xticklabels(('Sentinel-2', 'SWIM', 'IBM COS'), rotation=0, ha='center')
+    ax_storage.set_ylim(0, 100)
+    ax_storage.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+
+    handles, labels = plt.gca().get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
     
-# Plot storage data on the bottom subplot
-for i, scheduler in enumerate(unique_algorithms):
-    bars = ax_bottom.bar(x + i * bar_width, [storage_data[data_se][i] for data_se in data_set], 
-                         width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
-    legend_handles.append(bars)
-# ~ # Plot storage data
+    plt.tight_layout()
+    plt.savefig("plot/combined/dataset_evolution_storage_only" + folder_suffix + ".pdf")
+
+else:
+    # Plot both throughput and storage
+    fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width / (golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
+    
+    # Plot efficiency data
+    for i, scheduler in enumerate(unique_algorithms):
+        ax_top.bar(x + i * bar_width, [throughput_data[data_se][i] for data_se in data_set], 
+                   width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
+
+    legend_handles = []
+    for i, set_of_node in enumerate(data_set):
+        optimal_throughput = throughput_optimal_all[i]
+        oracle_line = ax_top.hlines(
+            y=optimal_throughput, 
+            xmin=x[i] - bar_width / 2, 
+            xmax=x[i] + (len(unique_algorithms) - 0.5) * bar_width, 
+            color='blue', linewidth=2, linestyle='--', label='Ideal Throughput' if i == 0 else None
+        )
+        if i == 0:
+            legend_handles.append(oracle_line)
+
+    # Plot storage data
+    for i, scheduler in enumerate(unique_algorithms):
+        bars = ax_bottom.bar(x + i * bar_width, [storage_data[data_se][i] for data_se in data_set], 
+                             width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
+        legend_handles.append(bars)
+
+    # Set labels and limits
+    ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
+    ax_top.set_ylabel('Throughput (MB/s)')
+    ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+    ax_bottom.set_xticklabels(('Sentinel-2', 'SWIM', 'IBM COS'), rotation=0, ha='center')
+    ax_top.set_ylim(0, 15)
+    ax_bottom.set_ylim(0, 100)
+    ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+    ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+
+    handles, labels = plt.gca().get_legend_handles_labels()
+    fig.legend(legend_handles, [h.get_label() for h in legend_handles], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
+
+    plt.tight_layout()
+    plt.savefig("plot/combined/dataset_evolution_throughput_and_storage" + folder_suffix + ".pdf")
+
+
+
+# ~ # Plot efficiency data on the top subplot
 # ~ for i, scheduler in enumerate(unique_algorithms):
-    # ~ ax1.bar(x + i * bar_width, [storage_data[data_se][i] for data_se in data_set], width=bar_width, alpha=1, lw=1, label=f'{scheduler}', edgecolor='black', color=colors[i])
-# Set labels and limits
-ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
-ax_top.set_ylabel('Throughput (MB/s)')
-ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax_top.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
-ax_bottom.set_xticklabels(('Sentinel-2', 'SWIM', 'IBM COS'), rotation=0, ha='center')
-# ~ ax2.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Most Used x10'), rotation=0, ha='center')
-# ~ ax_bottom.set_ylim(0, 100)
-ax_top.set_ylim(0, 15)
-# ~ ax_top.set_ylim(0, 50)
-ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
-ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+    # ~ bars = ax_top.bar(x + i * bar_width, [throughput_data[data_se][i] for data_se in data_set], 
+                      # ~ width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black', hatch='//')
+# ~ legend_handles = []
+# ~ for i, set_of_node in enumerate(data_set):
+    # ~ optimal_throughput = throughput_optimal_all[i]  # Use index since throughput_optimal_all is a list
+    # ~ oracle_line = ax_top.hlines(
+        # ~ y=optimal_throughput, 
+        # ~ xmin=x[i] - bar_width / 2,  # Start slightly before the first bar
+        # ~ xmax=x[i] + (len(unique_algorithms) - 0.5) * bar_width,  # End slightly after the last bar
+        # ~ color='blue', 
+        # ~ linewidth=2, 
+        # ~ linestyle='--', 
+        # ~ label='Ideal Throughput' if i == 0 else None  # Add legend only once
+    # ~ )
+    # ~ if i == 0:  # Add the first "Oracle" line to the legend
+        # ~ legend_handles.append(oracle_line)
+    
+# ~ # Plot storage data on the bottom subplot
+# ~ for i, scheduler in enumerate(unique_algorithms):
+    # ~ bars = ax_bottom.bar(x + i * bar_width, [storage_data[data_se][i] for data_se in data_set], 
+                         # ~ width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
+    # ~ legend_handles.append(bars)
+# Plot storage data
+# ~ # Set labels and limits
+# ~ ax_bottom.set_ylabel('Proportion of Data Sizes Stored (\%)')
+# ~ ax_top.set_ylabel('Throughput (MB/s)')
+# ~ ax_bottom.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+# ~ ax_top.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
+# ~ ax_bottom.set_xticklabels(('Sentinel-2', 'SWIM', 'IBM COS'), rotation=0, ha='center')
+# ~ ax_top.set_ylim(0, 15)
+# ~ ax_top.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
+# ~ ax_bottom.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
-# Add legends
-handles, labels = plt.gca().get_legend_handles_labels()
-# ~ fig.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
-fig.legend(legend_handles, [h.get_label() for h in legend_handles], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
+# ~ # Add legends
+# ~ handles, labels = plt.gca().get_legend_handles_labels()
+# ~ fig.legend(legend_handles, [h.get_label() for h in legend_handles], loc='lower center', bbox_to_anchor=(0.54, -0.18), fancybox=False, ncol=3)
 
-plt.tight_layout()
+# ~ plt.tight_layout()
 
-# Save the figures as PDFs
-plt.savefig("plot/combined/dataset_evolution_throughput_and_storage" + folder_suffix + ".pdf")
+# ~ # Save the figures as PDFs
+# ~ plt.savefig("plot/combined/dataset_evolution_throughput_and_storage" + folder_suffix + ".pdf")
