@@ -5,6 +5,7 @@ import csv
 import re
 import sys
 import numpy as np
+from matplotlib.lines import Line2D
 from matplotlib.ticker import LogLocator
 from functools import partial
 import matplotlib.patches as mpatches
@@ -52,7 +53,8 @@ set_of_node_regex = re.compile(r'^(.+)' + re.escape(folder_suffix) + r'$')
 metric_to_plot_bars = 'size_stored'
 metric_to_plot_efficiency = 'efficiency'
 
-colors = ['#1f77b4', '#17becf','#ffbf00', '#7f7f7f', '#800000', '#d62728', '#ff7f0e', '#2ca02c']
+# ~ colors = ['#1f77b4', '#17becf','#ffbf00', '#7f7f7f', '#800000', '#d62728', '#ff7f0e', '#2ca02c']
+colors = ['#ffbf00', '#7f7f7f', '#800000', '#d62728', '#ff7f0e', '#2ca02c']
 order = [0, 2, 1, 3, 4, 6, 7]  # The new order for labels (C first, A second, B third)
 
 data = []
@@ -348,15 +350,15 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
         # Set x-axis ticks at group centers.
         ax.set_xticks(x)
         # Only show x-axis tick labels on bottom row.
-        if idx < (nrows - 1) * ncols:
-            ax.set_xticklabels([])
-        else:
-            ax.set_xticklabels(ordered_algs, rotation=45, ha='right')
+        # ~ if idx < (nrows - 1) * ncols:
+            # ~ ax.set_xticklabels([])
+        # ~ else:
+            # ~ ax.set_xticklabels(ordered_algs, rotation=45, ha='right')
         # Show y-axis label only on left column subplots.
-        if idx % ncols == 0:
-            ax.set_ylabel('Avg Throughput Difference (MB/s)')
-        else:
-            ax.set_ylabel('')
+        # ~ if idx % ncols == 0:
+            # ~ ax.set_ylabel('Avg Throughput Difference Compared to D-Rex SC and D-Rex LB (hashed) (MB/s)')
+        # ~ else:
+            # ~ ax.set_ylabel('')
         
         # Set subplot title based on folder name contents.
         folder_lower = folder.lower()
@@ -376,27 +378,45 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
             title = "IBM"
         else:
             title = folder
-        ax.set_title(title)
+        ax.set_title(title, fontsize=14)
         ax.set_ylabel("")
         
         # Optionally, add a legend on the first subplot.
         if idx == 0:
             ax.legend()
+        ax.set_xlabel('')  # Remove x-labels
     
     # Remove any unused axes.
     for j in range(n_folders, nrows * ncols):
         fig.delaxes(axes[j])
     
     # Add one global y-axis label, centered on the left.
-    fig.text(0.04, 0.5, 'Avg Throughput Difference (MB/s)', va='center', rotation='vertical', fontsize=12)
+    fig.text(-0.01, 0.5, 'Avg Throughput Difference Compared to D-Rex SC and D-Rex LB (hashed) (MB/s)', va='center', rotation='vertical', fontsize=14)
     
     # Create a combined legend for both D-Rex SC and D-Rex LB, placed at the bottom.
-    from matplotlib.patches import Patch
-    legend_handles = [
-        Patch(facecolor='white', edgecolor='black', linewidth=0.5, label='D-Rex SC'),
-        Patch(facecolor='white', edgecolor='black', linewidth=0.5, hatch='//', label='D-Rex LB')
+    # ~ legend_patches = [mpatches.Patch(color=color, label=algo) for algo, color in zip(ordered_algs, colors)]    
+    # ~ fig.legend(handles=legend_patches, loc='lower center', ncol=3, fancybox=False, bbox_to_anchor=(0.54, -0.07), fontsize=14)
+
+    legend_patches = [
+        Line2D([0], [0], marker='s', color='black', markerfacecolor=color, markeredgecolor='black', markersize=15, linestyle='') 
+        for color in colors
     ]
-    fig.legend(handles=legend_handles, loc='lower center', ncol=2, bbox_to_anchor=(0.54, -0.04), fancybox=False)
+
+    # Add legend
+    legend = fig.legend(
+        handles=[mpatches.Patch(color=color, label=algo) for algo, color in zip(ordered_algs, colors)],
+        loc='lower center', 
+        ncol=3, 
+        fancybox=False, 
+        bbox_to_anchor=(0.54, -0.07), 
+        fontsize=14
+    )
+
+    # Set black border for each color box
+    for handle in legend.legendHandles:
+        handle.set_edgecolor('black')
+        handle.set_linewidth(1)
+        
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.savefig(out_filename)
     plt.close(fig)
@@ -448,9 +468,12 @@ def create_combined_improvement_figure_datasets(improvements_sc, improvements_lb
         return
     
     # Arrange subplots in a grid (here we use 2 columns)
-    ncols = 2
-    nrows = int(np.ceil(n_folders / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 4))
+    # ~ ncols = 2
+    ncols=1
+    nrows=3
+    # ~ nrows = int(np.ceil(n_folders / ncols))
+    # ~ fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 4))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 2.4))
     if n_folders == 1:
         axes = [axes]
     else:
@@ -510,11 +533,11 @@ def create_combined_improvement_figure_datasets(improvements_sc, improvements_lb
         ax.axhline(0, color='black', linewidth=1)
         ax.set_ylim(-3, 3)
         ax.set_xticks(x)
-        # Only show x-axis tick labels on the bottom row.
-        if idx < (nrows - 1) * ncols:
-            ax.set_xticklabels([])
-        else:
-            ax.set_xticklabels(ordered_algs, rotation=45, ha='right')
+        # ~ # Only show x-axis tick labels on the bottom row.
+        # ~ if idx < (nrows - 1) * ncols:
+            # ~ ax.set_xticklabels([])
+        # ~ else:
+            # ~ ax.set_xticklabels(ordered_algs, rotation=45, ha='right')
         
         # Set subplot title based on folder name contents.
         folder_lower = folder.lower()
@@ -527,33 +550,38 @@ def create_combined_improvement_figure_datasets(improvements_sc, improvements_lb
             title = "IBM COS"
         else:
             title = folder
-        ax.set_title(title)
+        ax.set_title(title, fontsize=14)
         # Remove individual y-axis labels (global one will be added)
         ax.set_ylabel("")
+        ax.set_xlabel('')  # Remove x-labels
     
     # Remove any unused axes.
     for j in range(n_folders, nrows * ncols):
         fig.delaxes(axes[j])
-        
-    # ~ # If the last row contains only one subplot, center it horizontally.
-    # ~ # Force-center the third subplot
-    # ~ if n_folders == 3:
-        # ~ third_ax = axes[2]  # Third subplot (index 2)
-        # ~ pos = third_ax.get_position()
-        # ~ new_left = 0.5 - pos.width / 2  # Center it horizontally
-        # ~ third_ax.set_position([new_left, pos.y0, pos.width, pos.height])    
-        
+                
     # Add one global y-axis label (centered on the left).
-    fig.text(-0.01, 0.5, 'Avg Throughput Difference (MB/s)', va='center',
-             rotation='vertical', fontsize=12)
-    
-    # Create a combined legend for both D-Rex SC and D-Rex LB, placed at the bottom.
-    from matplotlib.patches import Patch
-    legend_handles = [
-        Patch(facecolor='white', edgecolor='black', linewidth=0.5, label='D-Rex SC'),
-        Patch(facecolor='white', edgecolor='black', linewidth=0.5, hatch='//', label='D-Rex LB')
+    fig.text(-0.01, 0.5, 'Avg Throughput Difference Compared to D-Rex SC and D-Rex LB (hashed) (MB/s)', va='center', rotation='vertical', fontsize=14)
+
+    legend_patches = [
+        Line2D([0], [0], marker='s', color='black', markerfacecolor=color, markeredgecolor='black', markersize=15, linestyle='') 
+        for color in colors
     ]
-    fig.legend(handles=legend_handles, loc='lower center', ncol=2, bbox_to_anchor=(0.54, -0.03), fancybox=False)
+
+    # Add legend
+    legend = fig.legend(
+        handles=[mpatches.Patch(color=color, label=algo) for algo, color in zip(ordered_algs, colors)],
+        loc='lower center', 
+        ncol=3, 
+        fancybox=False, 
+        bbox_to_anchor=(0.54, -0.08), 
+        fontsize=14
+    )
+
+    # Set black border for each color box
+    for handle in legend.legendHandles:
+        handle.set_edgecolor('black')
+        handle.set_linewidth(1)    
+
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.savefig(out_filename)
     plt.close(fig)
