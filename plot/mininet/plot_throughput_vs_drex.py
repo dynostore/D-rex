@@ -104,8 +104,7 @@ for folder in os.listdir(base_dir):
                             df_temp['Transfer_Time_Parralelized'] +
                             df_temp['Chunking_Time'] +
                             df_temp['Read_Time_Parralelized'] +
-                            df_temp['Reconstruct_Time']
-                        )
+                            df_temp['Reconstruct_Time'])
                     csv_files[file] = df_temp
                 
             # ~ differences = {}
@@ -124,7 +123,7 @@ for folder in os.listdir(base_dir):
                         avg_diff = throughput_diff.mean()
                         # ~ differences[file_name] = avg_diff
                         diffs_alg4[file_name] = avg_diff
-                        # ~ print(f"Comparison between alg4_1.csv and {file_name}: Average throughput difference = {avg_diff:.3f}")
+                        print(f"Comparison between alg4_1.csv and {file_name}: Average throughput difference = {avg_diff:.3f}")
                 improvements_alg4[folder] = diffs_alg4
             else:
                 print("Reference file alg4_1.csv not found in", folder_path)
@@ -141,7 +140,7 @@ for folder in os.listdir(base_dir):
                         diff = throughput_ref - throughput_other
                         avg_diff = diff.mean()
                         diffs_bogdan[file_name] = avg_diff
-                        # ~ print(f"[{folder}] alg_bogdan.csv vs {file_name}: Avg throughput diff = {avg_diff:.3f}")
+                        print(f"[{folder}] alg_bogdan.csv vs {file_name}: Avg throughput diff = {avg_diff:.3f}")
                 improvements_alg_bogdan[folder] = diffs_bogdan
             else:
                 print(f"Reference file alg_bogdan.csv not found in {folder_path}")
@@ -344,11 +343,12 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
                          edgecolor='black', linewidth=1, hatch='//')
         
         # Draw a horizontal line at 0.
+        ax.set_xticklabels([])  
         ax.axhline(0, color='black', linewidth=1)
         # Set uniform y-axis limits.
         ax.set_ylim(-3, 3)
         # Set x-axis ticks at group centers.
-        ax.set_xticks(x)
+        # ~ ax.set_xticks(x)
         # Only show x-axis tick labels on bottom row.
         # ~ if idx < (nrows - 1) * ncols:
             # ~ ax.set_xticklabels([])
@@ -532,13 +532,13 @@ def create_combined_improvement_figure_datasets(improvements_sc, improvements_lb
         # Draw a horizontal line at 0 and set uniform y-axis limits.
         ax.axhline(0, color='black', linewidth=1)
         ax.set_ylim(-3, 3)
-        ax.set_xticks(x)
+        # ~ ax.set_xticks(x)
         # ~ # Only show x-axis tick labels on the bottom row.
         # ~ if idx < (nrows - 1) * ncols:
             # ~ ax.set_xticklabels([])
         # ~ else:
             # ~ ax.set_xticklabels(ordered_algs, rotation=45, ha='right')
-        
+        ax.set_xticklabels([])
         # Set subplot title based on folder name contents.
         folder_lower = folder.lower()
         print("folder_lower:", folder_lower)
@@ -560,7 +560,7 @@ def create_combined_improvement_figure_datasets(improvements_sc, improvements_lb
         fig.delaxes(axes[j])
                 
     # Add one global y-axis label (centered on the left).
-    fig.text(-0.01, 0.5, 'Avg Throughput Difference Compared to D-Rex SC and D-Rex LB (hashed) (MB/s)', va='center', rotation='vertical', fontsize=14)
+    fig.text(-0.01, 0.41, 'Avg Throughput Difference Compared to D-Rex SC and D-Rex LB (hashed) (MB/s)', va='center', rotation='vertical', fontsize=14)
 
     legend_patches = [
         Line2D([0], [0], marker='s', color='black', markerfacecolor=color, markeredgecolor='black', markersize=15, linestyle='') 
@@ -599,6 +599,7 @@ for folder in folder_list:
         print(f"Folder not found: {folder}")
         continue
     csv_files = {}
+    print("Folder:", folder)
     # Read all CSV files except those starting with 'output_drex_only_'
     for file in os.listdir(folder):
         if file.endswith('.csv') and not file.startswith('output_drex_only_') and not file.startswith('output_optimal_schedule') and not file.startswith('optimal_schedule'):
@@ -641,7 +642,9 @@ for folder in folder_list:
                     print(f"Problem at row {i}: throughput_ref = {ref_val}, throughput_other = {other_val}")
 
             diff = throughput_ref - throughput_other
+            
             avg_diff = diff.mean()
+            print(f"Comparison between alg4_1.csv and {file_name}: Average throughput difference = {avg_diff:.3f}")
             diffs_sc[file_name] = avg_diff
         improvements_sc_datasets[folder] = diffs_sc
     else:
@@ -659,6 +662,7 @@ for folder in folder_list:
             throughput_other = df_other['throughput'].iloc[:n_lines].values
             diff = throughput_ref - throughput_other
             avg_diff = diff.mean()
+            print(f"Comparison between DREX LB and {file_name}: Average throughput difference = {avg_diff:.3f}")
             diffs_lb[file_name] = avg_diff
         improvements_lb_datasets[folder] = diffs_lb
     else:

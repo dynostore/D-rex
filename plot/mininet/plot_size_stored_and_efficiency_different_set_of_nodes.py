@@ -102,6 +102,7 @@ for folder in os.listdir(base_dir):
                         size_stored_value = (df[metric_to_plot_bars].iloc[i] * 100) / total_possible_size_to_store
                         throughput_value = df['throughput'].iloc[i]
                         data.append((set_of_nodes, algorithm, size_stored_value, throughput_value))
+                        print(algorithm, throughput_value)
 
 # Convert the data into a DataFrame
 df_data = pd.DataFrame(data, columns=['Set of Nodes', 'Algorithm', 'size_stored', 'throughput'])
@@ -125,8 +126,6 @@ df_data = df_data[(df_data['size_stored'] != 0) & (df_data['throughput'] != 0)]
 # Filter out some algorithms
 algorithms_to_exclude = ['HDFS(4,2)', 'GlusterFS_ADAPTATIVE', 'DAOS_2R', 'HDFS_RS_ADAPTATIVE', '3 Replication']
 filtered_df = df_data[~df_data['Algorithm'].isin(algorithms_to_exclude)]
-
-# ~ fig, (ax_top, ax_bottom) = plt.subplots(2, 1, figsize=(my_width, my_width/(golden)), sharex=True, gridspec_kw={'height_ratios': [1, 1]})
 
 bar_width = 0.09
 bar_spacing = 0.3  # Adjust spacing between sets of nodes
@@ -164,7 +163,7 @@ x = np.arange(len(sets_of_nodes)) * (len(unique_algorithms) * bar_width + bar_sp
 
 if mode != "all":
     # Only plot storage when mode is 'all'
-    golden = (1 + 5 ** 0.5) / 2.2
+    golden = (1 + 5 ** 0.5) / 2
     fig, ax = plt.subplots(figsize=(my_width, my_width / golden))
 
     bar_width = 0.09
@@ -179,6 +178,7 @@ if mode != "all":
                width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
 
     ax.set_ylabel('Proportion of Data Sizes Stored (\%)')
+    ax.yaxis.set_label_coords(-0.06, 0.4)  # Adjusts position (move left/right and up/down)
     ax.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
     ax.set_xticklabels(('Most Used', 'Most Reliable', 'Most Unreliable', 'Homogeneous'), rotation=0, ha='center')
     ax.set_ylim(0, 100)
@@ -186,7 +186,7 @@ if mode != "all":
 
     # Add legend
     handles, labels = ax.get_legend_handles_labels()
-    ax.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.41), fancybox=False, ncol=3)
+    ax.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.53), fancybox=False, ncol=3)
 
     plt.tight_layout()
     plt.savefig("plot/combined/nodes_evolution_storage" + folder_suffix + ".pdf")

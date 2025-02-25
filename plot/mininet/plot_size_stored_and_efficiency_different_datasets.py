@@ -98,7 +98,7 @@ for folder in folder_list:
                 size_stored_value = (df[metric_to_plot_bars].iloc[i] * 100) / total_possible_size_to_store
                 throughput_value = df['throughput'].iloc[i]
                 data.append((data_set, algorithm, size_stored_value, throughput_value))
-
+                
 # Convert the data into a DataFrame
 df_data = pd.DataFrame(data, columns=['Data Set', 'Algorithm', 'size_stored', 'throughput'])
 
@@ -153,8 +153,7 @@ for data_set, group in grouped:
     
     throughput_data[data_set] = efficiency_list
     storage_data[data_set] = storage_list
-    print(efficiency_list)
-    print(storage_list)
+    print(f"Data Set: {data_set}, Storage List: {storage_list}")  # Print storage values
 
 data_set = filtered_df['Data Set'].unique().tolist()
 x = np.arange(len(data_set)) * (len(unique_algorithms) * bar_width + bar_spacing)
@@ -162,7 +161,7 @@ x = np.arange(len(data_set)) * (len(unique_algorithms) * bar_width + bar_spacing
 
 if mode != "all":
     # Only plot storage data
-    golden = (1 + 5 ** 0.5) / 1.7
+    golden = (1 + 5 ** 0.5) / 1.5
     fig, ax_storage = plt.subplots(figsize=(my_width, my_width / (golden)))
 
     for i, scheduler in enumerate(unique_algorithms):
@@ -170,13 +169,14 @@ if mode != "all":
                               width=bar_width, alpha=0.6, label=f'{scheduler}', color=colors[i], edgecolor='black')
 
     ax_storage.set_ylabel('Proportion of Data Sizes Stored (\%)')
+    ax_storage.yaxis.set_label_coords(-0.06, 0.4)  # Adjusts position (move left/right and up/down)
     ax_storage.set_xticks(x + bar_width * (len(unique_algorithms) - 1) / 2)
     ax_storage.set_xticklabels(('Sentinel-2', 'SWIM', 'IBM COS'), rotation=0, ha='center')
     ax_storage.set_ylim(0, 100)
     ax_storage.grid(True, which='both', axis='y', linestyle='--', linewidth=0.5)
 
     handles, labels = plt.gca().get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.54, -0.23), fancybox=False, ncol=3)
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.54, -0.27), fancybox=False, ncol=3)
     
     plt.tight_layout()
     plt.savefig("plot/combined/dataset_evolution_storage_only" + folder_suffix + ".pdf")
