@@ -211,13 +211,13 @@ def plot_stats_input_nodes(datapath, data, minmax, my_width, golden):
         plt.xlabel(x_labels[factor])
         if x_labels[factor] == "Storage Size (TB)":
             plt.ylabel("\#")
-            plt.xticks([5, 10, 15]) 
+            plt.xticks([5, 10, 15, 20]) 
             plt.yticks([0, 2, 4])
             plt.ylim(0,4.1)
         if x_labels[factor] == "Write Bandwidth (MB/s)":
             plt.xticks([150, 200, 250])
         if x_labels[factor] == "Annual Failure Rate (\%)":
-            plt.xticks([8, 16, 24]) 
+            plt.xticks([5, 15, 25]) 
             plt.yticks([0, 2, 4, 6])
             plt.ylim(0,6.1)
         plt.tight_layout()

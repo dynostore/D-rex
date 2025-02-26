@@ -519,7 +519,6 @@ void read_data(const char *filename, double *sizes, int *submit_times, int numbe
                 target_reliability[size_count] = generate_reliability();
                 //~ printf("target_reliability[size_count] %f\n", target_reliability[size_count]); if (size_count > 30) { exit(1); }
                 if (submit_times[size_count] > 1947483647) { printf("ERROR: Time too big use a long or double for submit times\n"); exit(1); }
-                
                 size_count++;
             }
         } else {
@@ -664,7 +663,6 @@ int reliability_threshold_met_accurate(int N, int K, double reliability_threshol
     PoiBin *pb = init_poi_bin_accurate(reliability_of_nodes, N);
     double cdf_value = cdf_poi_bin_accurate(pb, N - K);
     free_poi_bin_accurate(pb);
-    //~ printf("1\n");
     return cdf_value >= reliability_threshold;
 }
 
@@ -781,11 +779,13 @@ void algorithm4(int number_of_nodes, Node* nodes, float reliability_threshold, d
     printf("System saturation = %f\n", system_saturation);
     printf("Data size = %f\n", size);
     #endif
-    
+    //~ printf("total_combinations %d\n", total_combinations);
     // 2. Iterates over a range of nodes combination
     for (i = 0; i < total_combinations; i++) {
         if (max_N < combinations[i]->num_elements) { combinations[i]->K = -1; continue; }
         //~ printf("%d\n", combinations[i]->num_elements);
+        //~ if (i > 900) {
+        //~ exit(1); }
         
         *K = get_max_K_from_reliability_threshold_and_nodes_chosen(combinations[i]->num_elements, reliability_threshold, combinations[i]->sum_reliability, combinations[i]->variance_reliability, combinations[i]->probability_failure);
         
@@ -1819,7 +1819,7 @@ int main(int argc, char *argv[]) {
     /** Simulation main loop **/
     
     printf("data_size, chunk_size, N, K, chosen_nodes\n");
-    
+    //~ printf("count: %d\n", count);
     for (i = 0; i < count; i++) {
         
         if (reliability_threshold == -1) {
@@ -1829,7 +1829,7 @@ int main(int argc, char *argv[]) {
         
         add_time_to_print(&list_time, submit_times[i], size_stored);
        
-        //~ if (i%250000 == 0) {
+        //~ if (i%100 == 0) {
         //~ if (i%50000 == 0) {
             //~ printf("Data %d/%d of size %f\n", i, count, sizes[i]);
         //~ }
@@ -2239,7 +2239,7 @@ int main(int argc, char *argv[]) {
         fprintf(file, "%d,%f,%f,%f,%f\n", number_of_data_stored, total_storage_used, best_upload_time_to_print, best_read_time_to_print, size_stored);
         fclose(file);
     }
-    
+    printf("La\n"); fflush(stdout);
     // Free allocated memory
     free(sizes);
     free(nodes);

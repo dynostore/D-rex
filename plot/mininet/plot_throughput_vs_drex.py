@@ -287,7 +287,7 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
     ncols = 1
     # ~ nrows = int(np.ceil(n_folders / ncols))
     nrows = 4
-    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 2.4))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 2))
     if n_folders == 1:
         axes = [axes]
     else:
@@ -391,7 +391,7 @@ def create_combined_improvement_figure(improvements_sc, improvements_lb, out_fil
         fig.delaxes(axes[j])
     
     # Add one global y-axis label, centered on the left.
-    fig.text(-0.01, 0.5, 'Avg Throughput Difference Compared to D-Rex SC and D-Rex LB (hashed) (MB/s)', va='center', rotation='vertical', fontsize=14)
+    fig.text(-0.01, 0.5, 'Avg Throughput Difference vs. D-Rex SC (plain) \& LB (hashed) (MB/s)', va='center', rotation='vertical', fontsize=14)
     
     # Create a combined legend for both D-Rex SC and D-Rex LB, placed at the bottom.
     # ~ legend_patches = [mpatches.Patch(color=color, label=algo) for algo, color in zip(ordered_algs, colors)]    
@@ -472,8 +472,7 @@ def create_combined_improvement_figure_datasets(improvements_sc, improvements_lb
     ncols=1
     nrows=3
     # ~ nrows = int(np.ceil(n_folders / ncols))
-    # ~ fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 4))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 2.4))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 6, nrows * 2))
     if n_folders == 1:
         axes = [axes]
     else:
@@ -560,7 +559,7 @@ def create_combined_improvement_figure_datasets(improvements_sc, improvements_lb
         fig.delaxes(axes[j])
                 
     # Add one global y-axis label (centered on the left).
-    fig.text(-0.01, 0.41, 'Avg Throughput Difference Compared to D-Rex SC and D-Rex LB (hashed) (MB/s)', va='center', rotation='vertical', fontsize=14)
+    fig.text(-0.01, 0.41, 'Avg Throughput Difference vs. D-Rex SC (plain) \& LB (hashed) (MB/s)', va='center', rotation='vertical', fontsize=14)
 
     legend_patches = [
         Line2D([0], [0], marker='s', color='black', markerfacecolor=color, markeredgecolor='black', markersize=15, linestyle='') 
@@ -573,7 +572,7 @@ def create_combined_improvement_figure_datasets(improvements_sc, improvements_lb
         loc='lower center', 
         ncol=3, 
         fancybox=False, 
-        bbox_to_anchor=(0.54, -0.08), 
+        bbox_to_anchor=(0.54, -0.11), 
         fontsize=14
     )
 
