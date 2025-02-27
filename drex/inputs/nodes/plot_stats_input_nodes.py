@@ -210,7 +210,7 @@ def plot_stats_input_nodes(datapath, data, minmax, my_width, golden):
         plt.hist(data[factor], color=hist_color)
         plt.xlabel(x_labels[factor])
         if x_labels[factor] == "Storage Size (TB)":
-            plt.ylabel("\#")
+            plt.ylabel("Frequency")
             plt.xticks([5, 10, 15, 20]) 
             plt.yticks([0, 2, 4])
             plt.ylim(0,4.1)
