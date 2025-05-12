@@ -19,6 +19,8 @@ drex/inputs/data/FB_merged.csv
 drex/inputs/data/MEVA_merged.csv
 drex/inputs/get_stats_input_data
 alg4
+drex/inputs/data/test.csv
+drex/inputs/nodes/10_most_used_nodes_last_update.csv
 data/traces.zip
 output_hdfs_rs_3_2_c_stats.csv
 output_hdfs_rs_6_3_c_stats.csv

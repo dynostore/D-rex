@@ -4,6 +4,14 @@ CC = gcc
 CFLAGS = -Idrex/utils -I/usr/local/include -Wall
 LDFLAGS = -L/usr/local/lib -lgsl -lgslcblas -lm
 
+# Optional flags
+ifdef PRINT
+    CFLAGS += -DPRINT
+endif
+ifdef SINGLE_DATA
+    CFLAGS += -DSINGLE_DATA
+endif
+
 # List of object files
 OBJS = drex/utils/prediction.o drex/utils/pareto_knee.o drex/utils/k_means_clustering.o drex/utils/combinations.o drex/utils/remove_node.o drex/schedulers/algorithm4.o drex/schedulers/bogdan_balance_penalty.o drex/schedulers/algorithm1.o drex/schedulers/random.o drex/schedulers/hdfs.o drex/schedulers/glusterfs.o drex/schedulers/optimal_schedule.o drex/schedulers/least_used_node.o
 

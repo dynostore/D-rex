@@ -1,6 +1,6 @@
 # Truncate current output files and add header
-truncate -s 0 output.csv
-echo "algorithm_used,data_size,N,K,nodes_used" > output.csv
+#~ truncate -s 0 output_drex_only.csv
+#~ echo "algorithm,total_scheduling_time,total_storage_used,total_upload_time,total_parralelized_upload_time,number_of_data_stored,total_N,mean_storage_used,mean_upload_time,mean_N,initial_node_sizes,final_node_sizes,total_chunking_time,mean_chunking_time,mean_parralelized_upload_time,total_read_time,mean_read_time,total_read_time_parrallelized,mean_read_time_parrallelized,total_reconstruct_time,mean_reconstruct_time,size_stored" > output_drex_only.csv
 
 # Inputs
 data_duration_on_system=$1
@@ -38,7 +38,9 @@ else
     alg4=alg4
 fi
 
-make
+make clean
+make SINGLE_DATA=1
+#~ make
 
 if [ "$input_nodes" == "drex/inputs/nodes/8_nodes_from_chicago.csv" ]; then
     nodes_to_print=8
@@ -46,8 +48,13 @@ elif [ "$input_nodes" == "drex/inputs/nodes/10_nodes_from_chicago.csv" ]; then
     nodes_to_print=10
 fi
 
-# Alg 4 SC
-./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times} 1
+# cancelled algorithms
+# Random
+# ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 0 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times}
+
+
+# Alg 4
+./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times} 1 
 #~ ./alg4 ${input_nodes} ${input_data} ${data_duration_on_system} ${reliability_threshold} $((number_of_repetition)) 4 ${add_data_pattern} $((remove_node_pattern)) $((fixed_random_seed)) $((max_N)) ${input_nodes_failure_times} 1 > "trace_drex_sc_${reliability_threshold}_${nodes_to_print}.csv"
 
 #~ # Alg LB
