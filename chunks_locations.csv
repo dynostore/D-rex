@@ -1,0 +1,9 @@
+0 1 6 3
+N 3 K 2 0 1 6 3
+Data 3 N 3 K 2 Nodes 1 6 3
+Data 3 N 3 K 2 P 1 Nodes 1 6 3
+Data 9 N 3 K 2 P 1 Nodes 1 6 3
+Data 9 N 4 K 3 P 1 Nodes 1 6 5 3
+Data 9 N 4 K 3 P 1 Nodes 1 6 5 3
+Data 9 N 5 K 4 P 1 Nodes 1 6 5 3 7
+Data 9 N 5 K 4 P 1 Nodes 4 6 5 3 7
