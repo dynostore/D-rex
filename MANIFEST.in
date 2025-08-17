@@ -1,0 +1,2 @@
+exclude plot/*
+prune plot
